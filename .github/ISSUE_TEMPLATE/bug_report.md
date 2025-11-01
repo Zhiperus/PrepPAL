@@ -1,5 +1,5 @@
 ---
-name: "🐛 Bug Report"
+name: "🐛 Bug Report1"
 about: Create a report to help us improve the application
 title: "[BUG] - "
 labels: bug
