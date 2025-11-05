@@ -11,7 +11,7 @@ export default [
   { path: "/users", router: userRoutes },
   { path: "/goBags", router: goBagRoutes },
   { path: "/items", router: goBagItemRoutes },
-  { path: "modules", router: moduleRoutes },
+  { path: "/modules", router: moduleRoutes },
   { path: "/posts", router: postRoutes },
   { path: "/quiz", router: quizRoutes },
   { path: "/quiz-attempt", router: quizAttemptRoutes },
