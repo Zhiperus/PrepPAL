@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import RatingController from "../controllers/rating.controller";
 
 const ratingRoutes = Router();

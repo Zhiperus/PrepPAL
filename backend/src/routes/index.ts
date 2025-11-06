@@ -1,11 +1,11 @@
-import userRoutes from "./user.routes";
 import goBagRoutes from "./goBag.routes";
 import goBagItemRoutes from "./goBagItem.routes";
 import moduleRoutes from "./module.routes";
 import postRoutes from "./post.routes";
 import quizRoutes from "./quiz.routes";
-import ratingRoutes from "./rating.routes";
 import quizAttemptRoutes from "./quizAttempt.routes";
+import ratingRoutes from "./rating.routes";
+import userRoutes from "./user.routes";
 
 export default [
   { path: "/users", router: userRoutes },
