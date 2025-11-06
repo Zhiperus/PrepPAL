@@ -4,6 +4,7 @@ import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
@@ -17,6 +18,9 @@ export default defineConfig([
       reactRefresh.configs.vite,
       react.configs.flat.recommended,
     ],
+    plugins: {
+      import: importPlugin,
+    },
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -25,6 +29,7 @@ export default defineConfig([
       react: { version: 'detect' },
     },
     rules: {
+      '@typescript-eslint/no-explicit-any': 'warn',
       'react/function-component-definition': [
         'error',
         {
@@ -33,6 +38,23 @@ export default defineConfig([
         },
       ],
       'react/react-in-jsx-scope': 'off',
+      'import/order': [
+        'error',
+        {
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+            'object',
+          ],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        },
+      ],
+      'react-refresh/only-export-components': 'off',
     },
   },
 ]);
