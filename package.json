@@ -1,0 +1,20 @@
+{
+	"dependencies": {
+		"husky": "^9.1.7",
+		"lint-staged": "^16.2.6"
+	},
+	"scripts": {
+		"prepare": "husky"
+    		"lint": "pnpm --filter ./frontend lint && pnpm --filter ./backend lint"
+	},
+	"lint-staged": {
+	    "frontend/**/*.{js,jsx,ts,tsx}": [
+	      "pnpm --filter frontend exec prettier --write",
+	      "pnpm --filter frontend exec eslint --fix"
+	    ],
+	    "backend/**/*.{js,ts}": [
+	      "pnpm --filter backend exec prettier --write",
+	      "pnpm --filter backend exec eslint --fix"
+	    ]
+	  }
+}
