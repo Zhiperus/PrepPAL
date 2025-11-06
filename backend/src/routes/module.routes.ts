@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import ModuleController from "../controllers/module.controller";
 
 const moduleRoutes = Router();

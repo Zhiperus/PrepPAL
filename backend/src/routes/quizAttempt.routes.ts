@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import QuizAttemptController from "../controllers/quizAttempt.controller";
 
 const quizAttemptRoutes = Router();
