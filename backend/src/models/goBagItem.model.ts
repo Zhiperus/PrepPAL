@@ -1,10 +1,10 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const goBagItemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   category: { type: String, required: true },
   scoreWeight: { type: Number, required: true },
-  descrption: { type: String, required: true },
+  description: { type: String, required: true },
   applicableIf: {
     hasFemale: { type: Boolean, required: true },
     hasDog: { type: Boolean, required: true },
@@ -12,6 +12,6 @@ const goBagItemSchema = new mongoose.Schema({
   },
 });
 
-const GoBagItem = mongoose.model("GoBagItem", goBagItemSchema);
+const GoBagItem = mongoose.model('GoBagItem', goBagItemSchema);
 
 export default GoBagItem;
