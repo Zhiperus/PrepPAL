@@ -1,41 +1,77 @@
 import { z } from "zod";
-import mongoose from "mongoose";
 
-export const userSchemaZod = z.object({
-  email: z.email({ message: "Invalid email" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
-  phoneNumber: z.string().nonempty({ message: "Phone number is required" }),
-  location: z.object({
-    region: z.string().nonempty(),
-    province: z.string().nonempty(),
-    city: z.string().nonempty(),
-    barangay: z.string().nonempty(),
-  }),
-  householdInfo: z.object({
-    name: z.string().nonempty(),
-    memberCount: z.number().int().nonnegative(),
-    femaleCount: z.number().int().nonnegative(),
-    dogCount: z.number().int().nonnegative(),
-    catCount: z.number().int().nonnegative(),
-  }),
-  notification: z
-    .object({
-      email: z.boolean().default(true),
-      sms: z.boolean().default(true),
-    })
-    .default({ email: true, sms: true }),
-  role: z.string().nonempty(),
-  modulePoints: z.number().int().default(0),
-  goBagPoints: z.number().int().default(0),
-  totalPoints: z.number().int().default(0),
-  completedCoursesCount: z.number().int().default(0),
-  createdAt: z.date().default(() => new Date()),
-  updatedAt: z.date().default(() => new Date()),
-  personalGoBagId: z.instanceof(mongoose.Types.ObjectId).optional(),
-  recommendedGoBagId: z.instanceof(mongoose.Types.ObjectId).optional(),
-  lastViewedModuleId: z.instanceof(mongoose.Types.ObjectId).optional(),
+const PasswordSchema = z
+  .string()
+  .min(8, { message: "Password must be at least 8 characters long." });
+
+const LocationSchema = z.object({
+  region: z.string().min(1, { message: "Region is required." }),
+  province: z.string().min(1, { message: "Province is required." }),
+  city: z.string().min(1, { message: "City is required." }),
+  barangay: z.string().min(1, { message: "Barangay is required." }),
 });
 
-export type UserInput = z.infer<typeof userSchemaZod>;
+const HouseholdSchema = z.object({
+  memberCount: z
+    .number()
+    .int()
+    .min(1, { message: "At least one member is required." }),
+  femaleCount: z.number().int().min(0),
+  dogCount: z.number().int().min(0),
+  catCount: z.number().int().min(0),
+});
+
+export const UserSchema = z.object({
+  _id: z.string(),
+  email: z.email({ error: "A valid email is required." }),
+  password: z.string(),
+  householdName: z.string(),
+  location: LocationSchema.optional(),
+  householdInfo: HouseholdSchema.optional(),
+  phoneNumber: z.string().nonempty({ message: "Phone number is required" }),
+  onboardingCompleted: z.boolean().default(false),
+  role: z.enum(["citizen", "lgu"]).default("citizen"),
+  notification: z.object({
+    email: z.boolean().default(true),
+    sms: z.boolean().default(false),
+  }),
+  points: z.object({
+    goBag: z.number().default(0),
+    modules: z.number().default(0),
+    community: z.number().default(0),
+  }),
+  goBags: z.array(z.string()).default([]),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export const RegisterRequestSchema = z.object({
+  email: z.email({ error: "A valid email is required." }),
+  password: PasswordSchema,
+});
+
+export const LoginRequestSchema = z.object({
+  email: z.email({ error: "A valid email is required." }),
+  password: z.string(),
+});
+
+export const AuthResponseSchema = z.object({
+  token: z.string(),
+  user: UserSchema.omit({ password: true }),
+});
+
+export const OnboardingRequestSchema = z.object({
+  location: LocationSchema,
+  householdInfo: HouseholdSchema,
+  phoneNumber: z.string(),
+});
+
+export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
+
+export type LoginRequest = z.infer<typeof LoginRequestSchema>;
+
+export type AuthResponse = z.infer<typeof AuthResponseSchema>;
+
+export type OnboardingRequest = z.infer<typeof OnboardingRequestSchema>;
+
+export type User = z.infer<typeof AuthResponseSchema.shape.user>;
