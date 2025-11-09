@@ -1,12 +1,13 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import type { Express } from 'express';
 import mongoose from 'mongoose';
 
 import routes from './routes/index';
 
 dotenv.config();
 
-const app = express();
+const app: Express = express();
 app.use(express.json());
 
 routes.forEach(({ path, router }) => {

@@ -1,3 +1,7 @@
+import type {
+  LoginRequest,
+  RegisterRequest,
+} from '@shared/schemas/auth.schema';
 import { configureAuth } from 'react-query-auth';
 import { Navigate, useLocation } from 'react-router';
 import { z } from 'zod';
@@ -20,13 +24,9 @@ const logout = (): Promise<void> => {
   return api.post('/auth/logout');
 };
 
-export const loginInputSchema = z.object({
-  email: z.email({ error: 'Invalid Email' }),
-  password: z.string().min(5, 'Required'),
-});
-
-export type LoginInput = z.infer<typeof loginInputSchema>;
-const loginWithEmailAndPassword = (data: LoginInput): Promise<AuthResponse> => {
+const loginWithEmailAndPassword = (
+  data: LoginRequest,
+): Promise<AuthResponse> => {
   return api.post('/auth/login', data);
 };
 
@@ -51,21 +51,19 @@ export const registerInputSchema = z
       ),
   );
 
-export type RegisterInput = z.infer<typeof registerInputSchema>;
-
 const registerWithEmailAndPassword = (
-  data: RegisterInput,
+  data: RegisterRequest,
 ): Promise<AuthResponse> => {
   return api.post('/auth/register', data);
 };
 
 const authConfig = {
   userFn: getUser,
-  loginFn: async (data: LoginInput) => {
+  loginFn: async (data: LoginRequest) => {
     const response = await loginWithEmailAndPassword(data);
     return response.user;
   },
-  registerFn: async (data: RegisterInput) => {
+  registerFn: async (data: RegisterRequest) => {
     const response = await registerWithEmailAndPassword(data);
     return response.user;
   },

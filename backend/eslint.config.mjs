@@ -10,7 +10,8 @@ export default [
       import: importPlugin,
     },
     rules: {
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'off',
       'import/order': [
         'error',
         {
