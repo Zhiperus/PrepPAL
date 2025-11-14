@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router } from 'express';
 
-import ModuleController from "../controllers/module.controller";
+import ModuleController from '../controllers/module.controller';
 
-const moduleRoutes = Router();
+const moduleRoutes: Router = Router();
 const controller = new ModuleController();
 
 export default moduleRoutes;

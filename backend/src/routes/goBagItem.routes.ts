@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router } from 'express';
 
-import GoBagItemController from "../controllers/goBagItem.controller";
+import GoBagItemController from '../controllers/goBagItem.controller';
 
-const goBagItemRoutes = Router();
+const goBagItemRoutes: Router = Router();
 const controller = new GoBagItemController();
 
 export default goBagItemRoutes;
