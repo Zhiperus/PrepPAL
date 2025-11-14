@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["node"],
     "target": "ES2020",
     "module": "CommonJS",
     "moduleResolution": "Node",
@@ -13,9 +14,7 @@
       "@shared/*": ["../shared/src/*"]
     }
   },
-  "include": ["src"],
-  "exclude": ["node_modules"]
-  "references": [
-    { "path": "../shared" }
-  ]
+  "include": ["src", "src/middleware/authMiddleware.tss"],
+  "exclude": ["node_modules"],
+  "references": [{ "path": "../shared" }]
 }
