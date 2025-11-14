@@ -9,6 +9,11 @@ const BCRYPT_SALT_ROUNDS: number = process.env.BCRYPT_SALT_ROUNDS
   : 10;
 
 export default class AuthRepository {
+  // Find user by email
+  async findByEmail(email: string): Promise<IUser | null> {
+    return UserModel.findOne({ email });
+  }
+
   // Hash password
   async hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS);
