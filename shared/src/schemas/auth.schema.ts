@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const PasswordSchema = z
-  .string()
+  .string({ error: "A password is required to register" })
   .min(8, { message: "Password must be at least 8 characters long." });
 
 export const RegisterRequestSchema = z.object({
@@ -11,7 +11,7 @@ export const RegisterRequestSchema = z.object({
 
 export const LoginRequestSchema = z.object({
   email: z.email({ error: "A valid email is required." }),
-  password: z.string(),
+  password: z.string({ error: "A password is required to register" }),
 });
 
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
