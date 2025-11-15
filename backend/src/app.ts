@@ -3,6 +3,7 @@ import express from 'express';
 import type { Express } from 'express';
 import mongoose from 'mongoose';
 
+import errorHandler from './middleware/errorHandler';
 import routes from './routes/index';
 
 dotenv.config();
@@ -13,6 +14,8 @@ app.use(express.json());
 routes.forEach(({ path, router }) => {
   app.use(path, router);
 });
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.DATABASE_URL;

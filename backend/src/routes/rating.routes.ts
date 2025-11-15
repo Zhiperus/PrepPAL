@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router } from 'express';
 
-import RatingController from "../controllers/rating.controller";
+import RatingController from '../controllers/rating.controller';
 
-const ratingRoutes = Router();
+const ratingRoutes: Router = Router();
 const controller = new RatingController();
 
 export default ratingRoutes;
