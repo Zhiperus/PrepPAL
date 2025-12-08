@@ -10,6 +10,7 @@ import {
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
+import OnboardingRoute from './routes/onboarding';
 
 const convert = (queryClient: QueryClient) => (m: any) => {
   const { clientLoader, clientAction, default: Component, ...rest } = m;
@@ -30,12 +31,20 @@ export const createAppRouter = (queryClient: QueryClient) =>
     {
       path: paths.app.root.path,
       element: (
-        <ProtectedRoute>
           <AppRoot />
-        </ProtectedRoute>
       ),
       ErrorBoundary: AppRootErrorBoundary,
       children: [],
+    },
+    {
+      path: paths.onboarding.path,
+      element: (
+        <ProtectedRoute>
+           {}
+           <OnboardingRoute />
+        </ProtectedRoute>
+      ),
+      lazy: () => import('./routes/onboarding').then(convert(queryClient)),
     },
     {
       path: '*',
