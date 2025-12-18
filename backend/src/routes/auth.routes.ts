@@ -12,6 +12,6 @@ authRoutes.post(
   validateAuth('register'),
   controller.signup.bind(controller),
 );
-//TODO: authRoutes.post('/login', controller.login.bind(controller));
+authRoutes.post('/login', validateAuth('login'), controller.login.bind(controller));
 
 export default authRoutes;
