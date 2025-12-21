@@ -7,10 +7,10 @@ import {
   default as AppRoot,
   ErrorBoundary as AppRootErrorBoundary,
 } from './routes/app/root';
+import OnboardingRoute from './routes/onboarding';
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
-import OnboardingRoute from './routes/onboarding';
 
 const convert = (queryClient: QueryClient) => (m: any) => {
   const { clientLoader, clientAction, default: Component, ...rest } = m;
