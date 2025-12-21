@@ -1,15 +1,14 @@
+import PhilippinesData from "phil-reg-prov-mun-brgy";
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { paths } from '@/config/paths';
-
-
-import PhilippinesData from "phil-reg-prov-mun-brgy";
 const { regions, provinces, city_mun, barangays } = PhilippinesData;
 
 import module from '../../assets/light-bulb.png';
-import goBag from '../../assets/school-bag.png';
 import leaderboard from '../../assets/podium.png';
+import goBag from '../../assets/school-bag.png';
+
+import { paths } from '@/config/paths';
 
 export default function Onboarding() {
   const goTo = useNavigate();
