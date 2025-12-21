@@ -1,8 +1,8 @@
+import dotenv from 'dotenv';
 import { Resend } from 'resend';
 
-import { env } from '@/config/env';
-
-const resend = new Resend(env.RESEND_API_KEY);
+dotenv.config();
+export const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface SendEmailProps {
   to: string;
@@ -13,7 +13,6 @@ interface SendEmailProps {
 export const sendEmail = async ({ to, subject, html }: SendEmailProps) => {
   try {
     const data = await resend.emails.send({
-      //NOTE: Temporary for now as there is no custom domain yet, we might also switch to AWS SES
       from: 'PrepPAL <onboarding@resend.dev>',
       to: to,
       subject: subject,

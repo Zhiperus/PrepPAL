@@ -67,8 +67,8 @@ export default class AuthRepository {
   ): Promise<IUser | null> {
     return UserModel.findByIdAndUpdate(userId, {
       password: newPasswordHash,
-      resetPasswordToken: undefined,
-      resetPasswordExpires: undefined,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
     });
   }
 }

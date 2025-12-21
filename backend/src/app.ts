@@ -1,3 +1,4 @@
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import type { Express } from 'express';
@@ -10,6 +11,13 @@ dotenv.config();
 
 const app: Express = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  }),
+);
 
 routes.forEach(({ path, router }) => {
   app.use(path, router);
