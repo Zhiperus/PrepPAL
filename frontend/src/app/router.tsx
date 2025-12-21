@@ -28,6 +28,16 @@ export const createAppRouter = (queryClient: QueryClient) =>
       lazy: () => import('./routes/landing').then(convert(queryClient)),
     },
     {
+      path: paths.auth['forget-password'].path,
+      lazy: () =>
+        import('./routes/auth/forget-password').then(convert(queryClient)),
+    },
+    {
+      path: paths.auth['reset-password'].path,
+      lazy: () =>
+        import('./routes/auth/reset-password').then(convert(queryClient)),
+    },
+    {
       path: paths.app.root.path,
       element: (
         <ProtectedRoute>

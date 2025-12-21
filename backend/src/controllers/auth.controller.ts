@@ -22,4 +22,24 @@ export default class AuthController {
   //TODO: async login(req: Request, res: Response, next: NextFunction)
 
   //TODO: async logout(req: Request, res: Response, next: NextFunction)
+  //
+  forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email } = req.body;
+      const result = await this.authService.forgotPassword(email);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { token, password } = req.body;
+      const result = await this.authService.resetPassword(token, password);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

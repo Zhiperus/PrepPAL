@@ -38,4 +38,37 @@ export default class AuthRepository {
   generateToken(payload: { userId: string }): string {
     return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
   }
+
+  async findByResetToken(token: string): Promise<IUser | null> {
+    return UserModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+  }
+
+  async saveResetToken(
+    userId: string,
+    token: string,
+    expires: Date,
+  ): Promise<IUser | null> {
+    return UserModel.findByIdAndUpdate(
+      userId,
+      {
+        resetPasswordToken: token,
+        resetPasswordExpires: expires,
+      },
+      { new: true },
+    );
+  }
+
+  async updatePasswordAndClearToken(
+    userId: string,
+    newPasswordHash: string,
+  ): Promise<IUser | null> {
+    return UserModel.findByIdAndUpdate(userId, {
+      password: newPasswordHash,
+      resetPasswordToken: undefined,
+      resetPasswordExpires: undefined,
+    });
+  }
 }
