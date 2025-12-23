@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap');
+
 @import "tailwindcss";
 @plugin "daisyui";
 
@@ -84,3 +86,7 @@
 /* Border Classes */
 .border-container-custom { border-color: var(--border-container); }
 .border-container-secondary { border-color: var(--border-secondary); }
+
+@theme {
+  --font-sans: "Rubik", sans-serif;
+}

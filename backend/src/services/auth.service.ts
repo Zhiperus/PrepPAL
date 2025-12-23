@@ -31,7 +31,33 @@ export default class AuthService {
     return newUser;
   }
 
-  //TODO: async login();
+  async login(credentials: { email: string; password: string }) {
+    const { email, password } = credentials;
+
+    const user = await this.AuthRepo.findByEmail(email);
+    if (!user) {
+      throw new NotFoundError('Invalid email or password');
+    }
+
+    if (!user.password) {
+      throw new NotFoundError('Invalid email or password');
+    }
+
+    const isPasswordValid = await this.AuthRepo.comparePassword(
+      password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new NotFoundError('Invalid email or password');
+    }
+
+    const token = this.AuthRepo.generateToken({ userId: String(user._id) });
+
+    return {
+      user: { id: user._id, email: user.email },
+      token,
+    };
+  }
 
   //TODO: async logout();
 }
