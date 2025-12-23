@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,7 +12,9 @@
   "license": "ISC",
   "dependencies": {
     "mongoose": "^8.19.3",
-    "pnpm": "^10.20.0",
     "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }
