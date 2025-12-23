@@ -3,6 +3,90 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+
+:root {
+  /* --- Text Colors --- */
+  --text-primary: #2a4263;
+  --text-secondary: #4B5563;
+  --text-placeholder: #9CA3AF;
+  --text-link: #4B5563; /* Note: Image lists this hex, though visual looks blue */
+  --text-link-hover: #0891b2;
+  --text-success: #10B981;
+  --text-warning: #F59E0B;
+  --text-error: #EF4444;
+
+  /* --- Button Text --- */
+  --btn-text-primary: #FFFFFF;
+  --btn-text-disabled: #F3F4F6;
+  --btn-text-secondary: #0891B2;
+
+  /* --- Container/Background Colors --- */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F9FAFB;
+  --bg-info: #E0F2F6;
+  --bg-success-container: #D1FAE5;
+  --bg-warning-container: #FEF3C7;
+  --bg-error-container: #FEE2E2;
+  --bg-page: #F3F4F6;
+
+  /* --- Button Backgrounds --- */
+  --btn-primary-bg: #2A4263;
+  --btn-primary-hover: #0891B2;
+  --btn-primary-disabled: #9CA3AF;
+  --btn-secondary-bg: #FFFFFF;
+  --btn-secondary-hover: #E0F7FA;
+
+  /* --- Border Colors --- */
+  --border-container: #E5E7EB;
+  --border-secondary: #4B5563;
+}
+
+
+/* Text Classes */
+.text-primary-custom   { color: var(--text-primary); }
+.text-secondary-custom { color: var(--text-secondary); }
+.text-placeholder      { color: var(--text-placeholder); }
+.text-link             { color: var(--text-link); }
+.text-link-hover:hover { color: var(--text-link-hover); }
+.text-success          { color: var(--text-success); }
+.text-warning          { color: var(--text-warning); }
+.text-error            { color: var(--text-error); }
+
+/* Background/Container Classes */
+.bg-primary-container   { background-color: var(--bg-primary); }
+.bg-secondary-container { background-color: var(--bg-secondary); }
+.bg-info                { background-color: var(--bg-info); }
+.bg-success-container   { background-color: var(--bg-success-container); }
+.bg-warning-container   { background-color: var(--bg-warning-container); }
+.bg-error-container     { background-color: var(--bg-error-container); }
+.bg-page                { background-color: var(--bg-page); }
+
+/* Button Classes */
+.btn-primary-custom {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-text-primary);
+}
+.btn-primary-custom:hover {
+  background-color: var(--btn-primary-hover);
+}
+.btn-primary-custom:disabled {
+  background-color: var(--btn-primary-disabled);
+  color: var(--btn-text-disabled);
+}
+
+.btn-secondary-custom {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-text-secondary);
+  border: 1px solid var(--border-secondary);
+}
+.btn-secondary-custom:hover {
+  background-color: var(--btn-secondary-hover);
+}
+
+/* Border Classes */
+.border-container-custom { border-color: var(--border-container); }
+.border-container-secondary { border-color: var(--border-secondary); }
+
 @theme {
   --font-sans: "Rubik", sans-serif;
 }
