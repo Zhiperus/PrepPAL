@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { InternalServerError } from '../errors/index';
+import { InternalServerError } from '../errors/index.js';
 
 const errorHandler = (
   err: any,

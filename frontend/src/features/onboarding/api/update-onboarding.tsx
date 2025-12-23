@@ -1,4 +1,4 @@
-import type { OnboardingRequest } from '@shared/schemas/user.schema';
+import type { OnboardingRequest } from '@repo/shared/dist/schemas/user.schema';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';

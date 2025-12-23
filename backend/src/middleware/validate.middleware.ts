@@ -1,11 +1,11 @@
 import {
   LoginRequestSchema,
   RegisterRequestSchema,
-} from '@shared/schemas/auth.schema';
+} from '@repo/shared/dist/schemas/auth.schema';
 import express from 'express';
 import { ZodType, ZodError } from 'zod';
 
-import { BadRequestError, InternalServerError } from '../errors';
+import { BadRequestError, InternalServerError } from '../errors/index.js';
 
 const validators: Record<string, ZodType> = {
   login: LoginRequestSchema,

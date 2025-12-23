@@ -1,4 +1,4 @@
-import type { OnboardingRequest } from '@shared/schemas/user.schema';
+import type { OnboardingRequest } from '@repo/shared/dist/schemas/user.schema';
 import { useState, useEffect, type ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
 

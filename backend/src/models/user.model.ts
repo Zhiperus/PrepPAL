@@ -1,4 +1,4 @@
-import { User } from '@shared/schemas/user.schema';
+import { User } from '@repo/shared/dist/schemas/user.schema';
 import mongoose, { Document } from 'mongoose';
 
 export interface IUser extends Omit<User, '_id'>, Document {

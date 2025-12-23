@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { handleInternalError } from '../errors';
-import AuthService from '../services/auth.service';
+import { handleInternalError } from '../errors/index.js';
+import AuthService from '../services/auth.service.js';
 
 export default class AuthController {
   private authService = new AuthService();

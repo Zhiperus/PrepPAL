@@ -2,8 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   OnboardingRequestSchema,
   type OnboardingRequest,
-} from '@shared/schemas/user.schema';
-import { useState, useEffect } from 'react'; // <--- Import useEffect
+} from '@repo/shared/dist/schemas/user.schema';
+import { useState, useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router';

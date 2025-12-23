@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PublicUserSchema } from "./user.schema";
+import { PublicUserSchema } from "./user.schema.js";
 
 const PasswordSchema = z
   .string({ error: "A password is required" })

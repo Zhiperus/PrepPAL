@@ -4,8 +4,8 @@ import express from 'express';
 import type { Express } from 'express';
 import mongoose from 'mongoose';
 
-import errorHandler from './middleware/errorHandler';
-import routes from './routes/index';
+import errorHandler from './middleware/errorHandler.js';
+import routes from './routes/index.js';
 
 dotenv.config();
 
