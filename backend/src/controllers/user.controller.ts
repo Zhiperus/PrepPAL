@@ -1,8 +1,8 @@
-import { OnboardingRequestSchema } from '@shared/schemas/user.schema';
+import { OnboardingRequestSchema } from '@repo/shared/dist/schemas/user.schema';
 import { NextFunction, Request, Response } from 'express';
 
-import { handleInternalError } from '../errors';
-import UserService from '../services/user.service';
+import { handleInternalError } from '../errors/index.js';
+import UserService from '../services/user.service.js';
 
 export default class UserController {
   private userService = new UserService();

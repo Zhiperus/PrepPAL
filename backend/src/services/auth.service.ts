@@ -1,13 +1,17 @@
 import * as crypto from 'crypto';
 
-import { BadRequestError, ConflictError, NotFoundError } from '../errors';
+import {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+} from '../errors/index.js';
 import {
   getResetPasswordTemplate,
   getVerifyEmailTemplate,
-} from '../lib/email-templates';
-import { resend } from '../lib/mail';
-import { IUser } from '../models/user.model';
-import AuthRepository from '../repositories/auth.repository';
+} from '../lib/email-templates.js';
+import { resend } from '../lib/mail.js';
+import { IUser } from '../models/user.model.js';
+import AuthRepository from '../repositories/auth.repository.js';
 
 export default class AuthService {
   private AuthRepo = new AuthRepository();

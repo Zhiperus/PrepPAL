@@ -1,14 +1,14 @@
 import { Router } from 'express';
 
-import authRoutes from './auth.routes';
-import goBagRoutes from './goBag.routes';
-import goBagItemRoutes from './goBagItem.routes';
-import moduleRoutes from './module.routes';
-import postRoutes from './post.routes';
-import quizRoutes from './quiz.routes';
-import quizAttemptRoutes from './quizAttempt.routes';
-import ratingRoutes from './rating.routes';
-import userRoutes from './user.routes';
+import authRoutes from './auth.routes.js';
+import goBagRoutes from './goBag.routes.js';
+import goBagItemRoutes from './goBagItem.routes.js';
+import moduleRoutes from './module.routes.js';
+import postRoutes from './post.routes.js';
+import quizRoutes from './quiz.routes.js';
+import quizAttemptRoutes from './quizAttempt.routes.js';
+import ratingRoutes from './rating.routes.js';
+import userRoutes from './user.routes.js';
 
 type Route = {
   path: string;

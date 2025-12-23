@@ -1,4 +1,4 @@
-import UserModel, { IUser } from '../models/user.model';
+import UserModel, { IUser } from '../models/user.model.js';
 
 export default class UserRepository {
   async findById(userId: string) {

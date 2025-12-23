@@ -1,3 +1,3 @@
-import Post from "../models/post.model";
+import Post from '../models/post.model.js';
 
 export default class PostRepository {}

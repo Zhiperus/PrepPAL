@@ -1,3 +1,3 @@
-import Module from "../models/module.model";
+import Module from '../models/module.model.js';
 
 export default class ModuleRepository {}

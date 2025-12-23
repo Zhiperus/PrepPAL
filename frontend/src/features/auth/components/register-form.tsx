@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   RegisterRequestSchema,
   type RegisterRequest,
-} from '@shared/schemas/auth.schema';
+} from '@repo/shared/dist/schemas/auth.schema';
 import { useState } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { LuCircleAlert, LuEye, LuEyeClosed } from 'react-icons/lu';

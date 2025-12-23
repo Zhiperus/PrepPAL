@@ -2,8 +2,8 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
-} from '@shared/schemas/auth.schema';
-import type { User } from '@shared/schemas/user.schema';
+} from '@repo/shared/dist/schemas/auth.schema';
+import type { User } from '@repo/shared/dist/schemas/user.schema';
 import Cookies from 'js-cookie';
 import { configureAuth } from 'react-query-auth';
 import { Navigate, useLocation } from 'react-router';
