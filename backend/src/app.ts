@@ -1,17 +1,29 @@
+import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import type { Express } from 'express';
 import mongoose from 'mongoose';
 
+import errorHandler from './middleware/errorHandler';
 import routes from './routes/index';
 
 dotenv.config();
 
-const app = express();
+const app: Express = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  }),
+);
 
 routes.forEach(({ path, router }) => {
   app.use(path, router);
 });
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.DATABASE_URL;

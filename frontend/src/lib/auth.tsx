@@ -1,71 +1,87 @@
+import type {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+} from '@shared/schemas/auth.schema';
+import type { User } from '@shared/schemas/user.schema';
+import Cookies from 'js-cookie';
 import { configureAuth } from 'react-query-auth';
 import { Navigate, useLocation } from 'react-router';
-import { z } from 'zod';
 
 import { api } from './api-client';
 
 import { paths } from '@/config/paths';
-import type { AuthResponse, User } from '@/types/api';
 
 // api call definitions for auth (types, schemas, requests):
 // these are not part of features as this is a module shared across features
 
-const getUser = async (): Promise<User> => {
-  const response = await api.get('/auth/me');
+export const forgotPassword = (data: { email: string }) => {
+  return api.post('/auth/forgot-password', data);
+};
+
+export const resetPassword = (data: { password: string; token: string }) => {
+  return api.post('/auth/reset-password', data);
+};
+
+async function getUser(): Promise<User | null> {
+  try {
+    const response = await api.get('/auth/me');
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+const logout = async () => {
+  Cookies.remove('token');
+  return Promise.resolve();
+};
+
+const loginWithEmailAndPassword = async (
+  data: LoginRequest,
+): Promise<AuthResponse> => {
+  const response = (await api.post('/auth/login', data)) as {
+    data: AuthResponse;
+  };
+
+  if (response.data.token) {
+    Cookies.set('token', response.data.token, {
+      expires: 7,
+      secure: true,
+      sameSite: 'strict',
+    });
+  }
 
   return response.data;
 };
 
-const logout = (): Promise<void> => {
-  return api.post('/auth/logout');
-};
-
-export const loginInputSchema = z.object({
-  email: z.email({ error: 'Invalid Email' }),
-  password: z.string().min(5, 'Required'),
-});
-
-export type LoginInput = z.infer<typeof loginInputSchema>;
-const loginWithEmailAndPassword = (data: LoginInput): Promise<AuthResponse> => {
-  return api.post('/auth/login', data);
-};
-
-export const registerInputSchema = z
-  .object({
-    email: z.string().min(1, 'Required'),
-    firstName: z.string().min(1, 'Required'),
-    lastName: z.string().min(1, 'Required'),
-    password: z.string().min(5, 'Required'),
-  })
-  .and(
-    z
-      .object({
-        teamId: z.string().min(1, 'Required'),
-        teamName: z.null().default(null),
-      })
-      .or(
-        z.object({
-          teamName: z.string().min(1, 'Required'),
-          teamId: z.null().default(null),
-        }),
-      ),
-  );
-
-export type RegisterInput = z.infer<typeof registerInputSchema>;
-
-const registerWithEmailAndPassword = (
-  data: RegisterInput,
+const registerWithEmailAndPassword = async (
+  data: RegisterRequest,
 ): Promise<AuthResponse> => {
-  return api.post('/auth/register', data);
+  const response = (await api.post('/auth/signup', data)) as {
+    data: AuthResponse;
+  };
+  if (response.data.token) {
+    Cookies.set('token', response.data.token, {
+      expires: 7,
+      secure: true,
+      sameSite: 'strict',
+    });
+  }
+
+  return response.data;
 };
 
 const authConfig = {
   userFn: getUser,
-  loginFn: async (data: LoginInput) => {
+  loginFn: async (data: LoginRequest) => {
     const response = await loginWithEmailAndPassword(data);
     return response.user;
   },
-  registerFn: async (data: RegisterInput) => {
+  registerFn: async (data: RegisterRequest) => {
     const response = await registerWithEmailAndPassword(data);
     return response.user;
   },

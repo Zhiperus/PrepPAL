@@ -7,6 +7,7 @@ import {
   default as AppRoot,
   ErrorBoundary as AppRootErrorBoundary,
 } from './routes/app/root';
+import OnboardingRoute from './routes/onboarding';
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
@@ -28,14 +29,42 @@ export const createAppRouter = (queryClient: QueryClient) =>
       lazy: () => import('./routes/landing').then(convert(queryClient)),
     },
     {
+      path: paths.auth['forget-password'].path,
+      lazy: () =>
+        import('./routes/auth/forget-password').then(convert(queryClient)),
+    },
+    {
+      path: paths.auth['reset-password'].path,
+      lazy: () =>
+        import('./routes/auth/reset-password').then(convert(queryClient)),
+    },
+    {
+      path: paths.auth['verify-email'].path,
+      lazy: () =>
+        import('./routes/auth/verify-email').then(convert(queryClient)),
+    },
+    {
+      path: paths.auth.login.path,
+      lazy: () => import('./routes/auth/login').then(convert(queryClient)),
+    },
+    {
+      path: paths.auth.register.path,
+      lazy: () => import('./routes/auth/register').then(convert(queryClient)),
+    },
+    {
       path: paths.app.root.path,
-      element: (
-        <ProtectedRoute>
-          <AppRoot />
-        </ProtectedRoute>
-      ),
+      element: <AppRoot />,
       ErrorBoundary: AppRootErrorBoundary,
       children: [],
+    },
+    {
+      path: paths.onboarding.path,
+      element: (
+        <ProtectedRoute>
+          <OnboardingRoute />
+        </ProtectedRoute>
+      ),
+      lazy: () => import('./routes/onboarding').then(convert(queryClient)),
     },
     {
       path: '*',

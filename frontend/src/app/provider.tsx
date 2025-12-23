@@ -5,7 +5,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
 
 import { MainErrorFallback } from '@/components/errors/main';
-// import { AuthLoader } from '@/lib/auth';
+import { AuthLoader } from '@/lib/auth';
 import { queryConfig } from '@/lib/react-query';
 
 type AppProviderProps = {
@@ -32,15 +32,15 @@ export function AppProvider({ children }: AppProviderProps) {
         <HelmetProvider>
           <QueryClientProvider client={queryClient}>
             {import.meta.env.DEV && <ReactQueryDevtools />}
-            {children}
-            {/* <AuthLoader */}
-            {/*   renderLoading={() => ( */}
-            {/*     <div className="flex h-screen w-screen items-center justify-center"> */}
-            {/*       <span className="loading loading-spinner loading-xl"></span> */}
-            {/*     </div> */}
-            {/*   )} */}
-            {/* > */}
-            {/* </AuthLoader> */}
+            <AuthLoader
+              renderLoading={() => (
+                <div className="flex h-screen w-screen items-center justify-center">
+                  <span className="loading loading-spinner loading-xl"></span>
+                </div>
+              )}
+            >
+              {children}
+            </AuthLoader>
           </QueryClientProvider>
         </HelmetProvider>
       </ErrorBoundary>

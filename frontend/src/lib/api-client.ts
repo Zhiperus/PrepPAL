@@ -1,5 +1,6 @@
 import Axios from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
+import Cookies from 'js-cookie';
 
 import { env } from '@/config/env';
 import { paths } from '@/config/paths';
@@ -7,6 +8,11 @@ import { paths } from '@/config/paths';
 function authRequestInterceptor(config: InternalAxiosRequestConfig) {
   if (config.headers) {
     config.headers.Accept = 'application/json';
+  }
+
+  const token = Cookies.get('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
 
   config.withCredentials = true;
@@ -23,19 +29,19 @@ api.interceptors.response.use(
     return response.data;
   },
   (error) => {
-    // const message = error.response?.data?.message || error.message;
-    // NOTE: Implement own notification system
-    // useNotifications.getState().addNotification({
-    //   type: 'error',
-    //   title: 'Error',
-    //   message,
-    // });
+    // Check if this error came from the specific "Get User" endpoint
+    // Adjust the string '/auth/me' if your endpoint is named differently
+    const isAuthCheck = error.config?.url?.includes('/auth/me');
 
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !isAuthCheck) {
       const searchParams = new URLSearchParams();
       const redirectTo =
         searchParams.get('redirectTo') || window.location.pathname;
-      window.location.href = paths.auth.login.getHref(redirectTo);
+
+      // Prevent redirecting if we are already on the login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = paths.auth.login.getHref(redirectTo);
+      }
     }
 
     return Promise.reject(error);

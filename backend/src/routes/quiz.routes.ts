@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router } from 'express';
 
-import QuizController from "../controllers/quiz.controller";
+import QuizController from '../controllers/quiz.controller';
 
-const quizRoutes = Router();
+const quizRoutes: Router = Router();
 const controller = new QuizController();
 
 export default quizRoutes;
