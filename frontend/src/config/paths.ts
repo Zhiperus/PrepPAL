@@ -27,6 +27,11 @@ export const paths = {
     },
   },
 
+  onboarding: {
+    path: '/onboarding',
+    getHref: () => '/onboarding',
+  },
+
   app: {
     root: {
       path: '/app',

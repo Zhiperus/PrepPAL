@@ -7,6 +7,7 @@ import {
   default as AppRoot,
   ErrorBoundary as AppRootErrorBoundary,
 } from './routes/app/root';
+import OnboardingRoute from './routes/onboarding';
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
@@ -38,19 +39,35 @@ export const createAppRouter = (queryClient: QueryClient) =>
         import('./routes/auth/reset-password').then(convert(queryClient)),
     },
     {
+      path: paths.auth.login.path,
+      lazy: () => import('./routes/app/login').then(convert(queryClient)),
+    },
+    {
       path: paths.app.root.path,
       element: (
-        <ProtectedRoute>
           <AppRoot />
-        </ProtectedRoute>
       ),
       ErrorBoundary: AppRootErrorBoundary,
       children: [],
     },
     {
+      path: paths.onboarding.path,
+      element: (
+        <ProtectedRoute>
+           {}
+           <OnboardingRoute />
+        </ProtectedRoute>
+      ),
+      lazy: () => import('./routes/onboarding').then(convert(queryClient)),
+    },
+    {
       path: '*',
       lazy: () => import('./routes/not-found').then(convert(queryClient)),
     },
+    {
+      path: paths.auth.register.path,
+      lazy: () => import('./routes/app/register').then(convert(queryClient)),
+    }
   ]);
 
 export function AppRouter() {
