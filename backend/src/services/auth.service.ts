@@ -100,7 +100,7 @@ export default class AuthService {
       tokenExpires,
     );
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173';
     const verifyLink = `${frontendUrl}/auth/verify-email?token=${token}`;
 
     await resend.emails.send({
@@ -143,7 +143,7 @@ export default class AuthService {
       passwordResetExpires,
     );
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173';
     const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
 
     await resend.emails.send({
