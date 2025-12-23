@@ -25,6 +25,11 @@ export const paths = {
       getHref: (token: string, redirectTo?: string | null | undefined) =>
         `/auth/reset-password?token=${encodeURIComponent(token)}${redirectTo ? `&redirectTo=${encodeURIComponent(redirectTo)}` : ''}`,
     },
+    'verify-email': {
+      path: '/auth/verify-email',
+      getHref: (token: string, redirectTo?: string | null | undefined) =>
+        `/auth/verify-email?token=${encodeURIComponent(token)}${redirectTo ? `&redirectTo=${encodeURIComponent(redirectTo)}` : ''}`,
+    },
   },
 
   onboarding: {

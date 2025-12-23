@@ -76,4 +76,38 @@ export default class AuthRepository {
       resetPasswordExpires: null,
     });
   }
+
+  async saveVerificationToken(
+    userId: string,
+    token: string,
+    expires: Date,
+  ): Promise<IUser | null> {
+    return UserModel.findByIdAndUpdate(
+      userId,
+      {
+        verificationToken: token,
+        verificationTokenExpires: expires,
+      },
+      { new: true },
+    );
+  }
+
+  async findByVerificationToken(hashedToken: string): Promise<IUser | null> {
+    return UserModel.findOne({
+      verificationToken: hashedToken,
+      verificationTokenExpires: { $gt: Date.now() },
+    });
+  }
+
+  async markEmailAsVerified(userId: string): Promise<IUser | null> {
+    return UserModel.findByIdAndUpdate(
+      userId,
+      {
+        isEmailVerified: true,
+        verificationToken: null,
+        verificationTokenExpires: null,
+      },
+      { new: true },
+    );
+  }
 }

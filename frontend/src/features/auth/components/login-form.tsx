@@ -36,7 +36,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const onSubmit: SubmitHandler<LoginRequest> = async (data) => {
     setApiError(null); // Clear previous errors
     try {
-      // ✅ Use mutateAsync to catch errors in the try/catch block
       await login.mutateAsync(data);
     } catch (error: any) {
       console.error(error);
@@ -51,7 +50,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <div className="w-full">
-      {/* ✅ API Error Alert */}
       {apiError && (
         <div className="border-text-error/20 bg-bg-error-container/50 text-text-error animate-in fade-in slide-in-from-top-1 mb-4 flex items-center gap-3 rounded-md border p-3 text-sm font-medium">
           <LuCircleAlert className="h-5 w-5 shrink-0" />

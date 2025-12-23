@@ -39,6 +39,11 @@ export const createAppRouter = (queryClient: QueryClient) =>
         import('./routes/auth/reset-password').then(convert(queryClient)),
     },
     {
+      path: paths.auth['verify-email'].path,
+      lazy: () =>
+        import('./routes/auth/verify-email').then(convert(queryClient)),
+    },
+    {
       path: paths.auth.login.path,
       lazy: () => import('./routes/auth/login').then(convert(queryClient)),
     },

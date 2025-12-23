@@ -3,7 +3,7 @@ import {
   OnboardingRequestSchema,
   type OnboardingRequest,
 } from '@shared/schemas/user.schema';
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // <--- Import useEffect
 import { useForm, FormProvider } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router';
@@ -16,15 +16,24 @@ import { StepHousehold } from '@/features/onboarding/components/step-household';
 import { StepLocation } from '@/features/onboarding/components/step-location';
 import { useUser } from '@/lib/auth';
 
-export default function Onboarding() {
+export default function OnboardingRoute() {
   const navigate = useNavigate();
-  const user = useUser();
+  const { data: user, isLoading } = useUser();
   const [page, setPage] = useState(1);
   const [toastError, setToastError] = useState<string | null>(null);
 
-  if (user.data?.onboardingCompleted) {
-    navigate(paths.app.root.getHref());
-  }
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!user) {
+      navigate(paths.auth.login.getHref());
+      return;
+    }
+
+    if (user.onboardingCompleted) {
+      navigate(paths.app.root.getHref());
+    }
+  }, [user, isLoading, navigate]);
 
   const methods = useForm<OnboardingRequest>({
     resolver: zodResolver(OnboardingRequestSchema),
@@ -56,6 +65,18 @@ export default function Onboarding() {
   const onSubmit: SubmitHandler<OnboardingRequest> = (data) => {
     mutation.mutate({ data });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
+  if (!user || user.onboardingCompleted) {
+    return null;
+  }
 
   return (
     <OnboardingLayout>

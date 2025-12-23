@@ -15,8 +15,6 @@ type RegisterFormProps = {
   onSuccess: () => void;
 };
 
-type RegisterFormInputs = RegisterRequest & { confirmPassword?: string };
-
 export default function RegisterForm({ onSuccess }: RegisterFormProps) {
   const registerMutation = useRegister({ onSuccess });
 
@@ -27,17 +25,14 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    watch,
-  } = useForm<RegisterFormInputs>({
+  } = useForm<RegisterRequest>({
     resolver: zodResolver(RegisterRequestSchema),
   });
 
-  const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
+  const onSubmit: SubmitHandler<RegisterRequest> = async (data) => {
     setApiError(null);
     try {
-      const { confirmPassword, ...payload } = data;
-      // ✅ Use mutateAsync
-      await registerMutation.mutateAsync(payload as RegisterRequest);
+      await registerMutation.mutateAsync(data as RegisterRequest);
     } catch (error: any) {
       console.error(error);
       setApiError(
@@ -122,16 +117,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           </label>
           <input
             type="password"
-            {...register('confirmPassword', {
-              validate: (val) => {
-                if (!val) {
-                  return 'Confirm Password is required';
-                }
-                if (watch('password') !== val) {
-                  return 'Your passwords do not match';
-                }
-              },
-            })}
+            {...register('confirmPassword')}
             className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm ${
               errors.confirmPassword
                 ? 'input-error bg-bg-error-container/10'

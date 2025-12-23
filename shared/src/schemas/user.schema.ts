@@ -42,6 +42,8 @@ export const UserSchema = z.object({
   }),
   goBags: z.array(z.string()).default([]),
   isEmailVerified: z.boolean(),
+  verificationToken: z.string(),
+  verificationTokenExpires: z.date(),
   resetPasswordToken: z.string(),
   resetPasswordExpires: z.date(),
   createdAt: z.date(),

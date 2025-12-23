@@ -3,6 +3,11 @@ import mongoose, { Document } from 'mongoose';
 
 export interface IUser extends Omit<User, '_id'>, Document {
   password?: string;
+  isEmailVerified: boolean;
+  verificationToken: string;
+  verificationTokenExpires: Date;
+  resetPasswordToken: string;
+  resetPasswordExpires: Date;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -58,6 +63,15 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     goBags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserGoBag' }],
     isEmailVerified: { type: Boolean, default: false },
+    verificationToken: {
+      type: String,
+      select: false,
+    },
+
+    verificationTokenExpires: {
+      type: Date,
+      select: false,
+    },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
   },
@@ -72,6 +86,10 @@ userSchema.set('toJSON', {
   transform: (_: any, returnedObject: any) => {
     delete returnedObject.password;
     delete returnedObject.__v;
+    delete returnedObject.verificationToken;
+    delete returnedObject.verificationTokenExpires;
+    delete returnedObject.resetPasswordToken;
+    delete returnedObject.resetPasswordExpires;
   },
 });
 

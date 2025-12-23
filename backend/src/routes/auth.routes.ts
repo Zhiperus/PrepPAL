@@ -21,5 +21,6 @@ authRoutes.post(
 
 authRoutes.post('/forgot-password', controller.forgotPassword.bind(controller));
 authRoutes.post('/reset-password', controller.resetPassword.bind(controller));
+authRoutes.post('/verify-email', controller.verifyEmail.bind(controller));
 
 export default authRoutes;

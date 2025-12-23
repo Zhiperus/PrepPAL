@@ -1,7 +1,10 @@
 import * as crypto from 'crypto';
 
-import { ConflictError, NotFoundError } from '../errors';
-import { getResetPasswordTemplate } from '../lib/email-templates';
+import { BadRequestError, ConflictError, NotFoundError } from '../errors';
+import {
+  getResetPasswordTemplate,
+  getVerifyEmailTemplate,
+} from '../lib/email-templates';
 import { resend } from '../lib/mail';
 import { IUser } from '../models/user.model';
 import AuthRepository from '../repositories/auth.repository';
@@ -38,10 +41,14 @@ export default class AuthService {
       password: hashedPassword,
     });
 
-    const token = this.AuthRepo.generateToken({ userId: String(newUser._id) });
+    const token = this.AuthRepo.generateToken({
+      userId: String(newUser._id),
+    });
+
+    this.sendVerificationEmail(String(newUser._id));
 
     return {
-      user: { id: newUser._id, email: newUser.email },
+      user: newUser,
       token,
     };
   }
@@ -69,9 +76,56 @@ export default class AuthService {
     const token = this.AuthRepo.generateToken({ userId: String(user._id) });
 
     return {
-      user: { id: user._id, email: user.email },
+      user: user,
       token,
     };
+  }
+
+  async sendVerificationEmail(userId: string) {
+    const user = await this.AuthRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+
+    if (user.isEmailVerified) {
+      throw new BadRequestError('Email is already verified');
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await this.AuthRepo.saveVerificationToken(
+      String(user._id),
+      hashedToken,
+      tokenExpires,
+    );
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const verifyLink = `${frontendUrl}/auth/verify-email?token=${token}`;
+
+    await resend.emails.send({
+      from: 'PrepPAL <onboarding@resend.dev>',
+      to: user.email,
+      subject: 'Verify your PrepPAL Email',
+      html: getVerifyEmailTemplate(verifyLink),
+    });
+  }
+
+  async verifyEmailToken(rawToken: string) {
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(rawToken)
+      .digest('hex');
+
+    const user = await this.AuthRepo.findByVerificationToken(hashedToken);
+
+    if (!user) {
+      throw new BadRequestError('Invalid or expired verification token');
+    }
+
+    await this.AuthRepo.markEmailAsVerified(String(user._id));
+
+    return user;
   }
 
   async forgotPassword(email: string) {
@@ -90,7 +144,6 @@ export default class AuthService {
     );
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-
     const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
 
     await resend.emails.send({

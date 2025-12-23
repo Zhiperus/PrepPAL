@@ -1,5 +1,5 @@
 import type { OnboardingRequest } from '@shared/schemas/user.schema';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
 import type { MutationConfig } from '@/lib/react-query';
@@ -15,12 +15,13 @@ type UseUpdateOnboardingOptions = {
 export const useUpdateOnboarding = ({
   mutationConfig,
 }: UseUpdateOnboardingOptions = {}) => {
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   const { onSuccess, ...restConfig } = mutationConfig || {};
 
   return useMutation({
     onSuccess: (...args) => {
+      queryClient.invalidateQueries({ queryKey: ['authenticated-user'] });
       onSuccess?.(...args);
     },
     ...restConfig,

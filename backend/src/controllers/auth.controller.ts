@@ -41,8 +41,45 @@ export default class AuthController {
     }
   };
 
-  //TODO: async logout(req: Request, res: Response, next: NextFunction)
-  //
+  sendVerificationEmail = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      await this.authService.sendVerificationEmail(req.userId!);
+
+      res.status(200).json({
+        success: true,
+        message: 'Verification email sent',
+      });
+    } catch (e) {
+      handleInternalError(e, next);
+    }
+  };
+
+  verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { token } = req.body;
+
+      if (!token) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Token is required' });
+      }
+
+      const user = await this.authService.verifyEmailToken(token);
+
+      res.status(200).json({
+        success: true,
+        message: 'Email successfully verified',
+        user,
+      });
+    } catch (e) {
+      handleInternalError(e, next);
+    }
+  };
+
   forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email } = req.body;

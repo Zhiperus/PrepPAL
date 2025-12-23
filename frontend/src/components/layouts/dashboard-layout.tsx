@@ -6,16 +6,25 @@ import { useLogout, useUser } from '@/lib/auth';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
-  const { data: user, isLoading } = useUser();
+
+  const { data: user, isLoading, isError } = useUser();
+
   const logout = useLogout({
     onSuccess: () => navigate(paths.auth.login.getHref()),
   });
 
   useEffect(() => {
-    if (!isLoading && user && !user.onboardingCompleted) {
+    if (isLoading) return;
+
+    if (isError || !user) {
+      navigate(paths.auth.login.getHref());
+      return;
+    }
+
+    if (!user.onboardingCompleted) {
       navigate(paths.onboarding.getHref());
     }
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, isError, navigate]);
 
   if (isLoading) {
     return (
@@ -25,14 +34,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user?.onboardingCompleted) {
-    navigate(paths.onboarding.getHref());
+  if (isError || !user || !user.onboardingCompleted) {
+    return null;
   }
 
   return (
-    <h1>
-      <button onClick={() => logout.mutate({})}>Log out</button>
+    <div>
+      <div className="flex justify-between bg-gray-100 p-4">
+        <span>Dashboard</span>
+        <button onClick={() => logout.mutate({})}>Log out</button>
+      </div>
       {children}
-    </h1>
+    </div>
   );
 }
