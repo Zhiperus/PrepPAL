@@ -2,3 +2,7 @@
 
 @import "tailwindcss";
 @plugin "daisyui";
+
+@theme {
+  --font-sans: "Rubik", sans-serif;
+}
