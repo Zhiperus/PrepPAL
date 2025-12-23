@@ -41,11 +41,14 @@ export const UserSchema = z.object({
     community: z.number().default(0),
   }),
   goBags: z.array(z.string()).default([]),
+  isEmailVerified: z.boolean(),
   resetPasswordToken: z.string(),
   resetPasswordExpires: z.date(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
+
+export const PublicUserSchema = UserSchema.omit({ password: true });
 
 export const RegisterRequestSchema = z.object({
   email: z.email({ error: "A valid email is required." }),
@@ -57,23 +60,21 @@ export const LoginRequestSchema = z.object({
   password: z.string(),
 });
 
-export const AuthResponseSchema = z.object({
-  token: z.string(),
-  user: UserSchema.omit({ password: true }),
-});
-
 export const OnboardingRequestSchema = z.object({
   location: LocationSchema,
   householdInfo: HouseholdSchema,
-  phoneNumber: z.string(),
+  householdName: z.string().min(1, "Household Name is required"),
+  phoneNumber: z
+    .string()
+    .regex(/^09\d{9}$/, "Must be a valid format (e.g., 09123456789)"),
+
+  emailConsent: z.boolean().optional(),
 });
 
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 
-export type AuthResponse = z.infer<typeof AuthResponseSchema>;
-
 export type OnboardingRequest = z.infer<typeof OnboardingRequestSchema>;
 
-export type User = z.infer<typeof AuthResponseSchema.shape.user>;
+export type User = z.infer<typeof PublicUserSchema>;

@@ -1,0 +1,29 @@
+import type { OnboardingRequest } from '@shared/schemas/user.schema';
+import { useMutation } from '@tanstack/react-query';
+
+import { api } from '@/lib/api-client';
+import type { MutationConfig } from '@/lib/react-query';
+
+export const updateOnboarding = ({ data }: { data: OnboardingRequest }) => {
+  return api.put('/users/onboarding', data);
+};
+
+type UseUpdateOnboardingOptions = {
+  mutationConfig?: MutationConfig<typeof updateOnboarding>;
+};
+
+export const useUpdateOnboarding = ({
+  mutationConfig,
+}: UseUpdateOnboardingOptions = {}) => {
+  // const queryClient = useQueryClient();
+
+  const { onSuccess, ...restConfig } = mutationConfig || {};
+
+  return useMutation({
+    onSuccess: (...args) => {
+      onSuccess?.(...args);
+    },
+    ...restConfig,
+    mutationFn: updateOnboarding,
+  });
+};

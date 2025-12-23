@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import { FiAlertCircle, FiArrowLeft, FiCheckCircle } from 'react-icons/fi';
 
+import logo from '@/assets/logo.png';
 import AuthBackgroundShape from '@/assets/svg/auth-background-shape';
 import { Link } from '@/components/ui/link';
 import { forgotPassword } from '@/lib/auth';
@@ -20,9 +22,8 @@ export default function ForgotPasswordForm() {
     formState: { errors, isSubmitting },
   } = useForm<FormData>();
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
     setApiError('');
-
     try {
       await forgotPassword({ email: data.email });
       setIsSent(true);
@@ -34,79 +35,63 @@ export default function ForgotPasswordForm() {
   return (
     <div
       data-theme="light"
-      className="bg-base-200 relative flex min-h-screen items-center justify-center overflow-hidden p-4 text-slate-900"
+      className="bg-bg-page relative flex min-h-screen items-center justify-center overflow-hidden p-4"
     >
       {/* Background Shape */}
       <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
-        <AuthBackgroundShape className="text-slate-500" />
+        <AuthBackgroundShape className="text-text-secondary/70" />
       </div>
 
-      <div className="card z-10 w-full max-w-[420px] border border-slate-100 bg-white shadow-xl">
+      <div className="border-border-container bg-bg-primary card z-10 w-full max-w-[420px] border shadow-xl">
         <div className="card-body p-8">
           {/* Logo Section */}
-          <div className="mb-6 flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white">
-              {/* PrepPAL Logo Icon */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-5 w-5"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <span className="text-lg font-bold text-slate-900">PrepPAL</span>
+          <div className="mb-6 flex items-center justify-center gap-2.5">
+            <img src={logo} alt="PrepPAL Logo" className="h-8 w-8" />
+            <span className="text-text-primary text-xl font-bold">PrepPAL</span>
           </div>
 
           {isSent ? (
-            /* Success State */
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                <svg
-                  className="h-6 w-6 text-green-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+            /* --- Success State --- */
+            <div className="animate-in fade-in zoom-in text-center duration-300">
+              <div className="bg-bg-success-container mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+                <FiCheckCircle className="text-text-success h-8 w-8" />
               </div>
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-text-primary text-2xl font-bold">
                 Check your inbox
               </h2>
-              <p className="mt-2 text-sm text-slate-600">
-                We have sent a password reset link to your email.
+              <p className="text-text-secondary mt-2 text-sm leading-relaxed">
+                We have sent a password reset link to <br />
+                <span className="text-text-primary font-medium">
+                  {/* You could display the email here if you stored it */}
+                  your email address
+                </span>
+                .
               </p>
+
               <Link
                 to="/auth/login"
-                className="btn mt-6 w-full border-none bg-[#2e4463] text-white normal-case hover:bg-[#138fb1]"
+                className="btn-primary-custom mt-8 flex w-full items-center justify-center rounded-md px-4 py-2.5 text-sm font-bold shadow-sm transition-colors"
               >
                 Back to login
               </Link>
             </div>
           ) : (
-            /* Form State */
+            /* --- Form State --- */
             <>
-              <h2 className="text-2xl font-bold text-slate-900">
-                Forgot Password?
-              </h2>
-              <p className="mt-2 mb-6 text-sm leading-relaxed text-slate-500">
-                Enter your email and we&apos;ll send you instructions to reset
-                your password
-              </p>
+              <div className="text-center">
+                <h2 className="text-text-primary text-2xl font-bold">
+                  Forgot Password?
+                </h2>
+                <p className="text-text-secondary mt-2 mb-6 text-sm leading-relaxed">
+                  Enter your email address and we&apos;ll send you a link to
+                  reset your password.
+                </p>
+              </div>
 
+              {/* API Error Alert */}
               {apiError && (
-                <div className="alert alert-error mb-4 border border-red-100 bg-red-50 py-2 text-sm text-red-600">
+                <div className="bg-bg-error-container/50 border-text-error/20 text-text-error mb-4 flex items-center gap-3 rounded-md border p-3 text-sm font-medium">
+                  <FiAlertCircle className="h-5 w-5 shrink-0" />
                   <span>{apiError}</span>
                 </div>
               )}
@@ -116,41 +101,47 @@ export default function ForgotPasswordForm() {
                 className="flex flex-col gap-4"
               >
                 <div className="form-control w-full">
-                  <label className="label justify-start pt-0 pb-1.5">
-                    <span className="label-text font-medium text-slate-900">
-                      Email address
-                    </span>
-                    <span className="ml-0.5 text-red-500">*</span>
+                  <label className="text-text-primary mb-1.5 block text-sm font-bold">
+                    Email address
                   </label>
 
-                  <input
-                    type="email"
-                    placeholder="Enter your email address"
-                    className={`input input-bordered w-full bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none ${errors.email ? 'input-error focus:border-red-500' : 'border-slate-200 focus:border-slate-400'}`}
-                    {...register('email', {
-                      required: 'Email address is required',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Please enter a valid email address',
-                      },
-                    })}
-                  />
+                  <div className="relative">
+                    <input
+                      type="email"
+                      placeholder="name@example.com"
+                      {...register('email', {
+                        required: 'Email address is required',
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: 'Please enter a valid email address',
+                        },
+                      })}
+                      className={`input block w-full rounded-md border py-2 pr-3 transition-all outline-none sm:text-sm ${
+                        errors.email
+                          ? 'input-error bg-bg-error-container/10'
+                          : 'border-text-primary focus:border-text-link-hover'
+                      }`}
+                    />
+                  </div>
 
+                  {/* Field Error */}
                   {errors.email && (
-                    <span className="mt-1.5 ml-1 text-xs text-red-500">
-                      {errors.email.message}
-                    </span>
+                    <div className="text-text-error animate-in fade-in slide-in-from-top-1 mt-1.5 flex items-center gap-2 transition-all">
+                      <p className="text-xs font-medium">
+                        {errors.email.message}
+                      </p>
+                    </div>
                   )}
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn mt-2 w-full border-none bg-[#2e4463] text-white normal-case hover:bg-[#138fb1] disabled:bg-[#9ba2ad] disabled:text-white"
+                  className="bg-btn-primary hover:bg-btn-primary-hover disabled:bg-btn-primary-disabled disabled:text-text-secondary/50 mt-2 flex w-full cursor-pointer items-center justify-center rounded-md px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-colors disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>
-                      <span className="loading loading-spinner loading-sm text-white"></span>
+                      <span className="loading loading-spinner loading-sm mr-2"></span>
                       Sending...
                     </>
                   ) : (
@@ -159,25 +150,12 @@ export default function ForgotPasswordForm() {
                 </button>
               </form>
 
-              <div className="mt-6 text-center">
+              <div className="mt-8 text-center">
                 <Link
                   to="/auth/login"
-                  className="inline-flex items-center text-sm font-medium text-slate-900 hover:underline"
+                  className="text-text-primary hover:text-text-link-hover inline-flex items-center text-sm font-bold transition-colors hover:underline"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mr-2 h-4 w-4"
-                  >
-                    <path d="m15 18-6-6 6-6" />
-                  </svg>
+                  <FiArrowLeft className="mr-2 h-4 w-4" />
                   Back to login
                 </Link>
               </div>

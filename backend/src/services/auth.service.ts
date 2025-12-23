@@ -9,6 +9,12 @@ import AuthRepository from '../repositories/auth.repository';
 export default class AuthService {
   private AuthRepo = new AuthRepository();
 
+  async getUserById(userId: string) {
+    const user = await this.AuthRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+    return user.toJSON();
+  }
+
   async signup(userData?: Partial<IUser>) {
     if (!userData) {
       throw new Error('User data is required');
@@ -32,7 +38,12 @@ export default class AuthService {
       password: hashedPassword,
     });
 
-    return newUser;
+    const token = this.AuthRepo.generateToken({ userId: String(newUser._id) });
+
+    return {
+      user: { id: newUser._id, email: newUser.email },
+      token,
+    };
   }
 
   async login(credentials: { email: string; password: string }) {
@@ -63,8 +74,6 @@ export default class AuthService {
     };
   }
 
-  //TODO: async logout();
-
   async forgotPassword(email: string) {
     const user = await this.AuthRepo.findByEmail(email);
     if (!user) {
@@ -93,6 +102,7 @@ export default class AuthService {
 
     return { message: 'Password reset email sent' };
   }
+
   async resetPassword(token: string, newPassword: string) {
     const user = await this.AuthRepo.findByResetToken(token);
 

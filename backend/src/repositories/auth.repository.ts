@@ -9,6 +9,11 @@ const BCRYPT_SALT_ROUNDS: number = process.env.BCRYPT_SALT_ROUNDS
   : 10;
 
 export default class AuthRepository {
+  // Find user by Id
+  async findById(userId: string) {
+    return UserModel.findById(userId);
+  }
+
   // Find user by email
   async findByEmail(email: string): Promise<IUser | null> {
     return UserModel.findOne({ email });

@@ -40,13 +40,15 @@ export const createAppRouter = (queryClient: QueryClient) =>
     },
     {
       path: paths.auth.login.path,
-      lazy: () => import('./routes/app/login').then(convert(queryClient)),
+      lazy: () => import('./routes/auth/login').then(convert(queryClient)),
+    },
+    {
+      path: paths.auth.register.path,
+      lazy: () => import('./routes/auth/register').then(convert(queryClient)),
     },
     {
       path: paths.app.root.path,
-      element: (
-          <AppRoot />
-      ),
+      element: <AppRoot />,
       ErrorBoundary: AppRootErrorBoundary,
       children: [],
     },
@@ -54,8 +56,7 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.onboarding.path,
       element: (
         <ProtectedRoute>
-           {}
-           <OnboardingRoute />
+          <OnboardingRoute />
         </ProtectedRoute>
       ),
       lazy: () => import('./routes/onboarding').then(convert(queryClient)),
@@ -64,10 +65,6 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: '*',
       lazy: () => import('./routes/not-found').then(convert(queryClient)),
     },
-    {
-      path: paths.auth.register.path,
-      lazy: () => import('./routes/app/register').then(convert(queryClient)),
-    }
   ]);
 
 export function AppRouter() {

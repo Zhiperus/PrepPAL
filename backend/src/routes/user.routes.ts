@@ -6,6 +6,10 @@ import { authenticate } from '../middleware/auth.middleware';
 const userRoutes: Router = Router();
 const controller = new UserController();
 
-userRoutes.get('/me', authenticate, controller.me.bind(controller));
+userRoutes.put(
+  '/onboarding',
+  authenticate,
+  controller.complete.bind(controller),
+);
 
 export default userRoutes;

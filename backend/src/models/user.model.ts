@@ -57,6 +57,7 @@ const userSchema = new mongoose.Schema<IUser>(
       community: { type: Number, default: 0 },
     },
     goBags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserGoBag' }],
+    isEmailVerified: { type: Boolean, default: false },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
   },

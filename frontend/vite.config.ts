@@ -10,10 +10,14 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@shared': path.resolve(__dirname, '../shared/src'),
     },
   },
   server: {
     host: true,
     port: 5173,
+    fs: {
+      allow: ['..'],
+    },
   },
 });

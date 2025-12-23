@@ -1,120 +1,103 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
-// import { useNavigate, useSearchParams } from 'react-router'; 
+import { FaLongArrowAltLeft } from 'react-icons/fa';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 
-import logo from '../../assets/logo.png'; 
-
-
-// import { Head } from '@/components/seo';
-// import { Link } from '@/components/ui/link';
-// import { paths } from '@/config/paths';
-// import { useUser } from '@/lib/auth';
+import logo from '@/assets/logo.png';
+import { paths } from '@/config/paths';
+import { useUser } from '@/lib/auth';
 
 type LayoutProps = {
   children: React.ReactNode;
-  title: string;
+  title?: string;
 };
 
-export const AuthLayout = ({ children, title }: LayoutProps) => {
-
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-
-  /*
+export default function AuthLayout({ children }: LayoutProps) {
   const user = useUser();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirectTo');
+
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const isRegister = location.pathname.includes('/register');
+  const isLogin = !isRegister;
+
+  React.useEffect(() => {
     if (user.data) {
-      navigate(redirectTo ? redirectTo : paths.app.dashboard.getHref(), {
+      console.log(user.data);
+      navigate(redirectTo ? redirectTo : paths.app.root.getHref(), {
         replace: true,
       });
     }
   }, [user.data, navigate, redirectTo]);
-  */
-
 
   return (
     <>
-     
-      <div 
-        className="flex min-h-screen items-center justify-center bg-[#E0E7FF] p-4"
-        style={{ fontFamily: '"Rubik", sans-serif' }}
-      >
-
+      <div className="bg-bg-page flex min-h-screen items-center justify-center p-4 font-sans">
         {/* MAIN CARD */}
-     
-        <div className="flex w-full max-w-4xl min-h-[400px] overflow-hidden rounded-3xl bg-white shadow-[10px_10px_20px_rgba(0,0,0,0.15)]">
-
+        <div className="bg-bg-primary flex min-h-[616px] w-full max-w-4xl overflow-hidden rounded-3xl shadow-[10px_10px_20px_rgba(0,0,0,0.15)]">
           {/* LEFT SIDE */}
           <div className="flex w-full flex-col justify-start p-8 pt-14 md:w-1/2 md:p-12 md:pt-14">
             <div className="mx-auto w-full max-w-sm">
-
               {/* Register / Login */}
-              
+
               <div className="mb-8 flex items-center justify-center text-3xl">
-                
-                {/* Register Button */}
-                <div className="w-[140px] text-right">
-                  <button
-                    onClick={() => setAuthMode('register')}
-                    className={`focus:outline-none transition-colors ${
-                      authMode === 'register'
-                        ? 'font-bold text-[#2A4263]'   
-                        : 'font-normal text-[#4B5563] hover:text-[#2A4263]' 
-                    }`}
-                  >
-                    Register
-                  </button>
-                </div>
-
-                <span className="mx-3 font-bold text-[#4B5563]">/</span>
-
-                {/* Login Button */}
-                <div className="w-[140px] text-left">
-                  <button
-                    onClick={() => setAuthMode('login')}
-                    className={`focus:outline-none transition-colors ${
-                      authMode === 'login'
-                        ? 'font-bold text-[#2A4263]'   
-                        : 'font-normal text-[#4B5563] hover:text-[#2A4263]' 
+                {/* Login Link */}
+                <div>
+                  <Link
+                    to="/auth/login"
+                    className={`transition-colors focus:outline-none ${
+                      isLogin
+                        ? 'text-text-primary font-bold'
+                        : 'text-text-secondary hover:text-text-primary font-normal'
                     }`}
                   >
                     Login
-                  </button>
+                  </Link>
                 </div>
 
-              </div>
-              
-              <div className="space-y-6">
-                {children}
+                <span className="text-text-secondary mx-3 font-bold">/</span>
+
+                {/* Register Link */}
+                <div>
+                  <Link
+                    to="/auth/register"
+                    className={`transition-colors focus:outline-none ${
+                      isRegister
+                        ? 'text-text-primary font-bold'
+                        : 'text-text-secondary hover:text-text-primary font-normal'
+                    }`}
+                  >
+                    Register
+                  </Link>
+                </div>
               </div>
 
+              <div className="space-y-6">{children}</div>
             </div>
           </div>
 
           {/* RIGHT SIDE */}
-         
-          <div className="hidden w-1/2 flex-col items-center justify-start pt-12 bg-slate-500 p-12 text-white md:flex relative">
-            
+          <div className="relative hidden w-1/2 flex-col items-center justify-start bg-slate-500 p-12 pt-12 md:flex">
             <div className="flex flex-col items-center">
-               <img src={logo} alt="PrepPAL Logo" className="h-35 w-auto mb-4" />
-               <h1 className="text-4xl font-bold tracking-wide text-[#2A4263]">
-                 PrepPAL
-               </h1>
+              <img src={logo} alt="PrepPAL Logo" className="mb-4 h-35 w-auto" />
+              <h1 className="text-text-primary text-4xl font-bold tracking-wide">
+                PrepPAL
+              </h1>
             </div>
 
             {/* Back Link */}
             <div className="absolute bottom-8 left-0 w-full text-center">
-              <a href="/" className="text-sm text-gray-200 hover:text-white hover:underline flex items-center justify-center gap-2 transition-colors">
-                ← Go back to About section
-              </a>
+              <Link
+                to="/"
+                className="text-text-secondary hover:text-text-primary flex items-center justify-center gap-2 text-sm transition-colors hover:underline"
+              >
+                <FaLongArrowAltLeft /> Go back to About section
+              </Link>
             </div>
           </div>
-
         </div>
       </div>
     </>
   );
-};
+}
