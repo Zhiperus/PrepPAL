@@ -1,4 +1,8 @@
+import * as crypto from 'crypto';
+
 import { ConflictError, NotFoundError } from '../errors';
+import { getResetPasswordTemplate } from '../lib/email-templates';
+import { resend } from '../lib/mail';
 import { IUser } from '../models/user.model';
 import AuthRepository from '../repositories/auth.repository';
 
@@ -60,4 +64,46 @@ export default class AuthService {
   }
 
   //TODO: async logout();
+
+  async forgotPassword(email: string) {
+    const user = await this.AuthRepo.findByEmail(email);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 Minutes
+
+    await this.AuthRepo.saveResetToken(
+      user.id,
+      resetToken,
+      passwordResetExpires,
+    );
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+    const resetLink = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
+
+    await resend.emails.send({
+      from: 'PrepPAL <onboarding@resend.dev>',
+      to: email,
+      subject: 'Reset Password',
+      html: getResetPasswordTemplate(resetLink),
+    });
+
+    return { message: 'Password reset email sent' };
+  }
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.AuthRepo.findByResetToken(token);
+
+    if (!user) {
+      throw new Error('Token is invalid or has expired');
+    }
+
+    const hashedPassword = await this.AuthRepo.hashPassword(newPassword);
+
+    await this.AuthRepo.updatePasswordAndClearToken(user.id, hashedPassword);
+
+    return { message: 'Password has been reset successfully' };
+  }
 }

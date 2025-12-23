@@ -14,4 +14,7 @@ authRoutes.post(
 );
 authRoutes.post('/login', validateAuth('login'), controller.login.bind(controller));
 
+authRoutes.post('/forgot-password', controller.forgotPassword.bind(controller));
+authRoutes.post('/reset-password', controller.resetPassword.bind(controller));
+
 export default authRoutes;

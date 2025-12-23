@@ -14,6 +14,14 @@ import type { AuthResponse, User } from '@/types/api';
 // api call definitions for auth (types, schemas, requests):
 // these are not part of features as this is a module shared across features
 
+export const forgotPassword = (data: { email: string }) => {
+  return api.post('/auth/forgot-password', data);
+};
+
+export const resetPassword = (data: { password: string; token: string }) => {
+  return api.post('/auth/reset-password', data);
+};
+
 const getUser = async (): Promise<User> => {
   const response = await api.get('/auth/me');
 

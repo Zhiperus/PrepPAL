@@ -41,6 +41,8 @@ export const UserSchema = z.object({
     community: z.number().default(0),
   }),
   goBags: z.array(z.string()).default([]),
+  resetPasswordToken: z.string(),
+  resetPasswordExpires: z.date(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
