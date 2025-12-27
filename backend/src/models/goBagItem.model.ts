@@ -1,17 +1,27 @@
-import mongoose from 'mongoose';
+import type { GoBagItem } from '@repo/shared/dist/schemas/goBagItem.schema';
+import mongoose, { Document, Schema } from 'mongoose';
 
-const goBagItemSchema = new mongoose.Schema({
+export interface IGoBagItem extends Omit<GoBagItem, '_id'>, Document {}
+
+const goBagItemSchema = new Schema<IGoBagItem>({
+  _id: { type: String, required: true },
   name: { type: String, required: true },
-  category: { type: String, required: true },
-  scoreWeight: { type: Number, required: true },
-  description: { type: String, required: true },
-  applicableIf: {
-    hasFemale: { type: Boolean, required: true },
-    hasDog: { type: Boolean, required: true },
-    hasCat: { type: Boolean, required: true },
+  category: {
+    type: String,
+    enum: [
+      'food',
+      'water',
+      'hygiene',
+      'first-aid',
+      'tools',
+      'tech',
+      'clothing',
+      'documents',
+    ],
+    required: true,
   },
+  defaultQuantity: { type: Number, default: 1 },
 });
 
-const GoBagItem = mongoose.model('GoBagItem', goBagItemSchema);
-
-export default GoBagItem;
+const GoBagItemModel = mongoose.model<IGoBagItem>('GoBagItem', goBagItemSchema);
+export default GoBagItemModel;

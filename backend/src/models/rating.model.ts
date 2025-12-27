@@ -1,25 +1,36 @@
-import mongoose from 'mongoose';
+import type { Rating } from '@repo/shared/dist/schemas/rating.schema';
+import mongoose, { Document, Schema } from 'mongoose';
 
-const ratingSchema = new mongoose.Schema({
-  postId: { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
-  goBagId: { type: mongoose.Schema.Types.ObjectId, ref: 'GoBag' },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  recommendedBasis: [
-    {
-      item: { type: mongoose.Schema.Types.ObjectId, ref: 'GoBagItem' },
-      quantity: { type: Number, required: true },
+export interface IRating
+  extends Omit<Rating, '_id' | 'postId' | 'raterUserId'>,
+    Document {
+  postId: mongoose.Types.ObjectId;
+  raterUserId: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const ratingSchema = new Schema<IRating>(
+  {
+    postId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Post',
+      required: true,
     },
-  ],
-  checklistResults: [
-    {
-      item: { type: mongoose.Schema.Types.ObjectId, ref: 'GoBagItem' },
-      quantity: { type: Number, required: true },
+    raterUserId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
-  ],
-  createdAt: { type: Date, required: true, default: Date.now },
-  weightedScore: { type: Number, required: true },
-});
 
-const Rating = mongoose.model('Quiz', ratingSchema);
+    verifiedItemIds: [{ type: String, required: true }],
+  },
+  {
+    timestamps: true,
+  },
+);
 
-export default Rating;
+ratingSchema.index({ postId: 1, raterUserId: 1 }, { unique: true });
+
+const RatingModel = mongoose.model<IRating>('Rating', ratingSchema);
+export default RatingModel;

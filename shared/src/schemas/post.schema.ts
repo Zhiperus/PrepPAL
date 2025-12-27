@@ -1,12 +1,23 @@
 import { z } from "zod";
-import mongoose from "mongoose";
 
-export const postSchemaZod = z.object({
-  userId: z.instanceof(mongoose.Types.ObjectId),
-  imageUrl: z.string().nonempty("Image URL is required"),
-  goBagId: z.instanceof(mongoose.Types.ObjectId).optional(),
-  date: z.date().default(() => new Date()),
-  averageScore: z.number(),
+const SnapshotItemSchema = z.object({
+  itemId: z.string(),
+  name: z.string(),
+  category: z.string(),
 });
 
-export type PostInput = z.infer<typeof postSchemaZod>;
+export const PostSchema = z.object({
+  _id: z.string(),
+  userId: z.string(),
+  imageUrl: z.url(),
+  caption: z.string().optional(),
+  bagSnapshot: z.array(SnapshotItemSchema),
+
+  verifiedItemCount: z.number().default(0),
+  verificationCount: z.number().default(0),
+
+  createdAt: z.date().or(z.string()),
+});
+
+export type Post = z.infer<typeof PostSchema>;
+export type SnapshotItem = z.infer<typeof SnapshotItemSchema>;

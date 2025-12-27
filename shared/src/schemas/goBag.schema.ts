@@ -1,14 +1,20 @@
 import { z } from "zod";
-import mongoose from "mongoose";
 
-const goBagItemSchema = z.object({
-  itemId: z.instanceof(mongoose.Types.ObjectId),
-  quantity: z.number().int().min(1).default(1),
+export const BagItemSchema = z.object({
+  itemId: z.string(),
+  name: z.string(),
+  category: z.string(),
+
+  // Calculated by Backend:
+  // true = User has ID in their GoBag.items array
+  // false = User does not have ID
+  isPacked: z.boolean(),
 });
 
-export const goBagSchemaZod = z.object({
-  isRecommended: z.boolean(),
-  items: z.array(goBagItemSchema).default([]),
+// The API Response
+export const GoBagResponseSchema = z.object({
+  items: z.array(BagItemSchema),
+  completeness: z.number(), // 0-100 score
 });
 
-export type GoBagInput = z.infer<typeof goBagSchemaZod>;
+export type BagItem = z.infer<typeof BagItemSchema>;
