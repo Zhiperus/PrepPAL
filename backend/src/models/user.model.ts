@@ -53,6 +53,8 @@ const userSchema = new Schema<IUser>(
       community: { type: Number, default: 0 },
       modules: { type: Number, default: 0 },
     },
+    profileImage: { type: String, default: null },
+    profileImageId: { type: String, default: null },
     isEmailVerified: { type: Boolean, default: false },
     verificationToken: { type: String, select: false },
     verificationTokenExpires: { type: Date, select: false },

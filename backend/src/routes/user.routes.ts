@@ -12,4 +12,10 @@ userRoutes.put(
   controller.complete.bind(controller),
 );
 
+userRoutes.patch(
+  '/avatar',
+  authenticate,
+  controller.updateAvatar.bind(controller),
+);
+
 export default userRoutes;
