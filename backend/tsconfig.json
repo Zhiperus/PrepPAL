@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "target": "ES2020",
-    "module": "NodeNext",           
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "rootDir": "src",
     "outDir": "dist",
@@ -11,10 +13,21 @@
     "skipLibCheck": true,
     "composite": true,
     "paths": {
-      "@shared/*": ["../shared/src/*"]
+      "@shared/*": [
+        "../shared/src/*"
+      ]
     }
   },
-  "include": ["src", "src/middleware/authMiddleware.tss"],
-  "exclude": ["node_modules"],
-  "references": [{ "path": "../shared" }]
+  "include": [
+    "src",
+    "src/middleware/authMiddleware.tss"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
 }
