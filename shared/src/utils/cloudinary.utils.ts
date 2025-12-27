@@ -1,28 +1,40 @@
-import { UploadApiOptions } from "cloudinary";
-
+import { UploadApiOptions, UploadApiResponse } from "cloudinary";
 import cloudinary from "./cloudinary.config.js";
+
+export interface CloudinaryUploadResult {
+  url: string;
+  publicId: string;
+}
 
 export const uploadToCloudinary = async (
   file: Express.Multer.File,
   userId: string,
   subFolder: "profile" | "posts" | "others" = "others"
-) => {
-  return new Promise<{ url: string; publicId: string }>((resolve, reject) => {
+): Promise<CloudinaryUploadResult> => {
+  return new Promise((resolve, reject) => {
+    // Convert current time to Base36
+    const shortTime = Date.now().toString(36);
+    const shortId = Math.random().toString(36).substring(7);
+
     const options: UploadApiOptions = {
-      folder: `preppal/user_uploads/${userId}/${subFolder}`,
-      public_id: `${Date.now()}_${file.originalname.split(".")[0]}`,
+      public_id: `pp/u/${userId}/${subFolder}/${shortTime}_${shortId}`,
+      use_filename: false,
+      unique_filename: false,
+      overwrite: true,
       allowed_formats: ["jpg", "png", "jpeg"],
+      resource_type: "auto",
     };
 
+    // Apply transformations
     if (subFolder === "profile") {
       options.transformation = [
         { width: 500, height: 500, crop: "fill", gravity: "face" },
       ];
     } else if (subFolder === "posts") {
       options.transformation = [
-        { width: 1200, crop: "limit" }, // Resize only if larger than 1200px
-        { quality: "auto" }, // Compression
-        { fetch_format: "auto" }, // Modern file formats (WebP/AVIF)
+        { width: 1200, crop: "limit" },
+        { quality: "auto" },
+        { fetch_format: "auto" },
       ];
     }
 
@@ -30,12 +42,12 @@ export const uploadToCloudinary = async (
       options,
       (error, result) => {
         if (error) return reject(error);
-        if (result) {
-          resolve({
-            url: result.secure_url,
-            publicId: result.public_id,
-          });
-        }
+        if (!result) return reject(new Error("Cloudinary upload failed"));
+
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id,
+        });
       }
     );
 
