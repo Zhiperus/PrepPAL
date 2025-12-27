@@ -1,23 +1,26 @@
 import { z } from "zod";
-import mongoose from "mongoose";
 
-const ratingItemSchema = z.object({
-  item: z.instanceof(mongoose.Types.ObjectId),
-  quantity: z.number().int().nonnegative(),
+export const RatingSchema = z.object({
+  _id: z.string().optional(),
+
+  postId: z.string(),
+
+  raterUserId: z.string(),
+
+  verifiedItemIds: z
+    .array(z.string())
+    .min(1, "You must verify at least one item."),
+
+  createdAt: z.date().or(z.string()).optional(),
+  updatedAt: z.date().or(z.string()).optional(),
 });
 
-export const ratingSchemaZod = z.object({
-  postId: z.instanceof(mongoose.Types.ObjectId).optional(),
-  goBagId: z.instanceof(mongoose.Types.ObjectId).optional(),
-  userId: z.instanceof(mongoose.Types.ObjectId).optional(),
-  recommendedBasis: z.array(ratingItemSchema).optional().default([]),
-  checklistResults: z.array(ratingItemSchema).optional().default([]),
-  createdAt: z
-    .date()
-    .optional()
-    .default(() => new Date()),
-  weightedScore: z.number(),
+export const CreateRatingSchema = RatingSchema.omit({
+  _id: true,
+  raterUserId: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
-// TypeScript type inference
-export type RatingInput = z.infer<typeof ratingSchemaZod>;
+export type Rating = z.infer<typeof RatingSchema>;
+export type CreateRatingRequest = z.infer<typeof CreateRatingSchema>;

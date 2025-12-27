@@ -40,7 +40,6 @@ export const UserSchema = z.object({
     modules: z.number().default(0),
     community: z.number().default(0),
   }),
-  goBags: z.array(z.string()).default([]),
   isEmailVerified: z.boolean(),
   verificationToken: z.string(),
   verificationTokenExpires: z.date(),

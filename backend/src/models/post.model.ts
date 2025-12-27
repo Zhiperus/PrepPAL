@@ -1,13 +1,30 @@
-import mongoose from "mongoose";
+import type { Post } from '@repo/shared/dist/schemas/post.schema';
+import mongoose, { Document, Schema } from 'mongoose';
 
-const postSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  imageUrl: { type: String, required: true },
-  goBagId: { type: mongoose.Schema.Types.ObjectId, ref: "GoBag" },
-  date: { type: Date, required: true, default: Date.now },
-  averageScore: { type: Number, required: true },
-});
+export interface IPost
+  extends Omit<Post, '_id' | 'userId' | 'createdAt'>,
+    Document {
+  userId: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
-const Post = mongoose.model("Post", postSchema);
+const postSchema = new Schema<IPost>(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    imageUrl: { type: String, required: true },
+    bagSnapshot: [
+      {
+        itemId: { type: String, required: true },
+        name: { type: String, required: true },
+        category: { type: String, required: true },
+      },
+    ],
+    verifiedItemCount: { type: Number, default: 0 },
+    verificationCount: { type: Number, default: 0 },
+  },
+  { timestamps: true },
+);
 
-export default Post;
+const PostModel = mongoose.model<IPost>('Post', postSchema);
+export default PostModel;
