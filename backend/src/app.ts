@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 
 import errorHandler from './middleware/errorHandler.js';
 import routes from './routes/index.js';
+import GoBagItemService from './services/goBagItem.service.js';
 
 dotenv.config();
 
@@ -34,8 +35,11 @@ if (!MONGO_URI) {
 
 mongoose
   .connect(MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log('✅ MongoDB connected');
+    // // initialize goBagItems
+    // const goBagItemService = new GoBagItemService();
+    // await goBagItemService.initializeDefaultItems();
     app.listen(PORT, () => {
       console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
