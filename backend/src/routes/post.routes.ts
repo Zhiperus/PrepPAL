@@ -13,3 +13,4 @@ postRoutes.get('/', controller.getAllPosts.bind(controller));
 postRoutes.post('/', authenticate, controller.createPost.bind(controller));
 
 export default postRoutes;
+

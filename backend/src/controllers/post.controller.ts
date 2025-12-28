@@ -6,13 +6,20 @@ import PostService from '../services/post.service.js';
 export default class PostController {
   private postService = new PostService();
 
-  // GET /api/posts
+  /**
+   * GET /api/posts
+   * Retrieves all posts with optional sorting via query params.
+   * Query params: sortBy (createdAt|verificationCount|verifiedItemCount), order (asc|desc)
+   */
   getAllPosts = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { sortBy, order } = req.query;
 
       const posts = await this.postService.getAllPosts({
-        sortBy: sortBy as 'createdAt' | 'verificationCount' | 'verifiedItemCount',
+        sortBy: sortBy as
+          | 'createdAt'
+          | 'verificationCount'
+          | 'verifiedItemCount',
         order: order as 'asc' | 'desc',
       });
 
@@ -25,7 +32,12 @@ export default class PostController {
     }
   };
 
-  // POST /api/posts
+  /**
+   * POST /api/posts
+   * Creates a new post for the authenticated user.
+   * Body: { imageUrl: string, caption?: string }
+   * Automatically snapshots the user's current GoBag items into the post.
+   */
   createPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { imageUrl, caption } = req.body;
@@ -46,3 +58,4 @@ export default class PostController {
     }
   };
 }
+

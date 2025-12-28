@@ -3,11 +3,13 @@ import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
 import mongoose from 'mongoose';
 
+// Options for sorting posts
 export interface GetPostsOptions {
     sortBy?: 'createdAt' | 'verificationCount' | 'verifiedItemCount';
     order?: 'asc' | 'desc';
 }
 
+// Data required to create a new post
 export interface CreatePostData {
     userId: string;
     imageUrl: string;
@@ -15,6 +17,10 @@ export interface CreatePostData {
 }
 
 export default class PostRepository {
+    /**
+     * Retrieves all posts with optional sorting.
+     * Populates user info and sorts by specified field (default: createdAt desc).
+     */
     async findAll(options: GetPostsOptions = {}) {
         const { sortBy = 'createdAt', order = 'desc' } = options;
         const sortOrder = order === 'asc' ? 1 : -1;
@@ -24,10 +30,17 @@ export default class PostRepository {
             .populate('userId', 'username profilePicture');
     }
 
+    /**
+     * Finds a single post by its ID.
+     */
     async findById(postId: string) {
         return Post.findById(postId);
     }
 
+    /**
+     * Creates a new post with a snapshot of the user's current GoBag items.
+     * If user has no GoBag, creates post with empty bagSnapshot.
+     */
     async create(data: CreatePostData) {
         const { userId, imageUrl, caption } = data;
 
@@ -45,6 +58,7 @@ export default class PostRepository {
                 _id: { $in: goBag.items },
             });
 
+            // Map each item to a snapshot object
             bagSnapshot = items.map((item) => ({
                 itemId: String(item._id),
                 name: item.name,
@@ -52,6 +66,7 @@ export default class PostRepository {
             }));
         }
 
+        // Create and save the new post
         const post = new Post({
             userId: new mongoose.Types.ObjectId(userId),
             imageUrl,
@@ -63,6 +78,10 @@ export default class PostRepository {
         return post.save();
     }
 
+    /**
+     * Updates the verification statistics for a post.
+     * Called after ratings are added/updated to recalculate averages.
+     */
     async updateVerificationStats(
         postId: string,
         verifiedItemCount: number,
