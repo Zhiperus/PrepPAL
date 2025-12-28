@@ -37,6 +37,11 @@ export const paths = {
     getHref: () => '/onboarding',
   },
 
+  'community-feed': {
+    path: "/community-feed",
+     getHref: () => '/community-feed',
+  },
+
   app: {
     root: {
       path: '/app',
