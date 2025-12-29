@@ -16,6 +16,7 @@ export default class UserService {
       location: data.location,
       householdInfo: data.householdInfo,
       phoneNumber: data.phoneNumber,
+      householdName: data.householdName,
     });
 
     return updatedUser;
