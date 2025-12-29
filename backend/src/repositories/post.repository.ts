@@ -27,7 +27,8 @@ export default class PostRepository {
 
         return Post.find()
             .sort({ [sortBy]: sortOrder })
-            .populate('userId', 'username profilePicture');
+            .populate('userId', 'email householdName profileImage')
+            .lean();
     }
 
     /**

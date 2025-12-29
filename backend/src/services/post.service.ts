@@ -29,4 +29,3 @@ export default class PostService {
     return this.postRepo.create(data);
   }
 }
-

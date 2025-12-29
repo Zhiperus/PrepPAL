@@ -10,6 +10,7 @@ export const PostSchema = z.object({
   _id: z.string(),
   userId: z.string(),
   imageUrl: z.url(),
+  imageId: z.string().optional(),
   caption: z.string().optional(),
   bagSnapshot: z.array(SnapshotItemSchema),
 
