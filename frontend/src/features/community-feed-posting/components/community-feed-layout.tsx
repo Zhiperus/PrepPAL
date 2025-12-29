@@ -12,8 +12,7 @@ export function CommunityFeedLayout() {
   const [postId, setPostId] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState('newest');
 
-  function sortedPosts(posts: any, sortOption: string){
-    return [...posts].sort((a, b) => {
+  const sortedPosts = [...posts].sort((a, b) => {
       if (sortOption === 'newest') {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
@@ -25,37 +24,49 @@ export function CommunityFeedLayout() {
       }
       return 0;
     });
-  }
 
   return (
     <div className='bg-base-200 min-h-screen flex flex-col items-center space-y-4 > *'>
       
-      <h1 className='mb-6 text-3xl font-bold text-[#2a4263]'>Community Posts</h1>
-        <div>
-          <label className="input">
-              <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <g
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  strokeWidth="2.5"
-                  fill="none"
-                  stroke="currentColor"
-                  >
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <path d="m21 21-4.3-4.3"></path>
-                  </g>
+      {/* Header */}
+      <div className="flex flex-col items-center w-full max-w-lg px-4">
+        
+        <h1 className='mb-8 text-3xl font-bold text-[#2a4263] tracking-tight'>
+          Community Posts
+        </h1>
+
+        <div className='flex w-full items-center gap-3 mb-6'>
+          
+          {/* Search Bar*/}
+          <label className="input input-bordered flex items-center gap-3 flex-1 shadow-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-[#2a4263] focus-within:border-transparent transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-50">
+                <path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" />
               </svg>
-              <input type="search" required placeholder="Search" />
+              <input type="search" className="grow text-sm" required placeholder="Search updates..." />
           </label>
-            <div className="dropdown">
-            <div tabIndex={0} role="button" className="btn m-1">Click</div>
-            <ul tabIndex="-1" className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-              <li><a>Newest</a></li>
-              <li><a>Oldest</a></li>
-              <li><a>Popular</a></li>
+
+          {/* 2. Sort Button*/}
+          <div className="dropdown dropdown-end">
+            <div 
+              tabIndex={0} 
+              role="button" 
+              className="btn btn-square btn-outline border-base-300 bg-base-100 hover:bg-base-200 hover:border-base-400 shadow-sm text-gray-600"
+              title="Sort Feed"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+              </svg>
+            </div>
+            
+            <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-40 p-2 shadow-lg border border-base-200 mt-2">
+              <li><a onClick={() => setSortOption('newest')} className={sortOption === 'newest' ? 'active' : ''}>Newest</a></li>
+              <li><a onClick={() => setSortOption('oldest')} className={sortOption === 'oldest' ? 'active' : ''}>Oldest</a></li>
+              <li><a onClick={() => setSortOption('popular')} className={sortOption === 'popular' ? 'active' : ''}>Popular</a></li>
             </ul>
           </div>
+
         </div>
+      </div>
 
 
       <div className="w-full max-w-lg space-y-6 px-4">
