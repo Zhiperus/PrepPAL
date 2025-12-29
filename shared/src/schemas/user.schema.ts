@@ -74,10 +74,48 @@ export const OnboardingRequestSchema = z.object({
   emailConsent: z.boolean().optional(),
 });
 
+export const UpdateProfileInfoRequestSchema = z
+  .object({
+    email: z.email({ error: "A valid email is required." }).optional(),
+    phoneNumber: z
+      .string()
+      .regex(/^09\d{9}$/, "Must be a valid format (e.g., 09123456789)"),
+    notification: z
+      .object({
+        email: z.boolean(),
+        sms: z.boolean(),
+      })
+      .partial(),
+
+    householdName: z.string().min(1, "Household Name is required"),
+    householdInfo: HouseholdSchema.partial(),
+  })
+  .partial();
+
+export const GetLeaderboardQuerySchema = z.object({
+  sortBy: z
+    .enum(["points.goBag", "points.community", "points.modules", "totalPoints"])
+    .default("points.goBag"),
+  order: z.enum(["asc", "desc"]).default("desc"),
+  limit: z.coerce.number().default(10),
+  page: z.coerce.number().default(1),
+
+  region: z.string().optional(),
+  province: z.string().optional(),
+  city: z.string().optional(),
+  barangay: z.string().optional(),
+});
+
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 
 export type OnboardingRequest = z.infer<typeof OnboardingRequestSchema>;
+
+export type UpdateProfileInfoRequest = z.infer<
+  typeof UpdateProfileInfoRequestSchema
+>;
+
+export type GetLeaderboardQuery = z.infer<typeof GetLeaderboardQuerySchema>;
 
 export type User = z.infer<typeof PublicUserSchema>;
