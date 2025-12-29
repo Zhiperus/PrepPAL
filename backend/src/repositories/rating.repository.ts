@@ -1,5 +1,6 @@
-import Rating, { IRating } from '../models/rating.model.js';
 import mongoose from 'mongoose';
+
+import Rating, { IRating } from '../models/rating.model.js';
 
 export interface CreateRatingData {
     postId: string;

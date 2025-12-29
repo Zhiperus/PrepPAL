@@ -1,7 +1,8 @@
-import Post, { IPost } from '../models/post.model.js';
+import mongoose from 'mongoose';
+
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
-import mongoose from 'mongoose';
+import Post, { IPost } from '../models/post.model.js';
 
 
 // Options for sorting posts
