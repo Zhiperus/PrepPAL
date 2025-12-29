@@ -1,18 +1,27 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { use, useState } from 'react';
+
+import { useFeedPosts } from '../api/feed-posts';
 
 import { PostCardModal } from './post-card';
 
-import { MOCK_FEED_RESPONSE } from '@/lib/mockData'; // change to use api
 import { timeAgo } from '@/utils/dateUtil';
 
 export function CommunityFeedLayout() {
-  const posts = MOCK_FEED_RESPONSE; // change to use api
+  const { data: posts, isLoading } = useFeedPosts();
 
   const [postId, setPostId] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState('newest');
 
-  const sortedPosts = [...posts].sort((a, b) => {
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-base-200">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  const sortedPosts = [...(posts || [])].sort((a, b) => {
       if (sortOption === 'newest') {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
