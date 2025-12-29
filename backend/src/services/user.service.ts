@@ -1,3 +1,4 @@
+import { deleteFromCloudinary, uploadToCloudinary } from '@repo/shared';
 import { OnboardingRequest } from '@repo/shared/dist/schemas/user.schema';
 
 import { NotFoundError } from '../errors/index.js';
@@ -20,4 +21,24 @@ export default class UserService {
 
     return updatedUser;
   }
+
+  async updateAvatar(userId: string, file: Express.Multer.File) {
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Delete from Cloudinary if a profile picture exists
+    if (user.profileImageId) {
+      await deleteFromCloudinary(user.profileImageId);
+    }
+
+    const { url, publicId } = await uploadToCloudinary(file, userId, 'profile');
+
+    const updatedUser = await this.userRepo.updateAvatar(userId, url, publicId);
+
+    return updatedUser;
+  }
+
+  // TODO: Edit Profile Info
 }
