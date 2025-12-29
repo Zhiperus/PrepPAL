@@ -17,4 +17,21 @@ export default class UserRepository {
       { new: true },
     );
   }
+
+  async updateAvatar(
+    userId: string,
+    profileImage: string,
+    profileImageId: string,
+  ) {
+    return UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          profileImage: profileImage,
+          profileImageId: profileImageId,
+        },
+      },
+      { new: true },
+    );
+  }
 }
