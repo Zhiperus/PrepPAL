@@ -1,6 +1,7 @@
 import type { Post } from '@repo/shared/dist/schemas/post.schema';
 import mongoose, { Document, Schema } from 'mongoose';
 
+
 export interface IPost
   extends Omit<Post, '_id' | 'userId' | 'createdAt'>,
   Document {

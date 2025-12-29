@@ -3,6 +3,7 @@ import { Router } from 'express';
 import PostController from '../controllers/post.controller.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 
+
 const postRoutes: Router = Router();
 const controller = new PostController();
 

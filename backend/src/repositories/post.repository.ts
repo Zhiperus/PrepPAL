@@ -3,6 +3,7 @@ import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
 import mongoose from 'mongoose';
 
+
 // Options for sorting posts
 export interface GetPostsOptions {
     sortBy?: 'createdAt' | 'verificationCount' | 'verifiedItemCount';
@@ -13,7 +14,7 @@ export interface GetPostsOptions {
 export interface CreatePostData {
     userId: string;
     imageUrl: string;
-    caption?: string;
+    imageId: string;
 }
 
 export default class PostRepository {
@@ -43,7 +44,7 @@ export default class PostRepository {
      * If user has no GoBag, creates post with empty bagSnapshot.
      */
     async create(data: CreatePostData) {
-        const { userId, imageUrl, caption } = data;
+        const { userId, imageUrl, imageId } = data;
 
         // Get the user's current GoBag
         const goBag = await GoBagModel.findOne({
@@ -71,6 +72,7 @@ export default class PostRepository {
         const post = new Post({
             userId: new mongoose.Types.ObjectId(userId),
             imageUrl,
+            imageId,
             bagSnapshot,
             verifiedItemCount: 0,
             verificationCount: 0,
