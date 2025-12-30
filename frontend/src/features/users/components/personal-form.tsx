@@ -48,6 +48,7 @@ export default function PersonalForm({ user }: { user: User }) {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { isSubmitting, isDirty },
   } = useForm<UpdateProfileInfoRequest>({
     resolver: zodResolver(UpdateProfileInfoRequestSchema),
@@ -63,6 +64,7 @@ export default function PersonalForm({ user }: { user: User }) {
     formData,
   ) => {
     await updateProfile.mutateAsync({ data: formData });
+    reset(formData);
   };
 
   return (

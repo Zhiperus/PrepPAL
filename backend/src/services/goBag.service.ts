@@ -31,7 +31,7 @@ export default class GoBagService {
       totalItems > 0 ? Math.round((packedCount / totalItems) * 100) : 0;
 
     return {
-      stats: { totalItems, packedCount, progress },
+      completeness: progress,
       items: hydratedItems,
       imageUrl: latestPost?.imageUrl || null,
     };

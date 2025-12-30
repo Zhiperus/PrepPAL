@@ -55,7 +55,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <div className="drawer-content">
           <label
             htmlFor="my-drawer-1"
-            className="btn btn-ghost btn-circle drawer-button absolute top-4 left-4 z-50"
+            className="btn btn-ghost btn-circle drawer-button fixed top-4 left-4 z-50"
           >
             <RxHamburgerMenu className="h-6 w-6 text-black" />
           </label>

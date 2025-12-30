@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { LuCamera } from 'react-icons/lu';
 
 import HouseholdForm from '@/features/users/components/household-form';
 import PersonalForm from '@/features/users/components/personal-form';
+import { UpdateImageModal } from '@/features/users/components/update-image-modal';
 import { useUser } from '@/lib/auth';
 
 export default function ProfileRoute() {
@@ -9,6 +11,7 @@ export default function ProfileRoute() {
   const [activeTab, setActiveTab] = useState<'personal' | 'household'>(
     'personal',
   );
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -21,15 +24,38 @@ export default function ProfileRoute() {
 
   if (!user) return null;
 
+  const userInitial = user.householdName?.charAt(0).toUpperCase() || 'U';
+
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center overflow-y-scroll bg-[#F3F4F6] p-4">
-      <div className="avatar placeholder mb-4">
-        <div className="bg-neutral text-neutral-content w-32 rounded-full shadow-sm">
-          <span className="text-4xl font-bold">
-            {user.householdName?.charAt(0).toUpperCase() || 'U'}
-          </span>
+      <UpdateImageModal
+        isOpen={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        currentImageChar={userInitial}
+        currentImageUrl={user.profileImage} // Assuming user object has profileImage url field
+      />
+
+      <button
+        onClick={() => setIsImageModalOpen(true)}
+        className="avatar placeholder group relative mb-4 cursor-pointer rounded-full transition-all outline-none focus:ring-2 focus:ring-[#2A4263] focus:ring-offset-2"
+        aria-label="Update profile picture"
+      >
+        <div className="bg-neutral text-neutral-content h-32 w-32 overflow-hidden rounded-full shadow-sm transition-transform group-hover:scale-105">
+          {user.profileImage ? (
+            <img
+              src={user.profileImage}
+              alt={user.householdName}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="text-4xl font-bold">{userInitial}</span>
+          )}
         </div>
-      </div>
+
+        <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+          <LuCamera className="h-10 w-10 text-white opacity-80" />
+        </div>
+      </button>
 
       <div className="flex h-[640px] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-sm">
         {/* Tab Header */}

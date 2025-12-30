@@ -47,6 +47,7 @@ export default function HouseholdForm({ user }: { user: User }) {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<UpdateProfileInfoRequest>({
     resolver: zodResolver(UpdateProfileInfoRequestSchema),
@@ -65,6 +66,7 @@ export default function HouseholdForm({ user }: { user: User }) {
     formData,
   ) => {
     await updateProfile.mutateAsync({ data: formData });
+    reset(formData);
   };
 
   return (

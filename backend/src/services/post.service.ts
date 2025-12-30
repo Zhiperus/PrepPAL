@@ -8,6 +8,8 @@ import {
 import PostRepository, {
   GetPostsOptions,
 } from '../repositories/post.repository.js';
+import RatingRepository from '../repositories/rating.repository.js';
+import UserRepository from '../repositories/user.repository.js';
 
 export interface CreatePostInput {
   userId: string;
@@ -15,12 +17,16 @@ export interface CreatePostInput {
 }
 
 export default class PostService {
+  private readonly POINTS_PER_ITEM = 10; // Configurable
+
   private postRepo = new PostRepository();
-  private readonly POINTS_PER_ITEM = 10;
+  private ratingRepo = new RatingRepository();
+  private userRepo = new UserRepository();
 
   /**
    * Gets all posts with optional sorting options.
    */
+
   async getAllPosts(options: GetPostsOptions = {}) {
     return this.postRepo.findAll(options);
   }
@@ -77,38 +83,40 @@ export default class PostService {
     postId: string;
     verifiedItemIds: string[];
   }) {
-    // 1. Fetch Post
     const post = await this.postRepo.findPostById(postId);
     if (!post) throw new NotFoundError('Post not found');
 
-    // 2. Check Ownership
     if (post.userId.toString() === raterUserId) {
       throw new ForbiddenError('You cannot verify your own post.');
     }
 
-    // 3. Check Duplicate Vote
-    const hasRated = await this.postRepo.hasUserRated(postId, raterUserId);
-    if (hasRated) {
+    const existingRating = await this.ratingRepo.findByPostAndUser(
+      postId,
+      raterUserId,
+    );
+    if (existingRating) {
       throw new BadRequestError('You have already rated this post.');
     }
 
-    // 4. Save Rating
-    await this.postRepo.createRating({
+    await this.ratingRepo.create({
       postId,
       raterUserId,
       verifiedItemIds,
     });
 
-    // 5. Recalculate Majority
-    const allRatings = await this.postRepo.getPostRatings(postId);
+    // We need ALL ratings to calculate consensus
+    const allRatings = await this.ratingRepo.findByPostId(postId);
+
     const totalRaters = allRatings.length;
     const majorityThreshold = totalRaters / 2;
 
     let newVerifiedItemCount = 0;
 
+    // Check every item in the snapshot against the "Votes" ledger
     post.bagSnapshot.forEach((item) => {
+      // Count how many rating documents contain this specific Item ID
       const votesForItem = allRatings.filter((r) =>
-        r.verifiedItemIds.includes(item.itemId),
+        r.verifiedItemIds.includes(item.itemId.toString()),
       ).length;
 
       if (votesForItem > majorityThreshold) {
@@ -116,21 +124,20 @@ export default class PostService {
       }
     });
 
-    // 6. Calculate Points Delta
     const oldVerifiedItemCount = post.verifiedItemCount;
     const itemsGained = newVerifiedItemCount - oldVerifiedItemCount;
-    const pointsAwarded = itemsGained * this.POINTS_PER_ITEM;
 
-    // 7. Update Post Stats
+    const pointsAwarded =
+      itemsGained > 0 ? itemsGained * this.POINTS_PER_ITEM : 0;
+
     await this.postRepo.updatePostStats(
       postId,
       newVerifiedItemCount,
       totalRaters,
     );
 
-    // 8. Award Points
-    if (pointsAwarded !== 0) {
-      await this.postRepo.updateUserGoBagPoints(
+    if (pointsAwarded > 0) {
+      await this.userRepo.updateUserGoBagPoints(
         post.userId.toString(),
         pointsAwarded,
       );

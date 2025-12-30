@@ -1,49 +1,115 @@
-import { useState, useEffect } from 'react';
+import type {
+  FeedPost,
+  SnapshotItem,
+} from '@repo/shared/dist/schemas/post.schema';
+import { useState, useEffect, useMemo } from 'react';
 
-import { GO_BAG_CATEGORIES } from '@/lib/checklist';
-import { MOCK_FEED_RESPONSE } from '@/lib/mockData';
+import { useVerifyPost } from '../api/verify-post';
+
+import Toast from '@/components/ui/toast/toast';
 import { timeAgo } from '@/utils/dateUtil';
-
 
 interface PostCardModalProps {
   isOpen: boolean;
   onClose: () => void;
-  postId: string | null;
+  post?: FeedPost;
 }
 
-export function PostCardModal({ isOpen, onClose, postId }: PostCardModalProps) {
-  const post = MOCK_FEED_RESPONSE.find((p) => p.id === postId);
+export function PostCardModal({ isOpen, onClose, post }: PostCardModalProps) {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
-  // Reset state when a new post is opened
+  // Local Toast State
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: 'success' | 'error';
+  }>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+
+  const verifyMutation = useVerifyPost({
+    mutationConfig: {
+      onSuccess: (data: any) => {
+        setToast({
+          show: true,
+          message: `Verification success! Author awarded points.`,
+          type: 'success',
+        });
+
+        // Delay closing slightly so user sees success
+        setTimeout(() => {
+          onClose();
+          setToast((prev) => ({ ...prev, show: false }));
+        }, 2000);
+      },
+      onError: (error: any) => {
+        setToast({
+          show: true,
+          message: error?.response?.data?.message || 'Failed to verify post',
+          type: 'error',
+        });
+        setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
+      },
+    },
+  });
+
   useEffect(() => {
-    setCheckedItems(new Set());
-  }, [postId]);
-
-  if (!isOpen || !post) return null;
-
-  const toggleItem = (item: string) => {
-    const next = new Set(checkedItems);
-    if (next.has(item)) {
-      next.delete(item);
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      setCheckedItems(new Set());
     } else {
-      next.add(item);
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, post]);
+
+  const toggleItem = (itemId: string) => {
+    const next = new Set(checkedItems);
+    if (next.has(itemId)) {
+      next.delete(itemId);
+    } else {
+      next.add(itemId);
     }
     setCheckedItems(next);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Verified Items:", Array.from(checkedItems));
-    onClose();
-  };
-  
-  return (
-    <dialog className="modal modal-open">
-      <div className="modal-box w-11/12 max-w-6xl p-0 overflow-hidden flex flex-col lg:flex-row bg-white h-[90vh]">
+    if (!post) return;
 
-        {/* Go Bag Pic*/}
-        <div className="w-full lg:w-3/5 bg-black flex items-center justify-center relative min-h-[300px] lg:min-h-full">
+    verifyMutation.mutate({
+      postId: post._id,
+      verifiedItemIds: Array.from(checkedItems),
+    });
+  };
+
+  const groupedItems = useMemo(() => {
+    if (!post?.bagSnapshot) return {};
+
+    return post.bagSnapshot.reduce(
+      (acc, item) => {
+        const category = item.category || 'Other';
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(item);
+        return acc;
+      },
+      {} as Record<string, SnapshotItem[]>,
+    );
+  }, [post]);
+
+  if (!isOpen || !post) return null;
+
+  return (
+    <div className={`modal ${isOpen ? 'modal-open' : ''}`}>
+      {/* Toast Notification */}
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
+
+      <div className="modal-box flex h-[90vh] w-11/12 max-w-6xl flex-col overflow-hidden bg-white p-0 lg:flex-row">
+        <div className="relative flex min-h-[300px] w-full items-center justify-center bg-black lg:min-h-full lg:w-3/5">
           <img
             src={post.imageUrl}
             alt="Go Bag Image"
@@ -51,82 +117,107 @@ export function PostCardModal({ isOpen, onClose, postId }: PostCardModalProps) {
           />
         </div>
 
-        {/* Post Info*/}
-        <div className="w-full lg:w-2/5 flex flex-col h-full">
-          {/* Author Info */}
-          <div className="p-4 border-b flex items-center gap-3 bg-white shrink-0 z-10">
+        <div className="relative flex h-full w-full flex-col lg:w-2/5">
+          <div className="z-10 flex shrink-0 items-center gap-3 border-b bg-white p-4 shadow-sm">
             <div className="avatar">
-              <div className="w-10 h-10 rounded-full ring ring-offset-2 ring-[#2a4263]">
-                <img src={post.author.avatarUrl} alt={post.author.name} />
+              <div className="h-10 w-10 rounded-full ring ring-[#2a4263] ring-offset-2">
+                <img src={post.author.userImage} alt={post.author.name} />
               </div>
             </div>
             <div>
               <h3 className="font-bold text-gray-800">{post.author.name}</h3>
               <p className="text-xs text-gray-500">Rank #{post.author.rank}</p>
             </div>
-            <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost ml-auto">✕</button>
-          </div>
-
-          <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-            <p className="text-text-secondary mb-4 text-sm leading-relaxed">
-               <span className="font-bold mr-2 text-gray-900">{post.author.name}</span>
-               {post.caption}
-            </p>
-            <p className="text-text-placeholder mb-4 text-xs">
-                  Posted {timeAgo(post.createdAt)}
-               </p>
-            <div className="bg-base-200 rounded-lg p-3 text-xs mb-6 border border-base-300">
-                <span className="font-bold text-gray-500 uppercase tracking-wide">Go Bag Items:</span>
-                <div className="flex flex-wrap gap-1 mt-2">
-                    {post.bagSnapshot.map(item => (
-                        <span key={item.itemId} className="badge badge-sm badge-outline bg-white">{item.name}</span>
-                    ))}
-                </div>
-            </div>
-
-            {/* Go Bag Checklist */}
-            <div className="space-y-4">
-                <div className="divider text-xs text-gray-400 uppercase tracking-widest">Go Bag Checklist</div>
-                
-                {GO_BAG_CATEGORIES.map((category) => (
-                    <div key={category.title} className="card bg-white shadow-sm border border-gray-100">
-                        <div className="card-body p-3">
-                            <h4 className="card-title text-xs font-bold text-text-primary uppercase tracking-wider mb-2">
-                                {category.title}
-                            </h4>
-                            <div className="flex flex-col gap-2">
-                                {category.items.map((item) => (
-                                    <label key={item} className="cursor-pointer label justify-start gap-3 p-1 hover:bg-base-100 rounded transition-colors">
-                                        <input 
-                                            type="checkbox" 
-                                            className="checkbox checkbox-sm checkbox-btn-primary"
-                                            checked={checkedItems.has(item)}
-                                            onChange={() => toggleItem(item)}
-                                        />
-                                        <span className={`label-text text-xs leading-tight ${checkedItems.has(item) ? 'font-semibold text-gray-800' : 'text-gray-500'}`}>
-                                            {item}
-                                        </span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-          </div>
-
-          <div className="p-4 border-t bg-white shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <button className="btn bg-btn-primary hover:shadow-md w-full text-white" onClick={handleSubmit}>
-                Submit Checklist
+            <button
+              onClick={onClose}
+              className="btn btn-sm btn-circle btn-ghost ml-auto"
+            >
+              ✕
             </button>
           </div>
 
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-4">
+            <p className="mb-4 text-sm leading-relaxed text-gray-700">
+              <span className="mr-2 font-bold text-gray-900">
+                {post.author.name}
+              </span>
+              {post.caption}
+            </p>
+            <p className="mb-4 text-xs text-gray-400">
+              Posted{' '}
+              {timeAgo(
+                typeof post.createdAt === 'string'
+                  ? post.createdAt
+                  : new Date(post.createdAt).toISOString(),
+              )}
+            </p>
+
+            {/* Checklist Loop */}
+            <div className="space-y-4">
+              <div className="divider text-xs tracking-widest text-gray-400 uppercase">
+                Verify Contents
+              </div>
+
+              {Object.entries(groupedItems).map(([category, items]) => (
+                <div
+                  key={category}
+                  className="card border border-gray-100 bg-white shadow-sm"
+                >
+                  <div className="card-body p-3">
+                    <h4 className="card-title mb-2 text-xs font-bold tracking-wider text-[#2a4263] uppercase">
+                      {category}
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                      {items.map((item) => (
+                        <label
+                          key={item.itemId}
+                          className="label hover:bg-base-100 cursor-pointer justify-start gap-3 rounded p-1 transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            className="checkbox checkbox-sm checkbox-primary"
+                            checked={checkedItems.has(item.itemId)}
+                            onChange={() => toggleItem(item.itemId)}
+                          />
+                          <span
+                            className={`label-text text-xs leading-tight ${
+                              checkedItems.has(item.itemId)
+                                ? 'font-semibold text-gray-800'
+                                : 'text-gray-500'
+                            }`}
+                          >
+                            {item.name}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="shrink-0 border-t bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <button
+              className="btn w-full bg-[#2a4263] text-white hover:bg-[#1f304a]"
+              onClick={handleSubmit}
+              disabled={verifyMutation.isPending}
+            >
+              {verifyMutation.isPending ? (
+                <span className="loading loading-spinner"></span>
+              ) : (
+                'Confirm Verification'
+              )}
+            </button>
+          </div>
         </div>
       </div>
-
       <form method="dialog" className="modal-backdrop">
         <button onClick={onClose}>close</button>
       </form>
-    </dialog>
+    </div>
   );
 }
+

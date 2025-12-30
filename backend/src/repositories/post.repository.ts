@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
@@ -7,11 +7,13 @@ import RatingModel, { IRating } from '../models/rating.model.js';
 import UserModel from '../models/user.model.js';
 
 // Options for sorting posts
-export interface GetPostsOptions {
-  sortBy?: 'createdAt' | 'verificationCount' | 'verifiedItemCount';
+export type GetPostsOptions = {
+  sortBy?: string;
   order?: 'asc' | 'desc';
-}
-
+  search?: string;
+  page?: number;
+  limit?: number;
+};
 // Data required to create a new post
 export interface CreatePostData {
   userId: string;
@@ -25,13 +27,49 @@ export default class PostRepository {
    * Populates user info and sorts by specified field (default: createdAt desc).
    */
   async findAll(options: GetPostsOptions = {}) {
-    const { sortBy = 'createdAt', order = 'desc' } = options;
-    const sortOrder = order === 'asc' ? 1 : -1;
+    const {
+      sortBy = 'createdAt',
+      order = 'desc',
+      search,
+      page = 1,
+      limit = 10,
+    } = options;
 
-    return PostModel.find()
-      .sort({ [sortBy]: sortOrder })
-      .populate('userId', 'email householdName profileImage')
-      .lean();
+    const sortOrder = order === 'asc' ? 1 : -1;
+    const skip = (page - 1) * limit;
+
+    // 1. Build the Search Query
+    const query: FilterQuery<any> = {};
+
+    if (search) {
+      const searchRegex = { $regex: search, $options: 'i' }; // Case-insensitive
+
+      const matchingUsers = await UserModel.find({
+        householdName: searchRegex,
+      }).select('_id');
+
+      const matchingUserIds = matchingUsers.map((user) => user._id);
+
+      query.$or = [
+        { caption: searchRegex }, // 1. Match Caption
+        { 'bagSnapshot.name': searchRegex }, // 2. Match Item Name
+        { 'bagSnapshot.category': searchRegex }, // 3. Match Category
+        { userId: { $in: matchingUserIds } },
+      ];
+    }
+
+    // 2. Execute Query & Count in Parallel
+    const [posts, total] = await Promise.all([
+      PostModel.find(query)
+        .sort({ [sortBy]: sortOrder })
+        .skip(skip)
+        .limit(limit)
+        .populate('userId', 'householdName profileImage points') // Ensure points are fetched for ranking
+        .lean(),
+      PostModel.countDocuments(query),
+    ]);
+
+    return { posts, total };
   }
 
   async findLatestByUserId(userId: string): Promise<IPost | null> {
