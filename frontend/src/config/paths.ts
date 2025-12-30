@@ -32,7 +32,6 @@ export const paths = {
     },
   },
 
-
   app: {
     root: {
       path: '/app',
@@ -49,18 +48,18 @@ export const paths = {
     profile: {
       path: 'profile',
       getHref: () => '/app/profile',
+      edit: {
+        path: 'profile/edit',
+        getHref: () => '/app/profile/edit',
+      },
     },
     modules: {
       path: 'modules',
       getHref: () => '/app/modules',
     },
-    posts: {
-      path: 'posts',
-      getHref: () => '/app/posts',
-    },
-    'community-feed': {
-      path: "community-feed",
-       getHref: () => '/app/community-feed',
+    'community-posts': {
+      path: 'community-posts',
+      getHref: () => '/app/community-posts',
     },
     leaderboard: {
       path: 'leaderboard',

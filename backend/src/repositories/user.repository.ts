@@ -44,9 +44,7 @@ export default class UserRepository {
     return UserModel.findByIdAndUpdate(
       userId,
       {
-        $set: {
-          data,
-        },
+        $set: data,
       },
       { new: true },
     );

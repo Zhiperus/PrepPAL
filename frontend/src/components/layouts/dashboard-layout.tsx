@@ -74,7 +74,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {/* Sidebar Container - Matches image shape */}
           <div className="flex min-h-full w-72 flex-col rounded-tr-[50px] rounded-br-[50px] bg-white p-6 shadow-lg">
             {/* 1. Header: Profile */}
-            <div className="mt-4 mb-6 flex items-center gap-4 pl-2">
+            <div
+              className="mt-4 mb-6 flex items-center gap-4 pl-2 hover:cursor-pointer hover:bg-gray-100"
+              onClick={() => navigate(paths.app.profile.getHref())}
+            >
               <div className="avatar placeholder">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-black">
                   <span className="text-xl font-bold">
@@ -110,7 +113,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </li>
               <li>
                 <Link
-                  to={paths.app.posts.getHref()}
+                  to={paths.app['community-posts'].getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
                 >
                   <GoPencil className="h-6 w-6" />

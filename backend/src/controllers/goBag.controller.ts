@@ -7,7 +7,9 @@ export default class GoBagController {
 
   getGoBag = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await this.goBagService.getHydratedGoBag(req.body);
+      const data = await this.goBagService.getHydratedGoBag({
+        userId: req.userId!,
+      });
 
       res.status(200).json(data);
     } catch (error) {
@@ -17,7 +19,10 @@ export default class GoBagController {
 
   toggleGoBagItem = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await this.goBagService.toggleItem(req.body);
+      const result = await this.goBagService.toggleItem({
+        userId: req.userId!,
+        ...req.body,
+      });
 
       res.status(200).json({
         message: 'Item updated',

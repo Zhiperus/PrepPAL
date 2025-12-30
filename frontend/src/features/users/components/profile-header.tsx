@@ -1,10 +1,15 @@
 import type { User } from '@repo/shared/dist/schemas/user.schema';
+import { useNavigate } from 'react-router';
+
+import { paths } from '@/config/paths';
 
 type ProfileHeaderProps = {
   user: User & { rank?: number };
 };
 
 export default function ProfileHeader({ user }: ProfileHeaderProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col items-center px-6 pt-6 pb-2">
       <div className="relative mb-2 flex flex-col items-center">
@@ -31,7 +36,10 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
         <h1 className="text-text-primary text-[24px] font-extrabold tracking-tight">
           {user.householdName || 'Household Name'}
         </h1>
-        <button className="btn btn-sm bg-btn-primary hover:bg-btn-primary-hover h-[28px] min-h-0 rounded-[8px] border-none px-4 text-[13px] font-bold text-white">
+        <button
+          className="btn btn-sm bg-btn-primary hover:bg-btn-primary-hover h-[28px] min-h-0 rounded-[8px] border-none px-4 text-[13px] font-bold text-white"
+          onClick={() => navigate(paths.app.profile.edit.getHref())}
+        >
           Edit
         </button>
       </div>

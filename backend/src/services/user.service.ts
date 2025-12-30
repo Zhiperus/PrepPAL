@@ -54,8 +54,8 @@ export default class UserService {
     // Explicitly construct the update object
     const updatePayload: any = {};
 
-    if (data.email) updatePayload.email = data.email;
-    if (data.phoneNumber) updatePayload.phoneNumber = data.phoneNumber;
+    // if (data.email) updatePayload.email = data.email;
+    // if (data.phoneNumber) updatePayload.phoneNumber = data.phoneNumber;
     if (data.householdName) updatePayload.householdName = data.householdName;
 
     // To update nested fields without overwriting others, use dot notation:
@@ -73,6 +73,8 @@ export default class UserService {
         ];
       });
     }
+
+    console.log(data);
 
     const updatedUser = await this.userRepo.updateProfileInfo(
       userId,

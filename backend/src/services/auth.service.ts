@@ -12,9 +12,11 @@ import {
 import { resend } from '../lib/mail.js';
 import { IUser } from '../models/user.model.js';
 import AuthRepository from '../repositories/auth.repository.js';
+import GoBagRepository from '../repositories/goBag.repository.js';
 
 export default class AuthService {
   private AuthRepo = new AuthRepository();
+  private GoBagRepo = new GoBagRepository();
 
   async getUserById(userId: string) {
     const user = await this.AuthRepo.findById(userId);
@@ -45,6 +47,8 @@ export default class AuthService {
       password: hashedPassword,
     });
 
+    await this.GoBagRepo.createBag(String(newUser._id));
+
     const token = this.AuthRepo.generateToken({
       userId: String(newUser._id),
     });
@@ -56,7 +60,6 @@ export default class AuthService {
       token,
     };
   }
-
   async login(credentials: { email: string; password: string }) {
     const { email, password } = credentials;
 

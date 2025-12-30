@@ -34,6 +34,10 @@ export default class PostRepository {
       .lean();
   }
 
+  async findLatestByUserId(userId: string): Promise<IPost | null> {
+    return PostModel.findOne({ userId }).sort({ createdAt: -1 });
+  }
+
   /**
    * Finds a single post by its ID.
    */

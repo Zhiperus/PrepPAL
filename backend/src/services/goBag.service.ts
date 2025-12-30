@@ -1,13 +1,16 @@
 import { NotFoundError } from '../errors/index.js';
 import GoBagRepository from '../repositories/goBag.repository.js';
+import PostRepository from '../repositories/post.repository.js';
 
 export default class GoBagService {
   private goBagRepo = new GoBagRepository();
+  private postRepo = new PostRepository();
 
   async getHydratedGoBag({ userId }: { userId: string }) {
-    const [catalogItems, userBag] = await Promise.all([
+    const [catalogItems, userBag, latestPost] = await Promise.all([
       this.goBagRepo.findAllCatalogItems(),
       this.goBagRepo.findBagByUserId(userId),
+      this.postRepo.findLatestByUserId(userId),
     ]);
 
     const currentBag = userBag || (await this.goBagRepo.createBag(userId));
@@ -30,6 +33,7 @@ export default class GoBagService {
     return {
       stats: { totalItems, packedCount, progress },
       items: hydratedItems,
+      imageUrl: latestPost?.imageUrl || null,
     };
   }
 

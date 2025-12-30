@@ -82,10 +82,6 @@ export const OnboardingRequestSchema = z.object({
 
 export const UpdateProfileInfoRequestSchema = z
   .object({
-    email: z.email({ error: "A valid email is required." }).optional(),
-    phoneNumber: z
-      .string()
-      .regex(/^09\d{9}$/, "Must be a valid format (e.g., 09123456789)"),
     notification: z
       .object({
         email: z.boolean(),

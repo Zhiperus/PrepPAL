@@ -14,7 +14,7 @@ export default function RegisterRoute() {
       <RegisterForm
         onSuccess={() => {
           navigate(
-            `${redirectTo ? `${redirectTo}` : paths.onboarding.getHref()}`,
+            `${redirectTo ? `${redirectTo}` : paths.app.onboarding.getHref()}`,
             {
               replace: true,
             },
