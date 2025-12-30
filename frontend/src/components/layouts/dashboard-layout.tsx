@@ -51,7 +51,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div className="drawer">
         <input id="my-drawer-1" type="checkbox" className="drawer-toggle" />
 
-        {/* --- MAIN CONTENT --- */}
         <div className="drawer-content">
           <label
             htmlFor="my-drawer-1"
@@ -80,9 +79,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             >
               <div className="avatar placeholder">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-black">
-                  <span className="text-xl font-bold">
-                    {user.householdName?.charAt(0).toUpperCase() || 'J'}
-                  </span>
+                  <img
+                    src={
+                      user.profileImage ||
+                      `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${user.email}`
+                    }
+                    alt="Profile"
+                  />
                 </div>
               </div>
               <span className="text-lg font-bold text-black">

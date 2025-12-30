@@ -31,7 +31,7 @@ export function PostCardModal({ isOpen, onClose, post }: PostCardModalProps) {
 
   const verifyMutation = useVerifyPost({
     mutationConfig: {
-      onSuccess: (data: any) => {
+      onSuccess: () => {
         setToast({
           show: true,
           message: `Verification success! Author awarded points.`,

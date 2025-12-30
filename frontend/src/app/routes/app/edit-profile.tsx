@@ -41,15 +41,13 @@ export default function ProfileRoute() {
         aria-label="Update profile picture"
       >
         <div className="bg-neutral text-neutral-content h-32 w-32 overflow-hidden rounded-full shadow-sm transition-transform group-hover:scale-105">
-          {user.profileImage ? (
-            <img
-              src={user.profileImage}
-              alt={user.householdName}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <span className="text-4xl font-bold">{userInitial}</span>
-          )}
+          <img
+            src={
+              user.profileImage ||
+              `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${user.email}`
+            }
+            alt="Profile"
+          />
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">

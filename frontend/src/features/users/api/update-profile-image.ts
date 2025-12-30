@@ -4,7 +4,7 @@ import { api } from '@/lib/api-client';
 import type { MutationConfig } from '@/lib/react-query';
 
 export const updateProfileImage = ({ data }: { data: FormData }) => {
-  return api.post('/users/avatar', data);
+  return api.patch('/users/avatar', data);
 };
 
 type UseUpdateProfileImageOptions = {

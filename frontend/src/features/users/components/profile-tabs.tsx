@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { UserPostsList } from './user-posts-list';
 
-import { YourGoBag } from '@/features/go-bag/go-bag-tab';
+import YourGoBag from '@/features/go-bag/components/go-bag-tab';
 
 export default function ProfileTabs() {
   const [activeTab, setActiveTab] = useState<'posts' | 'gobag'>('posts');

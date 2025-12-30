@@ -77,7 +77,7 @@ export function UpdateImageModal({
 
     const formData = new FormData();
 
-    formData.append('avatar', selectedFile);
+    formData.append('image', selectedFile);
 
     await updateProfileImageMutation.mutateAsync({ data: formData });
   };

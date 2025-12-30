@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const BagItemSchema = z.object({
-  itemId: z.string(),
+  _id: z.string(),
   name: z.string(),
   category: z.string(),
   isPacked: z.boolean(),

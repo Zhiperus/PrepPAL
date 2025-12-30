@@ -16,7 +16,10 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
         <div className="avatar">
           <div className="border-border-container mb-0 h-[140px] w-[140px] rounded-full border-[6px] shadow-sm">
             <img
-              src={`https://api.dicebear.com/7.x/fun-emoji/svg?seed=${user.email}`}
+              src={
+                user.profileImage ||
+                `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${user.email}`
+              }
               alt="Profile"
             />
           </div>
