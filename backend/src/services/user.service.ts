@@ -1,5 +1,9 @@
 import { deleteFromCloudinary, uploadToCloudinary } from '@repo/shared';
-import { OnboardingRequest } from '@repo/shared/dist/schemas/user.schema';
+import {
+  GetLeaderboardQuery,
+  OnboardingRequest,
+  UpdateProfileInfoRequest,
+} from '@repo/shared/dist/schemas/user.schema';
 
 import { NotFoundError } from '../errors/index.js';
 import UserRepository from '../repositories/user.repository.js';
@@ -41,5 +45,58 @@ export default class UserService {
     return updatedUser;
   }
 
-  // TODO: Edit Profile Info
+  async updateProfileInfo(userId: string, data: UpdateProfileInfoRequest) {
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Explicitly construct the update object
+    const updatePayload: any = {};
+
+    if (data.email) updatePayload.email = data.email;
+    if (data.phoneNumber) updatePayload.phoneNumber = data.phoneNumber;
+    if (data.householdName) updatePayload.householdName = data.householdName;
+
+    // To update nested fields without overwriting others, use dot notation:
+    if (data.notification) {
+      if (data.notification.email !== undefined)
+        updatePayload['notification.email'] = data.notification.email;
+      if (data.notification.sms !== undefined)
+        updatePayload['notification.sms'] = data.notification.sms;
+    }
+
+    if (data.householdInfo) {
+      Object.keys(data.householdInfo).forEach((key) => {
+        updatePayload[`householdInfo.${key}`] = (data.householdInfo as any)[
+          key
+        ];
+      });
+    }
+
+    const updatedUser = await this.userRepo.updateProfileInfo(
+      userId,
+      updatePayload,
+    );
+
+    return updatedUser;
+  }
+
+  async getLeaderboard(params: GetLeaderboardQuery & { userId: string }) {
+    const currentUser = await this.userRepo.findById(params.userId);
+
+    const filterRegion = params.region || currentUser?.location?.region;
+    const filterProvince = params.province || currentUser?.location?.province;
+    const filterCity = params.city || currentUser?.location?.city;
+    const filterBarangay = params.barangay || currentUser?.location?.barangay;
+
+    const users = await this.userRepo.getLeaderboard({
+      ...params,
+      region: filterRegion,
+      province: filterProvince,
+      city: filterCity,
+      barangay: filterBarangay,
+    });
+    return users;
+  }
 }
