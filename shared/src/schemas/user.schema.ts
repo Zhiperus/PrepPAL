@@ -51,7 +51,13 @@ export const UserSchema = z.object({
   updatedAt: z.date(),
 });
 
-export const PublicUserSchema = UserSchema.omit({ password: true });
+export const PublicUserSchema = UserSchema.omit({
+  password: true,
+  verificationToken: true,
+  verificationTokenExpires: true,
+  resetPasswordToken: true,
+  resetPasswordExpires: true,
+});
 
 export const RegisterRequestSchema = z.object({
   email: z.email({ error: "A valid email is required." }),
