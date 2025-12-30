@@ -2,17 +2,25 @@ name: Main Branch Protection
 
 on:
   pull_request:
-    branches:
-      - main
-
+ 
 jobs:
   check-branch:
     runs-on: ubuntu-latest
     steps:
       - name: Check source branch
         run: |
-          echo "🔍 Checking source branch: ${GITHUB_HEAD_REF}"
-          if [[ "${GITHUB_HEAD_REF}" != "develop" ]]; then
-            echo "❌ Error: Pull request must come from 'develop' branch"
-            exit 1
+          TARGET_BRANCH="${GITHUB_BASE_REF}"
+          SOURCE_BRANCH="${GITHUB_HEAD_REF}"
+
+          echo "🔍 Checking PR: ${SOURCE_BRANCH} -> ${TARGET_BRANCH}"
+
+          if [[ "$TARGET_BRANCH" == "main" ]]; then
+            if [[ "$SOURCE_BRANCH" != "develop" ]]; then
+              echo "❌ Error: Pull requests to 'main' must come from 'develop'."
+              echo "   Current source: '$SOURCE_BRANCH'"
+              exit 1
+            fi
+            echo "✅ Valid path: develop -> main"
+          else
+            echo "✅ Check skipped (Target is not 'main')."
           fi
