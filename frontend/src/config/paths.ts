@@ -32,6 +32,7 @@ export const paths = {
     },
   },
 
+
   app: {
     root: {
       path: '/app',
@@ -56,6 +57,10 @@ export const paths = {
     posts: {
       path: 'posts',
       getHref: () => '/app/posts',
+    },
+    'community-feed': {
+      path: "community-feed",
+       getHref: () => '/app/community-feed',
     },
     leaderboard: {
       path: 'leaderboard',

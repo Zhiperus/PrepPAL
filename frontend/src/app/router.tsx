@@ -73,6 +73,10 @@ export const createAppRouter = (queryClient: QueryClient) =>
     },
 
     {
+      path: paths['community-feed'].path,
+      lazy: () => import('./routes/community-feed').then(convert(queryClient))
+    },
+    {
       path: '*',
       lazy: () => import('./routes/not-found').then(convert(queryClient)),
     },
