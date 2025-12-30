@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Check } from 'lucide-react';
+import { LuCheckCheck } from 'react-icons/lu';
 
-const ProfileRoute = () => {
+export default function ProfileRoute() {
   const [activeTab, setActiveTab] = useState<'personal' | 'household'>(
     'personal',
   );
@@ -71,7 +71,7 @@ const ProfileRoute = () => {
                 <label className="group flex cursor-pointer items-center gap-2 select-none">
                   <input type="checkbox" className="peer sr-only" />
                   <div className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all group-hover:border-gray-400 peer-checked:border-[#10B981] peer-checked:bg-[#10B981] peer-checked:[&_svg]:opacity-100">
-                    <Check
+                    <LuCheckCheck
                       size={16}
                       className="text-white opacity-0 transition-opacity"
                       strokeWidth={3}
@@ -85,7 +85,7 @@ const ProfileRoute = () => {
                 <label className="group flex cursor-pointer items-center gap-2 select-none">
                   <input type="checkbox" className="peer sr-only" />
                   <div className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-gray-300 bg-white transition-all group-hover:border-gray-400 peer-checked:border-[#10B981] peer-checked:bg-[#10B981] peer-checked:[&_svg]:opacity-100">
-                    <Check
+                    <LuCheckCheck
                       size={16}
                       className="text-white opacity-0 transition-opacity"
                       strokeWidth={3}
@@ -192,6 +192,4 @@ const ProfileRoute = () => {
       </div>
     </div>
   );
-};
-
-export default ProfileRoute;
+}
