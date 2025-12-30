@@ -1,4 +1,5 @@
 import { NextFunction } from 'express';
+import { ZodError } from 'zod';
 
 export class InternalServerError extends Error {
   statusCode: number;
@@ -51,8 +52,17 @@ export class ForbiddenError extends Error {
 // Handle unexpected errors in controllers
 export const handleInternalError = (err: unknown, next: NextFunction) => {
   console.error(err); // optional logging
+  // Handle Zod Validation Errors
+  if (err instanceof ZodError) {
+    const message = err.issues
+      .map((e) => `${e.path.join('.')}: ${e.message}`)
+      .join(', ');
+    return next(new BadRequestError(message));
+  }
+
   if (err instanceof Error && 'statusCode' in err) {
     return next(err);
   }
+
   return next(new InternalServerError());
 };
