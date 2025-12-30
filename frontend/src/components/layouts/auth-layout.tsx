@@ -24,7 +24,6 @@ export default function AuthLayout({ children }: LayoutProps) {
 
   React.useEffect(() => {
     if (user.data) {
-      console.log(user.data);
       navigate(redirectTo ? redirectTo : paths.app.root.getHref(), {
         replace: true,
       });

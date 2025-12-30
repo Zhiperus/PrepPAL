@@ -40,6 +40,8 @@ export const UserSchema = z.object({
     modules: z.number().default(0),
     community: z.number().default(0),
   }),
+  profileImage: z.url().optional(),
+  profileImageId: z.string().optional(),
   isEmailVerified: z.boolean(),
   verificationToken: z.string(),
   verificationTokenExpires: z.date(),
@@ -49,7 +51,13 @@ export const UserSchema = z.object({
   updatedAt: z.date(),
 });
 
-export const PublicUserSchema = UserSchema.omit({ password: true });
+export const PublicUserSchema = UserSchema.omit({
+  password: true,
+  verificationToken: true,
+  verificationTokenExpires: true,
+  resetPasswordToken: true,
+  resetPasswordExpires: true,
+});
 
 export const RegisterRequestSchema = z.object({
   email: z.email({ error: "A valid email is required." }),
