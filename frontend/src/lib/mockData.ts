@@ -11,7 +11,7 @@ export const MOCK_GOBAG_RESPONSE = {
     { itemId: "std_water_01", name: "Drinking Water (1L)", category: "water", isPacked: true },
     { itemId: "std_food_01", name: "Non-perishable Food", category: "food", isPacked: true },
     { itemId: "std_food_02", name: "Eating Utensils", category: "food", isPacked: false }, // User needs this
-    
+
     // --- First Aid ---
     { itemId: "std_fa_01", name: "Adhesive Bandages", category: "first-aid", isPacked: true },
     { itemId: "std_fa_02", name: "Alcohol / Disinfectant", category: "first-aid", isPacked: false },

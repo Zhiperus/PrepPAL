@@ -18,4 +18,16 @@ userRoutes.patch(
   controller.updateAvatar.bind(controller),
 );
 
+userRoutes.patch(
+  '/profile',
+  authenticate,
+  controller.updateProfileInfo.bind(controller),
+);
+
+userRoutes.get(
+  '/leaderboard',
+  authenticate,
+  controller.getLeaderboard.bind(controller),
+);
+
 export default userRoutes;

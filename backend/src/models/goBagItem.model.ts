@@ -4,7 +4,6 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IGoBagItem extends Omit<GoBagItem, '_id'>, Document {}
 
 const goBagItemSchema = new Schema<IGoBagItem>({
-  _id: { type: String, required: true },
   name: { type: String, required: true },
   category: {
     type: String,
