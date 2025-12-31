@@ -41,6 +41,14 @@ export class ConflictError extends Error {
   }
 }
 
+export class ForbiddenError extends Error {
+  statusCode: number;
+  constructor(message: string = 'Forbidden Access') {
+    super(message);
+    this.statusCode = 403;
+  }
+}
+
 // Handle unexpected errors in controllers
 export const handleInternalError = (err: unknown, next: NextFunction) => {
   console.error(err); // optional logging

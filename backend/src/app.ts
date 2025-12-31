@@ -6,7 +6,6 @@ import mongoose from 'mongoose';
 
 import errorHandler from './middleware/errorHandler.js';
 import routes from './routes/index.js';
-import GoBagItemService from './services/goBagItem.service.js';
 
 dotenv.config();
 
@@ -15,7 +14,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'PATCH', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   }),
 );

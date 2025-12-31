@@ -1,12 +1,8 @@
 import { useState } from 'react';
 
-function UserPostsList() {
-  return <div className="p-4 text-center">Posts List Component</div>;
-}
+import { UserPostsList } from './user-posts-list';
 
-function GoBagReadView() {
-  return <div className="p-4 text-center">Go Bag Component</div>;
-}
+import YourGoBag from '@/features/go-bag/components/go-bag-tab';
 
 export default function ProfileTabs() {
   const [activeTab, setActiveTab] = useState<'posts' | 'gobag'>('posts');
@@ -37,7 +33,7 @@ export default function ProfileTabs() {
       </div>
 
       <div className="bg-bg-primary flex-1 overflow-y-auto">
-        {activeTab === 'posts' ? <UserPostsList /> : <GoBagReadView />}
+        {activeTab === 'posts' ? <UserPostsList /> : <YourGoBag />}
       </div>
     </div>
   );

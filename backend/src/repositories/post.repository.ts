@@ -1,105 +1,256 @@
-import mongoose from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
-import Post, { IPost } from '../models/post.model.js';
-
+import PostModel, { IPost } from '../models/post.model.js';
+import RatingModel, { IRating } from '../models/rating.model.js';
+import UserModel from '../models/user.model.js';
 
 // Options for sorting posts
-export interface GetPostsOptions {
-    sortBy?: 'createdAt' | 'verificationCount' | 'verifiedItemCount';
-    order?: 'asc' | 'desc';
-}
-
+export type GetPostsOptions = {
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  search?: string;
+  page?: number;
+  limit?: number;
+};
 // Data required to create a new post
 export interface CreatePostData {
-    userId: string;
-    imageUrl: string;
-    imageId: string;
+  userId: string;
+  imageUrl: string;
+  imageId: string;
+  caption: string;
 }
 
 export default class PostRepository {
-    /**
-     * Retrieves all posts with optional sorting.
-     * Populates user info and sorts by specified field (default: createdAt desc).
-     */
-    async findAll(options: GetPostsOptions = {}) {
-        const { sortBy = 'createdAt', order = 'desc' } = options;
-        const sortOrder = order === 'asc' ? 1 : -1;
+  /**
+   * Retrieves all posts with optional sorting.
+   * Populates user info and sorts by specified field (default: createdAt desc).
+   */
+  async findAll(options: GetPostsOptions = {}) {
+    const {
+      sortBy = 'createdAt',
+      order = 'desc',
+      search,
+      page = 1,
+      limit = 10,
+    } = options;
 
-        return Post.find()
-            .sort({ [sortBy]: sortOrder })
-            .populate('userId', 'email householdName profileImage')
-            .lean();
+    const sortOrder = order === 'asc' ? 1 : -1;
+    const skip = (page - 1) * limit;
+
+    // 1. Build the Search Query
+    const query: FilterQuery<any> = {};
+
+    if (search) {
+      const searchRegex = { $regex: search, $options: 'i' }; // Case-insensitive
+
+      const matchingUsers = await UserModel.find({
+        householdName: searchRegex,
+      }).select('_id');
+
+      const matchingUserIds = matchingUsers.map((user) => user._id);
+
+      query.$or = [
+        { caption: searchRegex }, // 1. Match Caption
+        { 'bagSnapshot.name': searchRegex }, // 2. Match Item Name
+        { 'bagSnapshot.category': searchRegex }, // 3. Match Category
+        { userId: { $in: matchingUserIds } },
+      ];
     }
 
-    /**
-     * Finds a single post by its ID.
-     */
-    async findById(postId: string) {
-        return Post.findById(postId);
+    // 2. Execute Query & Count in Parallel
+    const [posts, total] = await Promise.all([
+      PostModel.find(query)
+        .sort({ [sortBy]: sortOrder })
+        .skip(skip)
+        .limit(limit)
+        .populate('userId', 'householdName profileImage points') // Ensure points are fetched for ranking
+        .lean(),
+      PostModel.countDocuments(query),
+    ]);
+
+    return { posts, total };
+  }
+
+  async findAllLatestUnique({
+    page,
+    limit,
+    search,
+    sortBy = 'createdAt',
+    order = 'desc',
+  }: any) {
+    const skip = (page - 1) * limit;
+    const sortDirection = order === 'desc' ? -1 : 1;
+
+    const matchStage: any = {};
+    if (search) {
+      matchStage.$or = [
+        { caption: { $regex: search, $options: 'i' } },
+        { 'userId.householdName': { $regex: search, $options: 'i' } },
+      ];
     }
 
-    /**
-     * Creates a new post with a snapshot of the user's current GoBag items.
-     * If user has no GoBag, creates post with empty bagSnapshot.
-     */
-    async create(data: CreatePostData) {
-        const { userId, imageUrl, imageId } = data;
+    const pipeline: any[] = [
+      { $sort: { createdAt: -1 } },
 
-        // Get the user's current GoBag
-        const goBag = await GoBagModel.findOne({
-            userId: new mongoose.Types.ObjectId(userId),
-        });
+      {
+        $group: {
+          _id: '$userId',
+          doc: { $first: '$$ROOT' },
+        },
+      },
 
-        // Create bagSnapshot - empty array if user has no GoBag yet
-        let bagSnapshot: { itemId: string; name: string; category: string }[] = [];
+      { $replaceRoot: { newRoot: '$doc' } },
 
-        if (goBag && goBag.items.length > 0) {
-            // Get the items from the GoBag and create a deep copy (snapshot)
-            const items = await GoBagItemModel.find({
-                _id: { $in: goBag.items },
-            });
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+        },
+      },
 
-            // Map each item to a snapshot object
-            bagSnapshot = items.map((item) => ({
-                itemId: String(item._id),
-                name: item.name,
-                category: item.category,
-            }));
-        }
+      { $unwind: '$userId' },
 
-        // Create and save the new post
-        const post = new Post({
-            userId: new mongoose.Types.ObjectId(userId),
-            imageUrl,
-            imageId,
-            bagSnapshot,
-            verifiedItemCount: 0,
-            verificationCount: 0,
-        });
+      { $match: matchStage },
 
-        return post.save();
+      { $sort: { [sortBy]: sortDirection } },
+
+      {
+        $facet: {
+          posts: [{ $skip: skip }, { $limit: limit }],
+          totalCount: [{ $count: 'count' }],
+        },
+      },
+    ];
+
+    const [result] = await PostModel.aggregate(pipeline);
+
+    return {
+      posts: result.posts,
+      total: result.totalCount[0]?.count || 0,
+    };
+  }
+
+  async findAllUserPosts(userId: string, options: GetPostsOptions = {}) {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      order = 'desc',
+    } = options;
+
+    const skip = (page - 1) * limit;
+    const sortDirection = order === 'desc' ? -1 : 1;
+
+    const query = { userId: new mongoose.Types.ObjectId(userId) };
+
+    const [posts, total] = await Promise.all([
+      PostModel.find(query)
+        .sort({ [sortBy]: sortDirection })
+        .skip(skip)
+        .limit(limit)
+        .populate('userId', 'householdName profileImage points')
+        .lean(),
+      PostModel.countDocuments(query),
+    ]);
+
+    return { posts, total };
+  }
+
+  async findLatestByUserId(userId: string): Promise<IPost | null> {
+    return PostModel.findOne({ userId }).sort({ createdAt: -1 });
+  }
+
+  /**
+   * Finds a single post by its ID.
+   */
+  async findById(postId: string): Promise<IPost | null> {
+    return PostModel.findById(postId);
+  }
+
+  /**
+   * Alias for findById to maintain compatibility with existing service calls
+   */
+  async findPostById(postId: string): Promise<IPost | null> {
+    return this.findById(postId);
+  }
+
+  /**
+   * Creates a new post with a snapshot of the user's current GoBag items.
+   * If user has no GoBag, creates post with empty bagSnapshot.
+   */
+  async create(data: CreatePostData) {
+    const { userId, imageUrl, imageId } = data;
+
+    // 1. Get the user's current GoBag
+    const goBag = await GoBagModel.findOne({
+      userId: new mongoose.Types.ObjectId(userId),
+    });
+
+    // 2. Create bagSnapshot - empty array if user has no GoBag yet
+    let bagSnapshot: { itemId: string; name: string; category: string }[] = [];
+
+    if (goBag && goBag.items.length > 0) {
+      // 3. Get the items from the GoBag and create a deep copy (snapshot)
+      const items = await GoBagItemModel.find({
+        _id: { $in: goBag.items },
+      });
+
+      // 4. Map each item to a snapshot object
+      bagSnapshot = items.map((item) => ({
+        itemId: String(item._id),
+        name: item.name,
+        category: item.category,
+      }));
     }
 
-    /**
-     * Updates the verification statistics for a post.
-     * Called after ratings are added/updated to recalculate averages.
-     */
-    async updateVerificationStats(
-        postId: string,
-        verifiedItemCount: number,
-        verificationCount: number,
-    ) {
-        return Post.findByIdAndUpdate(
-            postId,
-            {
-                $set: {
-                    verifiedItemCount,
-                    verificationCount,
-                },
-            },
-            { new: true },
-        );
-    }
+    // 5. Create and save the new post
+    const post = new PostModel({
+      userId: new mongoose.Types.ObjectId(userId),
+      caption: data.caption,
+      imageUrl,
+      imageId,
+      bagSnapshot,
+      verifiedItemCount: 0,
+      verificationCount: 0,
+    });
+
+    return post.save();
+  }
+
+  /**
+   * Updates the verification statistics for a post.
+   * Called after ratings are added/updated to recalculate averages.
+   */
+  async updatePostStats(
+    postId: string,
+    verifiedItemCount: number,
+    verificationCount: number,
+  ): Promise<IPost | null> {
+    return PostModel.findByIdAndUpdate(
+      postId,
+      {
+        verifiedItemCount,
+        verificationCount,
+      },
+      { new: true },
+    );
+  }
+
+  /**
+   * Update a User's GoBag points
+   */
+  async updateUserGoBagPoints(
+    userId: string,
+    pointsDelta: number,
+  ): Promise<void> {
+    if (pointsDelta === 0) return;
+
+    await UserModel.findByIdAndUpdate(userId, {
+      $inc: { 'points.goBag': pointsDelta },
+    });
+  }
 }

@@ -51,11 +51,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <div className="drawer">
         <input id="my-drawer-1" type="checkbox" className="drawer-toggle" />
 
-        {/* --- MAIN CONTENT --- */}
         <div className="drawer-content">
           <label
             htmlFor="my-drawer-1"
-            className="btn btn-ghost btn-circle drawer-button absolute top-4 left-4 z-50"
+            className="btn btn-ghost btn-circle drawer-button fixed top-4 left-4 z-50"
           >
             <RxHamburgerMenu className="h-6 w-6 text-black" />
           </label>
@@ -74,12 +73,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {/* Sidebar Container - Matches image shape */}
           <div className="flex min-h-full w-72 flex-col rounded-tr-[50px] rounded-br-[50px] bg-white p-6 shadow-lg">
             {/* 1. Header: Profile */}
-            <div className="mt-4 mb-6 flex items-center gap-4 pl-2">
+            <div
+              className="mt-4 mb-6 flex items-center gap-4 pl-2 hover:cursor-pointer hover:bg-gray-100"
+              onClick={() => navigate(paths.app.profile.getHref())}
+            >
               <div className="avatar placeholder">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-black">
-                  <span className="text-xl font-bold">
-                    {user.householdName?.charAt(0).toUpperCase() || 'J'}
-                  </span>
+                  <img
+                    src={
+                      user.profileImage ||
+                      `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${user.email}`
+                    }
+                    alt="Profile"
+                  />
                 </div>
               </div>
               <span className="text-lg font-bold text-black">
@@ -110,7 +116,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </li>
               <li>
                 <Link
-                  to={paths.app.posts.getHref()}
+                  to={paths.app['community-posts'].getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
                 >
                   <GoPencil className="h-6 w-6" />

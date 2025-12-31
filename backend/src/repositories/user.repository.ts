@@ -10,6 +10,16 @@ export default class UserRepository {
     return UserModel.findById(userId);
   }
 
+  async updateUserGoBagPoints(userId: string, pointsToAdd: number) {
+    return UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $inc: { 'points.goBag': pointsToAdd }, // Atomically increment
+      },
+      { new: true },
+    );
+  }
+
   async updateOnboardingDetails(userId: string, data: Partial<IUser>) {
     return UserModel.findByIdAndUpdate(
       userId,
@@ -44,9 +54,7 @@ export default class UserRepository {
     return UserModel.findByIdAndUpdate(
       userId,
       {
-        $set: {
-          data,
-        },
+        $set: data,
       },
       { new: true },
     );

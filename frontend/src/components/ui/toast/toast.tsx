@@ -10,7 +10,7 @@ export default function Toast({ show, message, type }: Props) {
   if (!show) return null;
 
   return createPortal(
-    <div className="toast toast-end toast-bottom animate-in slide-in-from-bottom-5 fade-in z-50 duration-300">
+    <div className="toast toast-end toast-bottom animate-in slide-in-from-bottom-5 fade-in z-9999 duration-300">
       <div
         className={`alert shadow-lg ${
           type === 'success'

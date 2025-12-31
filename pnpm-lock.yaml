@@ -23,6 +23,9 @@ importers:
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
+      cloudinary:
+        specifier: ^2.8.0
+        version: 2.8.0
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -235,9 +238,6 @@ importers:
 
   shared:
     dependencies:
-      cloudinary:
-        specifier: ^2.8.0
-        version: 2.8.0
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -245,10 +245,10 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       mongoose:
-        specifier: ^8.20.4
+        specifier: ^8.19.3
         version: 8.20.4
       zod:
-        specifier: ^4.2.1
+        specifier: ^4.1.12
         version: 4.2.1
     devDependencies:
       '@types/express':

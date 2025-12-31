@@ -9,7 +9,6 @@ import { configureAuth } from 'react-query-auth';
 import { Navigate, useLocation } from 'react-router';
 
 import { api } from './api-client';
-import { MOCK_USER_PROFILE } from './mockData';
 
 import { paths } from '@/config/paths';
 
@@ -25,17 +24,15 @@ export const resetPassword = (data: { password: string; token: string }) => {
 };
 
 async function getUser(): Promise<User | null> {
-  // try {
-  //   const response = await api.get('/auth/me');
-  //   return response.data;
-  // } catch (error: any) {
-  //   if (error.response?.status === 401 || error.response?.status === 403) {
-  //     return null;
-  //   }
-  //   throw error;
-  // }
-
-  return MOCK_USER_PROFILE as unknown as User;
+  try {
+    const response = await api.get('/auth/me');
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 const logout = async () => {

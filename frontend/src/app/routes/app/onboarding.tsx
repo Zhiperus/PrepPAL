@@ -81,7 +81,6 @@ export default function OnboardingRoute() {
   return (
     <OnboardingLayout>
       {toastError && <Toast show={true} message={toastError} type="error" />}
-
       <FormProvider {...methods}>
         <form className="w-full" onSubmit={methods.handleSubmit(onSubmit)}>
           {page === 1 && <StepLocation onNext={() => setPage(2)} />}
