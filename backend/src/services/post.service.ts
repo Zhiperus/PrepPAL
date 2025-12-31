@@ -1,5 +1,3 @@
-import { uploadToCloudinary } from '@repo/shared';
-
 import {
   BadRequestError,
   ForbiddenError,
@@ -10,6 +8,7 @@ import PostRepository, {
 } from '../repositories/post.repository.js';
 import RatingRepository from '../repositories/rating.repository.js';
 import UserRepository from '../repositories/user.repository.js';
+import { uploadToCloudinary } from '../utils/cloudinary.utils.js';
 
 export interface CreatePostInput {
   userId: string;
@@ -65,7 +64,6 @@ export default class PostService {
       );
     }
 
-    // 2. Create the post in DB (Repo handles GoBag snapshotting)
     return this.postRepo.create({
       userId,
       caption,

@@ -1,4 +1,3 @@
-import { deleteFromCloudinary, uploadToCloudinary } from '@repo/shared';
 import {
   GetLeaderboardQuery,
   OnboardingRequest,
@@ -7,6 +6,10 @@ import {
 
 import { NotFoundError } from '../errors/index.js';
 import UserRepository from '../repositories/user.repository.js';
+import {
+  deleteFromCloudinary,
+  uploadToCloudinary,
+} from '../utils/cloudinary.utils.js';
 
 export default class UserService {
   private userRepo = new UserRepository();

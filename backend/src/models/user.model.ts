@@ -1,7 +1,7 @@
 import type { User } from '@repo/shared/dist/schemas/user.schema';
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IUser extends Omit<User, '_id'>, Document {
+export interface IUser extends Omit<User, 'id'>, Document {
   password?: string;
 
   isEmailVerified: boolean;
