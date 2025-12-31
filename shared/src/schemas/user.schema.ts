@@ -22,7 +22,7 @@ const HouseholdSchema = z.object({
 });
 
 export const UserSchema = z.object({
-  _id: z.string(),
+  id: z.string(),
   email: z.email({ error: "A valid email is required." }),
   password: z.string(),
   householdName: z.string(),

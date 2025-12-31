@@ -19,6 +19,7 @@ export interface CreatePostData {
   userId: string;
   imageUrl: string;
   imageId: string;
+  caption: string;
 }
 
 export default class PostRepository {
@@ -65,6 +66,93 @@ export default class PostRepository {
         .skip(skip)
         .limit(limit)
         .populate('userId', 'householdName profileImage points') // Ensure points are fetched for ranking
+        .lean(),
+      PostModel.countDocuments(query),
+    ]);
+
+    return { posts, total };
+  }
+
+  async findAllLatestUnique({
+    page,
+    limit,
+    search,
+    sortBy = 'createdAt',
+    order = 'desc',
+  }: any) {
+    const skip = (page - 1) * limit;
+    const sortDirection = order === 'desc' ? -1 : 1;
+
+    const matchStage: any = {};
+    if (search) {
+      matchStage.$or = [
+        { caption: { $regex: search, $options: 'i' } },
+        { 'userId.householdName': { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const pipeline: any[] = [
+      { $sort: { createdAt: -1 } },
+
+      {
+        $group: {
+          _id: '$userId',
+          doc: { $first: '$$ROOT' },
+        },
+      },
+
+      { $replaceRoot: { newRoot: '$doc' } },
+
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+        },
+      },
+
+      { $unwind: '$userId' },
+
+      { $match: matchStage },
+
+      { $sort: { [sortBy]: sortDirection } },
+
+      {
+        $facet: {
+          posts: [{ $skip: skip }, { $limit: limit }],
+          totalCount: [{ $count: 'count' }],
+        },
+      },
+    ];
+
+    const [result] = await PostModel.aggregate(pipeline);
+
+    return {
+      posts: result.posts,
+      total: result.totalCount[0]?.count || 0,
+    };
+  }
+
+  async findAllUserPosts(userId: string, options: GetPostsOptions = {}) {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      order = 'desc',
+    } = options;
+
+    const skip = (page - 1) * limit;
+    const sortDirection = order === 'desc' ? -1 : 1;
+
+    const query = { userId: new mongoose.Types.ObjectId(userId) };
+
+    const [posts, total] = await Promise.all([
+      PostModel.find(query)
+        .sort({ [sortBy]: sortDirection })
+        .skip(skip)
+        .limit(limit)
+        .populate('userId', 'householdName profileImage points')
         .lean(),
       PostModel.countDocuments(query),
     ]);
@@ -122,6 +210,7 @@ export default class PostRepository {
     // 5. Create and save the new post
     const post = new PostModel({
       userId: new mongoose.Types.ObjectId(userId),
+      caption: data.caption,
       imageUrl,
       imageId,
       bagSnapshot,
@@ -130,32 +219,6 @@ export default class PostRepository {
     });
 
     return post.save();
-  }
-
-  /**
-   * Check if a user has already rated a specific post
-   */
-  async hasUserRated(postId: string, raterUserId: string): Promise<boolean> {
-    const existingRating = await RatingModel.exists({ postId, raterUserId });
-    return !!existingRating;
-  }
-
-  /**
-   * Create a new rating document
-   */
-  async createRating(data: {
-    postId: string;
-    raterUserId: string;
-    verifiedItemIds: string[];
-  }): Promise<IRating> {
-    return RatingModel.create(data);
-  }
-
-  /**
-   * Fetch all ratings for a post (to calculate majority)
-   */
-  async getPostRatings(postId: string): Promise<IRating[]> {
-    return RatingModel.find({ postId }).select('verifiedItemIds');
   }
 
   /**

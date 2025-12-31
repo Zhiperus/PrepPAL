@@ -6,7 +6,7 @@ import PersonalForm from '@/features/users/components/personal-form';
 import { UpdateImageModal } from '@/features/users/components/update-image-modal';
 import { useUser } from '@/lib/auth';
 
-export default function ProfileRoute() {
+export default function EditProfileRoute() {
   const { data: user, isLoading } = useUser();
   const [activeTab, setActiveTab] = useState<'personal' | 'household'>(
     'personal',

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { LuSearch, LuArrowUpDown, LuInbox } from 'react-icons/lu';
 
-import { PostCardModal } from './post-card';
+import PostCardModal from './post-card';
 
 import {
   useInfiniteFeed,
   type SortOption,
-} from '@/features/community-posts/api/get-feed';
+} from '@/features/community-posts/api/get-posts';
 import { timeAgo } from '@/utils/dateUtil';
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -25,7 +25,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export function CommunityFeedLayout() {
+export default function CommunityFeed() {
   const [postId, setPostId] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('newest');
   const [searchInput, setSearchInput] = useState('');
@@ -284,4 +284,3 @@ function FeedPostSkeleton() {
     </div>
   );
 }
-

@@ -33,41 +33,36 @@ export default class PostController {
 
   getAllPosts = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // 1. Extract Query Params
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const { sortBy, order, search } = req.query;
 
-      // 2. Call Service
       const { posts, total } = await this.postService.getAllPosts({
         page,
         limit,
         search: search as string,
-        sortBy: sortBy as
-          | 'createdAt'
-          | 'verificationCount'
-          | 'verifiedItemCount',
+        sortBy: sortBy as string,
         order: order as 'asc' | 'desc',
       });
 
-      // 3. Format Authors & Rank (Match FeedPostSchema)
       const formattedPosts = posts.map((post: any) => {
-        const points = post.userId?.points?.goBag || 0;
-        const rank = Math.floor(points / 50) + 1; // Example rank logic
+        const user = post.userId || {};
+
+        const points = user.points?.goBag || 0;
+        const rank = Math.floor(points / 50) + 1;
 
         return {
           ...post,
-          _id: post._id.toString(), // Ensure ID is string
-          userId: post.userId?._id.toString(),
+          _id: post._id.toString(),
+          userId: user._id?.toString(), // Ensure we handle the object safely
           author: {
-            name: post.userId?.householdName || 'Unknown',
-            userImage: post.userId?.profileImage,
+            name: user.householdName || 'Unknown',
+            userImage: user.profileImage,
             rank: rank,
           },
         };
       });
 
-      // 4. Send Response with Meta
       res.status(200).json({
         data: formattedPosts,
         meta: {
@@ -81,6 +76,39 @@ export default class PostController {
       handleInternalError(err, next);
     }
   };
+
+  /**
+   * GET /posts/user/:userId
+   * Retrieves all posts for a specific user.
+   */
+  getUserPosts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId } = req.params;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const { sortBy, order } = req.query;
+
+      const { posts, total } = await this.postService.getUserPosts(userId, {
+        page,
+        limit,
+        sortBy: sortBy as string,
+        order: order as 'asc' | 'desc',
+      });
+
+      res.status(200).json({
+        data: posts,
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    } catch (err) {
+      handleInternalError(err, next);
+    }
+  };
+
   /**
    * POST /api/posts
    * Creates a new post for the authenticated user.
@@ -91,10 +119,12 @@ export default class PostController {
     try {
       const userId = req.userId!;
       const file = await parseFileRequest(req, res);
+      const { caption } = req.body;
 
       const post = await this.postService.createPost({
         userId,
         file,
+        caption,
       });
 
       res.status(201).json({

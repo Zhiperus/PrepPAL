@@ -1,6 +1,5 @@
-import { CommunityFeedLayout } from '@/features/community-posts/components/community-feed-layout';
+import CommunityFeed from '@/features/community-posts/components/community-posts-layout';
 
 export default function CommunityFeedRoute() {
-  return <CommunityFeedLayout />;
+  return <CommunityFeed />;
 }
-

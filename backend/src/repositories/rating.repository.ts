@@ -41,30 +41,4 @@ export default class RatingRepository {
       { new: true },
     );
   }
-
-  /**
-   * Check if a user has already rated a specific post
-   */
-  async hasUserRated(postId: string, raterUserId: string): Promise<boolean> {
-    const existingRating = await RatingModel.exists({ postId, raterUserId });
-    return !!existingRating;
-  }
-
-  /**
-   * Create a new rating document
-   */
-  async createRating(data: {
-    postId: string;
-    raterUserId: string;
-    verifiedItemIds: string[];
-  }): Promise<IRating> {
-    return RatingModel.create(data);
-  }
-
-  /**
-   * Fetch all ratings for a post (to calculate majority)
-   */
-  async getPostRatings(postId: string): Promise<IRating[]> {
-    return RatingModel.find({ postId }).select('verifiedItemIds');
-  }
 }

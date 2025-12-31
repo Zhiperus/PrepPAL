@@ -64,7 +64,6 @@ export default class UserController {
     try {
       const userId = req.userId!;
       const updateData = UpdateProfileInfoRequestSchema.parse(req.body);
-      console.log(updateData);
 
       const result = await this.userService.updateProfileInfo(
         userId!,

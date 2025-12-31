@@ -3,6 +3,7 @@ import { infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
 import type { QueryConfig } from '@/lib/react-query';
+import type { Meta } from '@/types/api';
 
 export type SortOption = 'newest' | 'oldest' | 'popular';
 
@@ -12,14 +13,7 @@ const SORT_MAPPING: Record<
 > = {
   newest: { sortBy: 'createdAt', order: 'desc' },
   oldest: { sortBy: 'createdAt', order: 'asc' },
-  popular: { sortBy: 'verificationCount', order: 'desc' }, // Assuming popularity = most verifications
-};
-
-export type Meta = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
+  popular: { sortBy: 'verificationCount', order: 'desc' },
 };
 
 export const getFeed = ({

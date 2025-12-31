@@ -1,13 +1,9 @@
+import type { UpdateGoBagRequest } from '@repo/shared/dist/schemas/goBag.schema';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
 
-export type UpdateGoBagDTO = {
-  items: string[];
-  image?: File;
-};
-
-export const updateGoBag = async ({ items, image }: UpdateGoBagDTO) => {
+export const updateGoBag = async ({ items, image }: UpdateGoBagRequest) => {
   const formData = new FormData();
 
   items.forEach((id) => formData.append('items[]', id));

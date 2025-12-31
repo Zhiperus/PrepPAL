@@ -74,8 +74,6 @@ export default class UserService {
       });
     }
 
-    console.log(data);
-
     const updatedUser = await this.userRepo.updateProfileInfo(
       userId,
       updatePayload,

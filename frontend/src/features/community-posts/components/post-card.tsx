@@ -15,7 +15,11 @@ interface PostCardModalProps {
   post?: FeedPost;
 }
 
-export function PostCardModal({ isOpen, onClose, post }: PostCardModalProps) {
+export default function PostCardModal({
+  isOpen,
+  onClose,
+  post,
+}: PostCardModalProps) {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
   // Local Toast State
@@ -220,4 +224,3 @@ export function PostCardModal({ isOpen, onClose, post }: PostCardModalProps) {
     </div>
   );
 }
-

@@ -14,11 +14,10 @@ import UserRepository from '../repositories/user.repository.js';
 export interface CreatePostInput {
   userId: string;
   file: Express.Multer.File;
+  caption: string;
 }
 
 export default class PostService {
-  private readonly POINTS_PER_ITEM = 10; // Configurable
-
   private postRepo = new PostRepository();
   private ratingRepo = new RatingRepository();
   private userRepo = new UserRepository();
@@ -28,7 +27,11 @@ export default class PostService {
    */
 
   async getAllPosts(options: GetPostsOptions = {}) {
-    return this.postRepo.findAll(options);
+    return this.postRepo.findAllLatestUnique(options);
+  }
+
+  async getUserPosts(userId: string, options: any) {
+    return this.postRepo.findAllUserPosts(userId, options);
   }
 
   /**
@@ -45,7 +48,7 @@ export default class PostService {
    * Uploads image to Cloudinary -> Creates DB Entry with GoBag Snapshot.
    */
   async createPost(data: CreatePostInput) {
-    const { userId, file } = data;
+    const { userId, file, caption } = data;
 
     // 1. Upload image to Cloudinary
     let url: string;
@@ -65,6 +68,7 @@ export default class PostService {
     // 2. Create the post in DB (Repo handles GoBag snapshotting)
     return this.postRepo.create({
       userId,
+      caption,
       imageUrl: url,
       imageId: publicId,
     });
@@ -124,28 +128,17 @@ export default class PostService {
       }
     });
 
-    const oldVerifiedItemCount = post.verifiedItemCount;
-    const itemsGained = newVerifiedItemCount - oldVerifiedItemCount;
-
-    const pointsAwarded =
-      itemsGained > 0 ? itemsGained * this.POINTS_PER_ITEM : 0;
-
     await this.postRepo.updatePostStats(
       postId,
       newVerifiedItemCount,
       totalRaters,
     );
 
-    if (pointsAwarded > 0) {
-      await this.userRepo.updateUserGoBagPoints(
-        post.userId.toString(),
-        pointsAwarded,
-      );
-    }
+    //Add 1 to the rater's community points
+    await this.userRepo.updateUserGoBagPoints(post.userId.toString(), 1);
 
     return {
       verifiedCount: newVerifiedItemCount,
-      pointsUpdate: pointsAwarded,
     };
   }
 }
