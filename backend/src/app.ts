@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'PATCH', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   }),
 );
@@ -34,8 +34,11 @@ if (!MONGO_URI) {
 
 mongoose
   .connect(MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log('✅ MongoDB connected');
+    // // initialize goBagItems
+    // const goBagItemService = new GoBagItemService();
+    // await goBagItemService.initializeDefaultItems();
     app.listen(PORT, () => {
       console.log(`🚀 Server running at http://localhost:${PORT}`);
     });

@@ -7,7 +7,6 @@ import {
   default as AppRoot,
   ErrorBoundary as AppRootErrorBoundary,
 } from './routes/app/root';
-import OnboardingRoute from './routes/onboarding';
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
@@ -51,20 +50,36 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.auth.register.path,
       lazy: () => import('./routes/auth/register').then(convert(queryClient)),
     },
+
     {
       path: paths.app.root.path,
-      element: <AppRoot />,
-      ErrorBoundary: AppRootErrorBoundary,
-      children: [],
-    },
-    {
-      path: paths.onboarding.path,
       element: (
         <ProtectedRoute>
-          <OnboardingRoute />
+          <AppRoot />
         </ProtectedRoute>
       ),
-      lazy: () => import('./routes/onboarding').then(convert(queryClient)),
+      ErrorBoundary: AppRootErrorBoundary,
+      children: [
+        {
+          path: paths.app.onboarding.path,
+          lazy: () =>
+            import('./routes/app/onboarding').then(convert(queryClient)),
+        },
+        {
+          path: paths.app.profile.path,
+          lazy: () => import('./routes/app/profile').then(convert(queryClient)),
+        },
+        {
+          path: paths.app.profile.edit.path,
+          lazy: () =>
+            import('./routes/app/edit-profile').then(convert(queryClient)),
+        },
+        {
+          path: paths.app['community-posts'].path,
+          lazy: () =>
+            import('./routes/app/community-posts').then(convert(queryClient)),
+        },
+      ],
     },
     {
       path: '*',

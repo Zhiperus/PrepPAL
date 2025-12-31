@@ -9,7 +9,8 @@
     "start": "node dist/app.js",
     "build": "tsc",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "seed": "tsx src/scripts/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -18,11 +19,13 @@
     "@repo/shared": "workspace:*",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.3",
+    "multer": "^2.0.2",
     "resend": "^6.6.0",
     "zod": "^4.1.12"
   },
@@ -33,6 +36,7 @@
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mime": "^4.0.0",
+    "@types/multer": "^2.0.0",
     "@types/node": "^24.10.0",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",

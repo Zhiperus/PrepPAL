@@ -1,15 +1,21 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-const goBagSchema = new mongoose.Schema({
-  isRecommended: { type: Boolean, required: true },
-  items: [
-    {
-      itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'GoBagItem' },
-      quantity: { type: Number, required: true, default: 1 },
-    },
-  ],
+export interface IGoBag extends Document {
+  userId: mongoose.Types.ObjectId;
+  items: string[];
+  lastUpdated: Date;
+}
+
+const goBagSchema = new Schema<IGoBag>({
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    unique: true,
+  },
+  items: [{ type: String, ref: 'GoBagItem' }],
+  lastUpdated: { type: Date, default: Date.now },
 });
 
-const GoBag = mongoose.model('GoBag', goBagSchema);
-
-export default GoBag;
+const GoBagModel = mongoose.model<IGoBag>('GoBag', goBagSchema);
+export default GoBagModel;

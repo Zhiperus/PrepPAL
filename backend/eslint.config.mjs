@@ -3,6 +3,7 @@ import importPlugin from 'eslint-plugin-import';
 import tseslint from 'typescript-eslint';
 
 export default [
+  { ignores: ['dist/'] },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {

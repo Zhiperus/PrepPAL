@@ -22,7 +22,7 @@ const HouseholdSchema = z.object({
 });
 
 export const UserSchema = z.object({
-  _id: z.string(),
+  id: z.string(),
   email: z.email({ error: "A valid email is required." }),
   password: z.string(),
   householdName: z.string(),
@@ -40,7 +40,8 @@ export const UserSchema = z.object({
     modules: z.number().default(0),
     community: z.number().default(0),
   }),
-  goBags: z.array(z.string()).default([]),
+  profileImage: z.url().optional(),
+  profileImageId: z.string().optional(),
   isEmailVerified: z.boolean(),
   verificationToken: z.string(),
   verificationTokenExpires: z.date(),
@@ -50,7 +51,13 @@ export const UserSchema = z.object({
   updatedAt: z.date(),
 });
 
-export const PublicUserSchema = UserSchema.omit({ password: true });
+export const PublicUserSchema = UserSchema.omit({
+  password: true,
+  verificationToken: true,
+  verificationTokenExpires: true,
+  resetPasswordToken: true,
+  resetPasswordExpires: true,
+});
 
 export const RegisterRequestSchema = z.object({
   email: z.email({ error: "A valid email is required." }),
@@ -73,10 +80,44 @@ export const OnboardingRequestSchema = z.object({
   emailConsent: z.boolean().optional(),
 });
 
+export const UpdateProfileInfoRequestSchema = z
+  .object({
+    notification: z
+      .object({
+        email: z.boolean(),
+        sms: z.boolean(),
+      })
+      .partial(),
+
+    householdName: z.string().min(1, "Household Name is required"),
+    householdInfo: HouseholdSchema.partial(),
+  })
+  .partial();
+
+export const GetLeaderboardQuerySchema = z.object({
+  sortBy: z
+    .enum(["points.goBag", "points.community", "points.modules", "totalPoints"])
+    .default("points.goBag"),
+  order: z.enum(["asc", "desc"]).default("desc"),
+  limit: z.coerce.number().default(10),
+  page: z.coerce.number().default(1),
+
+  region: z.string().optional(),
+  province: z.string().optional(),
+  city: z.string().optional(),
+  barangay: z.string().optional(),
+});
+
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 
 export type OnboardingRequest = z.infer<typeof OnboardingRequestSchema>;
+
+export type UpdateProfileInfoRequest = z.infer<
+  typeof UpdateProfileInfoRequestSchema
+>;
+
+export type GetLeaderboardQuery = z.infer<typeof GetLeaderboardQuerySchema>;
 
 export type User = z.infer<typeof PublicUserSchema>;

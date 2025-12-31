@@ -32,15 +32,38 @@ export const paths = {
     },
   },
 
-  onboarding: {
-    path: '/onboarding',
-    getHref: () => '/onboarding',
-  },
-
   app: {
     root: {
       path: '/app',
       getHref: () => '/app',
+    },
+    dashboard: {
+      path: '',
+      getHref: () => '/app',
+    },
+    onboarding: {
+      path: 'onboarding',
+      getHref: () => '/app/onboarding',
+    },
+    profile: {
+      path: 'profile',
+      getHref: () => '/app/profile',
+      edit: {
+        path: 'profile/edit',
+        getHref: () => '/app/profile/edit',
+      },
+    },
+    modules: {
+      path: 'modules',
+      getHref: () => '/app/modules',
+    },
+    'community-posts': {
+      path: 'community-posts',
+      getHref: () => '/app/community-posts',
+    },
+    leaderboard: {
+      path: 'leaderboard',
+      getHref: () => '/app/leaderboard',
     },
   },
 } as const;
