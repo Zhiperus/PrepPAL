@@ -1,16 +1,36 @@
-import mongoose from 'mongoose';
+import type { QuizAttempt } from '@repo/shared/dist/schemas/quizAttempt.schema';
+import mongoose, { Document, Schema } from 'mongoose';
 
-const quizAttemptSchema = new mongoose.Schema({
-  quizId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quiz' },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  answers: [
-    {
-      answer: { type: String, required: true },
-      correctAnswer: { type: String, required: true },
+export interface IQuizAttempt
+  extends Omit<QuizAttempt, 'quizId' | 'userId' | 'createdAt'>,
+    Document {
+  quizId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const quizAttemptSchema = new Schema<IQuizAttempt>(
+  {
+    quizId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Quiz',
+      required: true,
     },
-  ],
-});
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true, // Fast lookup for a specific user's history
+    },
+    answers: [{ type: Number, required: true }],
+    correctAnswers: { type: Number, default: 0 },
+  },
+  { timestamps: true },
+);
 
-const QuizAttempt = mongoose.model('QuizAttempt', quizAttemptSchema);
-
-export default QuizAttempt;
+const QuizAttemptModel = mongoose.model<IQuizAttempt>(
+  'QuizAttempt',
+  quizAttemptSchema,
+);
+export default QuizAttemptModel;
