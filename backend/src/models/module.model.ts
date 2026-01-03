@@ -1,5 +1,5 @@
-import type { Module } from '@repo/shared/dist/schemas/module.schema'; // Adjust path if needed
-import mongoose, { Document, Schema } from 'mongoose';
+import type { Module } from '@repo/shared/dist/schemas/module.schema';
+import mongoose, { Document, Schema, trusted } from 'mongoose';
 
 export interface IModule
   extends Omit<Module, 'content' | 'createdAt'>,

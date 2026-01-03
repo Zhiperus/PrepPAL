@@ -10,7 +10,7 @@ export const contentSchemaZod = z.object({
 export const moduleSchemaZod = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
-  logo: z.url("Logo URL must be a valid URL"),
+  logo: z.string().min(1, "Logo icon key is required"),
   content: z.array(contentSchemaZod),
   createdAt: z.date().default(() => new Date()),
 });
