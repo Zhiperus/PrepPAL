@@ -119,6 +119,13 @@ export const GetLeaderboardQuerySchema = z.object({
   barangay: z.string().optional(),
 });
 
+export const updateModuleProgressSchema = z.object({
+  userId: z.string(),
+  moduleId: z.string(),
+  newScore: z.number().min(0).max(100),
+  pointsToAward: z.number().min(0),
+});
+
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
@@ -132,5 +139,9 @@ export type UpdateProfileInfoRequest = z.infer<
 export type GetLeaderboardQuery = z.infer<typeof GetLeaderboardQuerySchema>;
 
 export type CompletedModule = z.infer<typeof completedModuleSchema>;
+
+export type UpdateModuleProgressInput = z.infer<
+  typeof updateModuleProgressSchema
+>;
 
 export type User = z.infer<typeof PublicUserSchema>;
