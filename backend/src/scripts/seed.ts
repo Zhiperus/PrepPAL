@@ -136,6 +136,7 @@ const seed = async () => {
 
       return {
         userId: user._id,
+        imageUrl: getRandomItem(IMAGES),
         items: packedItems.map((i) => i._id.toString()), // Store just IDs
         lastUpdated: new Date(),
       };
