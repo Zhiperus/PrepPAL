@@ -17,7 +17,7 @@ export default class QuizAttemptService {
     moduleId: string,
     userAnswers: QuizAttemptInput['answers'],
   ) {
-    // 1. Fetch the Quiz (Truth Source)
+    // 1. Fetch the Quiz
     const quiz = await this.quizRepo.getQuizByModuleId(moduleId);
     if (!quiz) {
       throw new NotFoundError('No quiz found for this module.');
@@ -104,11 +104,26 @@ export default class QuizAttemptService {
     return pointsToAward;
   }
 
-  async getQuizAttempts(userId: string, moduleId: string) {
-    const attempts = await this.quizAttemptRepo.getQuizAttempts(
+  async getQuizAttemptsByUserAndQuizId(userId: string, quizId: string) {
+    const attempts = await this.quizAttemptRepo.getQuizAttemptsByUserAndQuizId(
       userId,
-      moduleId,
+      quizId,
     );
+    return attempts;
+  }
+
+  async getQuizAttemptsByQuizId(quizId: string) {
+    const attempts = await this.quizAttemptRepo.getQuizAttemptsByQuizId(quizId);
+    return attempts;
+  }
+
+  async getQuizAttemptsByUserId(userId: string) {
+    const attempts = await this.quizAttemptRepo.getQuizAttemptsByUserId(userId);
+    return attempts;
+  }
+
+  async getAllQuizAttempts() {
+    const attempts = await this.quizAttemptRepo.getAllQuizAttempts();
     return attempts;
   }
 }

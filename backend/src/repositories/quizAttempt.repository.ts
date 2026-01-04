@@ -1,6 +1,7 @@
 import { QuizAttemptResult } from '@repo/shared/dist/schemas/quizAttempt.schema';
+import mongoose from 'mongoose';
 
-import QuizAttempt from '../models/quizAttempt.model.js';
+import QuizAttempt, { IQuizAttempt } from '../models/quizAttempt.model.js';
 
 export default class QuizAttemptRepository {
   async createQuizAttempt(quizAttempt: QuizAttemptResult) {
@@ -8,22 +9,51 @@ export default class QuizAttemptRepository {
   }
 
   async getQuizAttemptById(id: string) {
-    return QuizAttempt.findById(id).populate('quiz').populate('user');
+    return await QuizAttempt.findById(id)
+      .populate('quizId')
+      .populate('userId')
+      .exec();
   }
 
-  async getQuizAttemptsByUserId(userId: string) {
-    return QuizAttempt.find({ user: userId }).populate('quiz').populate('user');
+  async getAllQuizAttempts(): Promise<IQuizAttempt[]> {
+    return await QuizAttempt.find({})
+      .sort({ createdAt: -1 })
+      .populate('quizId')
+      .exec();
   }
 
-  async getQuizAttemptsByQuizId(quizId: string) {
-    return QuizAttempt.find({ quiz: quizId }).populate('quiz').populate('user');
+  async getQuizAttemptsByUserId(userId: string): Promise<IQuizAttempt[]> {
+    return await QuizAttempt.find({
+      userId: userId,
+    })
+      .sort({ createdAt: -1 })
+      .populate('quizId')
+      .exec();
   }
 
-  async getQuizAttempts(userId: string, moduleId: string) {
-    return QuizAttempt.find().populate('quiz').populate('user');
+  async getQuizAttemptsByQuizId(quizId: string): Promise<IQuizAttempt[]> {
+    return await QuizAttempt.find({
+      quizId: quizId,
+    })
+      .sort({ createdAt: -1 })
+      .populate('quizId')
+      .exec();
+  }
+
+  async getQuizAttemptsByUserAndQuizId(
+    userId: string,
+    quizId: string,
+  ): Promise<IQuizAttempt[]> {
+    return await QuizAttempt.find({
+      userId: userId,
+      quizId: quizId,
+    })
+      .sort({ createdAt: -1 })
+      .populate('quizId')
+      .exec();
   }
 
   async deleteQuizAttempt(id: string) {
-    return QuizAttempt.findByIdAndDelete(id);
+    return await QuizAttempt.findByIdAndDelete(id).exec();
   }
 }

@@ -9,7 +9,7 @@ const controller = new ModuleController();
 moduleRoutes.get(
   '/:id/quiz-attempt',
   authenticate,
-  controller.getQuizAttempts.bind(controller),
+  controller.getQuizAttemptsByUserAndQuizId.bind(controller),
 );
 
 moduleRoutes.post(
@@ -17,5 +17,15 @@ moduleRoutes.post(
   authenticate,
   controller.handleQuizSubmission.bind(controller),
 );
+
+moduleRoutes.get(
+  '/:id/quiz',
+  authenticate,
+  controller.getQuiz.bind(controller),
+);
+
+moduleRoutes.get('/', controller.getAllModules.bind(controller));
+
+moduleRoutes.get('/:id', authenticate, controller.getModule.bind(controller));
 
 export default moduleRoutes;
