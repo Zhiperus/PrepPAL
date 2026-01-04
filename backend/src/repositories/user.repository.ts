@@ -1,5 +1,6 @@
 import {
   GetLeaderboardQuery,
+  UpdateModuleProgressInput,
   UpdateProfileInfoRequest,
 } from '@repo/shared/dist/schemas/user.schema';
 
@@ -108,5 +109,40 @@ export default class UserRepository {
       .select('id email points location householdName profileImage')
       .lean({ virtuals: true })
       .exec();
+  }
+
+  async updateModuleProgress(data: UpdateModuleProgressInput) {
+    const { userId, moduleId, newScore, pointsToAward } = data;
+
+    // 1. Try to update an existing entry
+    const result = await UserModel.updateOne(
+      {
+        _id: userId,
+        'completedModules.moduleId': moduleId,
+      },
+      {
+        // $max ensures we never overwrite a 90% with a 70%
+        $max: { 'completedModules.$.bestScore': newScore },
+        $inc: { 'points.modules': pointsToAward },
+      },
+    );
+
+    // 2. If the module wasn't in the array yet, add it
+    if (result.matchedCount === 0) {
+      return await UserModel.updateOne(
+        { _id: userId },
+        {
+          $push: {
+            completedModules: {
+              moduleId,
+              bestScore: newScore,
+              pointsAwarded: pointsToAward,
+            },
+          },
+          $inc: { 'points.modules': pointsToAward },
+        },
+      );
+    }
+    return result;
   }
 }
