@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import { GO_BAG_ITEMS } from '../lib/seedData.js';
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
+import LguModel from '../models/lgu.model.js';
 import ModuleModel from '../models/module.model.js';
 import PostModel from '../models/post.model.js';
 import QuizModel from '../models/quiz.model.js';
@@ -64,6 +65,7 @@ const seed = async () => {
     await Promise.all([
       UserModel.deleteMany({}),
       PostModel.deleteMany({}),
+      LguModel.deleteMany({}),
       GoBagItemModel.deleteMany({}),
       GoBagModel.deleteMany({}),
       ModuleModel.deleteMany({}),
@@ -75,7 +77,25 @@ const seed = async () => {
     const createdItems = await GoBagItemModel.insertMany(GO_BAG_ITEMS);
     console.log(`✅ Created ${createdItems.length} catalog items`);
 
-    // 3. CREATE USERS
+    // 3. CREATE USERS AND LGUS
+    const lgus = await LguModel.insertMany([
+      {
+        name: 'Manila',
+        region: 'NCR',
+        province: 'Metro Manila',
+        city: 'Manila',
+      },
+      {
+        name: 'Quezon City',
+        region: 'NCR',
+        province: 'Metro Manila',
+        city: 'Quezon City',
+      },
+    ]);
+
+    const manilaId = lgus[0]._id;
+    const qcId = lgus[1]._id;
+
     const hashedPassword = await bcrypt.hash('password', 10);
 
     // 3a. Specific Users (For Login)
@@ -85,6 +105,7 @@ const seed = async () => {
         password: hashedPassword,
         householdName: 'Chua Household',
         role: 'citizen',
+        lguId: manilaId,
         points: { goBag: 50, community: 10, modules: 5 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Iorie',
       },
@@ -93,6 +114,7 @@ const seed = async () => {
         password: hashedPassword,
         householdName: 'The Dev Cave',
         role: 'citizen',
+        lguId: manilaId,
         points: { goBag: 80, community: 150, modules: 20 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kyle',
       },
@@ -101,18 +123,45 @@ const seed = async () => {
         password: hashedPassword,
         householdName: 'Design Studio',
         role: 'citizen',
+        lguId: qcId,
         points: { goBag: 30, community: 5, modules: 0 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jarence',
       },
     ];
 
-    // 3b. Generate Random Users
+    // 3b. Admins and Super Admins
+    const adminUsers = [
+      {
+        email: 'super@test.com',
+        password: hashedPassword,
+        role: 'super_admin',
+        lguId: null, // Sees everything
+        householdName: 'Global HQ',
+      },
+      {
+        email: 'admin.manila@test.com',
+        password: hashedPassword,
+        role: 'admin',
+        lguId: manilaId, // Only sees Manila data
+        householdName: 'Manila City Hall',
+      },
+      {
+        email: 'admin.qc@test.com',
+        password: hashedPassword,
+        role: 'admin',
+        lguId: qcId, // Only sees QC data
+        householdName: 'QC City Hall',
+      },
+    ];
+
+    // 3c. Generate Random Users
     const randomUsersData = Array.from({ length: 20 }).map((_, i) => ({
       email: `user${i + 1}@example.com`,
       password: hashedPassword,
       householdName: `Resident ${i + 1}`,
       phoneNumber: `0917${getRandomInt(1000000, 9999999)}`,
       role: 'citizen',
+      lguId: i % 2 === 0 ? manilaId : qcId,
       onboardingCompleted: true,
       points: {
         goBag: getRandomInt(10, 100),
@@ -125,7 +174,11 @@ const seed = async () => {
     }));
 
     // Insert All Users
-    const allUsers = await UserModel.create([...mainUsers, ...randomUsersData]);
+    const allUsers = await UserModel.create([
+      ...mainUsers,
+      ...adminUsers,
+      ...randomUsersData,
+    ]);
     console.log(`✅ Created ${allUsers.length} users`);
 
     // 4. CREATE GO BAGS FOR ALL USERS
@@ -170,6 +223,7 @@ const seed = async () => {
 
       postsData.push({
         userId: author._id,
+        lguId: author.lguId,
         imageUrl: getRandomItem(IMAGES),
         caption: getRandomItem(CAPTIONS),
         bagSnapshot: snapshotItems,
