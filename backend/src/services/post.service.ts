@@ -3,16 +3,15 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '../errors/index.js';
+import GoBagRepository from '../repositories/goBag.repository.js';
 import PostRepository, {
   GetPostsOptions,
 } from '../repositories/post.repository.js';
 import RatingRepository from '../repositories/rating.repository.js';
 import UserRepository from '../repositories/user.repository.js';
-import { uploadToCloudinary } from '../utils/cloudinary.utils.js';
 
 export interface CreatePostInput {
   userId: string;
-  file: Express.Multer.File;
   caption: string;
 }
 
@@ -20,6 +19,7 @@ export default class PostService {
   private postRepo = new PostRepository();
   private ratingRepo = new RatingRepository();
   private userRepo = new UserRepository();
+  private goBagRepo = new GoBagRepository();
 
   /**
    * Gets all posts with optional sorting options.
@@ -43,32 +43,28 @@ export default class PostService {
   }
 
   /**
-   * Creates a new post.
-   * Uploads image to Cloudinary -> Creates DB Entry with GoBag Snapshot.
+   * Creates a new post using a snapshot of the user's go bag.
+   * Uses the imageUrl and imageId from the user's go bag.
    */
   async createPost(data: CreatePostInput) {
-    const { userId, file, caption } = data;
+    const { userId, caption } = data;
 
-    // 1. Upload image to Cloudinary
-    let url: string;
-    let publicId: string;
+    // 1. Get the user's go bag with image
+    const goBag = await this.goBagRepo.findBagByUserId(userId);
+    if (!goBag) throw new NotFoundError('Go Bag not found');
 
-    try {
-      const result = await uploadToCloudinary(file, userId, 'posts');
-      url = result.url;
-      publicId = result.publicId;
-    } catch (error) {
-      console.error('Cloudinary upload failed:', error);
-      throw new Error(
-        `Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    if (!goBag.imageUrl || !goBag.imageId || goBag.imageUrl === 'pending') {
+      throw new BadRequestError(
+        'No go bag image found. Please upload a go bag image first.',
       );
     }
 
+    // 2. Create the post with the snapshot of the go bag image
     return this.postRepo.create({
       userId,
       caption,
-      imageUrl: url,
-      imageId: publicId,
+      imageUrl: goBag.imageUrl,
+      imageId: goBag.imageId,
     });
   }
 

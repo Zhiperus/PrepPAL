@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { handleInternalError } from '../errors/index.js';
 import GoBagService from '../services/goBag.service.js';
+import { parseFileRequest } from '../utils/image.util.js';
 
 export default class GoBagController {
   private goBagService = new GoBagService();
@@ -30,6 +32,26 @@ export default class GoBagController {
       });
     } catch (error) {
       next(error);
+    }
+  };
+
+  updateGoBagImage = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.userId!;
+      const file = await parseFileRequest(req, res);
+
+      const result = await this.goBagService.updateGoBagImage({
+        userId,
+        file,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'Go bag image updated successfully',
+        data: result,
+      });
+    } catch (error) {
+      handleInternalError(error, next);
     }
   };
 }

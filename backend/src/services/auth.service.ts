@@ -47,7 +47,7 @@ export default class AuthService {
       password: hashedPassword,
     });
 
-    await this.GoBagRepo.createBag(String(newUser._id));
+    await this.GoBagRepo.findBagByUserId(String(newUser._id));
 
     const token = this.AuthRepo.generateToken({
       userId: String(newUser._id),
