@@ -18,9 +18,7 @@ moduleRoutes.get('/', controller.getAllModules.bind(controller));
 moduleRoutes.get('/search', controller.searchModules.bind(controller));
 
 // GET /api/modules/:id - Get a single module by ID
-moduleRoutes.get('/:id', authenticate, controller.getModuleById.bind(controller));
-
-
+moduleRoutes.get('/:id/quiz', controller.getQuiz.bind(controller));
 /**
  * QUIZ ROUTES
  */
