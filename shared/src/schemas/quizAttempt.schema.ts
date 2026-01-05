@@ -1,15 +1,33 @@
 import { z } from "zod";
-import mongoose from "mongoose";
 
-const answerSchema = z.object({
-  answer: z.string().nonempty("Answer is required"),
-  correctAnswer: z.string().nonempty("Correct answer is required"),
+// 1. Schema for User Input (Request Body)
+export const quizAttemptSchema = z.object({
+  answers: z
+    .array(
+      z.object({
+        questionIndex: z.number().int().min(0),
+        selectedAnswerId: z.number().int(),
+      })
+    )
+    .min(1, "You must provide at least one answer"),
 });
 
-export const quizAttemptSchemaZod = z.object({
-  quizId: z.instanceof(mongoose.Types.ObjectId),
-  userId: z.instanceof(mongoose.Types.ObjectId),
-  answers: z.array(answerSchema).min(1, "At least one answer is required"),
+// 2. Schema for Server Result / Database Record
+export const quizAttemptResultSchema = z.object({
+  userId: z.string(),
+  quizId: z.string(),
+  answersSubmitted: z.array(
+    z.object({
+      questionIndex: z.number().int(),
+      selectedAnswerId: z.number().int(),
+      isCorrect: z.boolean(),
+    })
+  ),
+  score: z.number().min(0).max(100),
+  correctCount: z.number().int(),
+  totalQuestions: z.number().int(),
+  createdAt: z.coerce.date().default(() => new Date()),
 });
-
-export type QuizAttemptInput = z.infer<typeof quizAttemptSchemaZod>;
+// Types
+export type QuizAttemptInput = z.infer<typeof quizAttemptSchema>;
+export type QuizAttemptResult = z.infer<typeof quizAttemptResultSchema>;

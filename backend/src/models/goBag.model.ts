@@ -1,11 +1,11 @@
+import type { GoBag } from '@repo/shared/dist/schemas/goBag.schema';
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IGoBag extends Document {
+export interface IGoBag extends Omit<GoBag, 'userId' | 'items'>, Document {
   userId: mongoose.Types.ObjectId;
   imageUrl: string;
   imageId: string | null;
   items: string[];
-  lastUpdated: Date;
 }
 
 const goBagSchema = new Schema<IGoBag>({

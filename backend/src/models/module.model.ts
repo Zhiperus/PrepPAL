@@ -1,50 +1,38 @@
-import mongoose, { Document } from 'mongoose';
+import type { Module } from '@repo/shared/dist/schemas/module.schema';
+import mongoose, { Document, Schema, trusted } from 'mongoose';
 
-// TypeScript interface for Content
-export interface IContent {
-  type: 'text' | 'video' | 'image' | 'quiz' | 'link';
-  title: string;
-  data: unknown; // Mixed type - can be string, object, array, etc. depending on content type
-  order: number;
-}
-
-// TypeScript interface for Module
-export interface IModule extends Document {
-  title: string;
-  description: string;
-  logo: string;
-  content: IContent[];
+export interface IModule
+  extends Omit<Module, 'content' | 'createdAt'>,
+    Document {
+  content: {
+    imageUrl?: string | null;
+    text: string;
+    reference?: string;
+    referenceUrl?: string | null;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-// ContentSchema for module content items
-const contentSchema = new mongoose.Schema(
+const contentSchema = new Schema(
   {
-    type: {
-      type: String,
-      enum: ['text', 'video', 'image', 'quiz', 'link'],
-      required: true,
-    },
-    title: { type: String, required: true },
-    data: { type: mongoose.Schema.Types.Mixed, required: true },
-    order: { type: Number, required: true },
+    imageUrl: { type: String, default: null },
+    text: { type: String, required: true },
+    reference: { type: String },
+    referenceUrl: { type: String, default: null },
   },
   { _id: false },
 );
 
-const moduleSchema = new mongoose.Schema(
+const moduleSchema = new Schema<IModule>(
   {
-    title: { type: String, required: true },
+    title: { type: String, required: true, trim: true },
     description: { type: String, required: true },
     logo: { type: String, required: true },
     content: [contentSchema],
   },
-  {
-    timestamps: true, // Automatically adds createdAt and updatedAt
-  },
+  { timestamps: true },
 );
 
-const Module = mongoose.model<IModule>('Module', moduleSchema);
-
-export default Module;
+const ModuleModel = mongoose.model<IModule>('Module', moduleSchema);
+export default ModuleModel;

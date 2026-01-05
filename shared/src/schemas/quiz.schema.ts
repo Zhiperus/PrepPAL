@@ -1,19 +1,24 @@
 import { z } from "zod";
-import mongoose from "mongoose";
 
-const questionSchema = z.object({
-  questionText: z.string().nonempty("Question text is required"),
+export const quizQuestionSchemaZod = z.object({
+  questionText: z.string().min(1, "Question text is required"),
   choices: z
-    .array(z.string().nonempty("Choice cannot be empty"))
-    .min(2, "At least two choices required"),
-  correctAnswer: z.string().nonempty("Correct answer is required"),
+    .array(
+      z.object({
+        id: z.number(), // The unique identifier for the choice
+        text: z.string().min(1, "Choice text cannot be empty"),
+      })
+    )
+    .min(2, "A question must have at least 2 choices"),
+  // correctAnswer stores the 'id' of the correct choice
+  correctAnswer: z.number(),
 });
 
 export const quizSchemaZod = z.object({
-  moduleId: z.instanceof(mongoose.Types.ObjectId),
+  moduleId: z.string().min(1, "Module ID is required"),
   questions: z
-    .array(questionSchema)
-    .min(1, "At least one question is required"),
+    .array(quizQuestionSchemaZod)
+    .min(1, "Quiz must have at least one question"),
 });
 
-export type QuizInput = z.infer<typeof quizSchemaZod>;
+export type Quiz = z.infer<typeof quizSchemaZod>;

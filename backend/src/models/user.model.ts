@@ -55,6 +55,13 @@ const userSchema = new Schema<IUser>(
     },
     profileImage: { type: String, default: null },
     profileImageId: { type: String, default: null },
+    completedModules: [
+      {
+        moduleId: { type: Schema.Types.ObjectId, ref: 'Module' },
+        bestScore: { type: Number, default: 0 },
+        pointsAwarded: { type: Number, default: 0 },
+      },
+    ],
     isEmailVerified: { type: Boolean, default: false },
     verificationToken: { type: String, select: false },
     verificationTokenExpires: { type: Date, select: false },
