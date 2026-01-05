@@ -129,7 +129,7 @@ const seed = async () => {
       },
     ];
 
-    // 3b. Admins and Super Admins
+    // 3b. LGUs and Super Admins
     const adminUsers = [
       {
         email: 'super@test.com',
@@ -139,16 +139,16 @@ const seed = async () => {
         householdName: 'Global HQ',
       },
       {
-        email: 'admin.manila@test.com',
+        email: 'lgu.manila@test.com',
         password: hashedPassword,
-        role: 'admin',
+        role: 'lgu',
         lguId: manilaId, // Only sees Manila data
         householdName: 'Manila City Hall',
       },
       {
-        email: 'admin.qc@test.com',
+        email: 'lgu.qc@test.com',
         password: hashedPassword,
-        role: 'admin',
+        role: 'lgu',
         lguId: qcId, // Only sees QC data
         householdName: 'QC City Hall',
       },
