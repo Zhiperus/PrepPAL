@@ -28,6 +28,9 @@ export const quizAttemptResultSchema = z.object({
   totalQuestions: z.number().int(),
   createdAt: z.coerce.date().default(() => new Date()),
 });
+
 // Types
 export type QuizAttemptInput = z.infer<typeof quizAttemptSchema>;
 export type QuizAttemptResult = z.infer<typeof quizAttemptResultSchema>;
+
+export const quizAttemptSchemaZod = quizAttemptSchema;
