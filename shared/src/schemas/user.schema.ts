@@ -21,6 +21,16 @@ const HouseholdSchema = z.object({
   catCount: z.number().int().min(0),
 });
 
+export const completedModuleSchema = z.object({
+  moduleId: z.string(),
+  bestScore: z
+    .number()
+    .min(0, "Score cannot be negative")
+    .max(100, "Score cannot exceed 100")
+    .default(0),
+  pointsAwarded: z.number().min(0, "Points cannot be negative").default(0),
+});
+
 export const UserSchema = z.object({
   id: z.string(),
   email: z.email({ error: "A valid email is required." }),
@@ -40,6 +50,7 @@ export const UserSchema = z.object({
     modules: z.number().default(0),
     community: z.number().default(0),
   }),
+  completedModules: z.array(completedModuleSchema).default([]),
   profileImage: z.url().optional(),
   profileImageId: z.string().optional(),
   isEmailVerified: z.boolean(),
@@ -108,6 +119,13 @@ export const GetLeaderboardQuerySchema = z.object({
   barangay: z.string().optional(),
 });
 
+export const updateModuleProgressSchema = z.object({
+  userId: z.string(),
+  moduleId: z.string(),
+  newScore: z.number().min(0).max(100),
+  pointsToAward: z.number().min(0),
+});
+
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
@@ -119,5 +137,11 @@ export type UpdateProfileInfoRequest = z.infer<
 >;
 
 export type GetLeaderboardQuery = z.infer<typeof GetLeaderboardQuerySchema>;
+
+export type CompletedModule = z.infer<typeof completedModuleSchema>;
+
+export type UpdateModuleProgressInput = z.infer<
+  typeof updateModuleProgressSchema
+>;
 
 export type User = z.infer<typeof PublicUserSchema>;

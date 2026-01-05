@@ -32,6 +32,7 @@ export default class ModuleRepository {
         // Execute query and count in parallel
         const [modules, total] = await Promise.all([
             Module.find(query)
+                .select('-content')
                 .sort({ createdAt: -1 }) // Most recent first
                 .skip(skip)
                 .limit(limit)
