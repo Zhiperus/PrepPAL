@@ -130,7 +130,7 @@ const seed = async () => {
     ];
 
     // 3b. LGUs and Super Admins
-    const adminUsers = [
+    const adminsToCreate = [
       {
         email: 'super@test.com',
         password: hashedPassword,
@@ -174,15 +174,18 @@ const seed = async () => {
     }));
 
     // Insert All Users
-    const allUsers = await UserModel.create([
-      ...mainUsers,
-      ...adminUsers,
-      ...randomUsersData,
-    ]);
-    console.log(`✅ Created ${allUsers.length} users`);
+
+    const citizensToCreate = [...mainUsers, ...randomUsersData];
+    const createdCitizens = await UserModel.create(citizensToCreate);
+    const createdAdmins = await UserModel.create(adminsToCreate);
+
+    const allUsers = [...createdCitizens, ...createdAdmins];
+    console.log(
+      `✅ Created ${createdCitizens.length} citizens and ${createdAdmins.length} admins`,
+    );
 
     // 4. CREATE GO BAGS FOR ALL USERS
-    const goBagDocs = allUsers.map((user) => {
+    const goBagDocs = createdCitizens.map((user) => {
       // Randomly decide which items this user has "packed" (between 5 and all items)
       const packedCount = getRandomInt(5, createdItems.length);
       const packedItems = getRandomSubset(createdItems, packedCount);
@@ -203,7 +206,7 @@ const seed = async () => {
     const TOTAL_POSTS = 100;
 
     for (let i = 0; i < TOTAL_POSTS; i++) {
-      const author = getRandomItem(allUsers);
+      const author = getRandomItem(createdCitizens);
 
       // Create a snapshot for this post
       // Pick 2-6 items from the catalog to "show off" in the post
