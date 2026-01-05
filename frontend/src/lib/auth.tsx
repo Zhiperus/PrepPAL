@@ -9,8 +9,10 @@ import { configureAuth } from 'react-query-auth';
 import { Navigate, useLocation } from 'react-router';
 
 import { api } from './api-client';
+import { MOCK_USER_PROFILE } from './mockData';
 
 import { paths } from '@/config/paths';
+
 
 // api call definitions for auth (types, schemas, requests):
 // these are not part of features as this is a module shared across features
@@ -24,6 +26,7 @@ export const resetPassword = (data: { password: string; token: string }) => {
 };
 
 async function getUser(): Promise<User | null> {
+  // return MOCK_USER_PROFILE as unknown as User;
   try {
     const response = await api.get('/auth/me');
     return response.data;
