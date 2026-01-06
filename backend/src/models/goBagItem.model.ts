@@ -1,9 +1,7 @@
 import type { GoBagItem } from '@repo/shared/dist/schemas/goBagItem.schema';
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IGoBagItem extends Omit<GoBagItem, '_id'>, Document {
-  _id: string;
-}
+export interface IGoBagItem extends Omit<GoBagItem, '_id'>, Document {}
 
 const goBagItemSchema = new Schema<IGoBagItem>({
   name: { type: String, required: true },

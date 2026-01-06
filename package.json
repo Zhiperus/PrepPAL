@@ -2,6 +2,9 @@
   "dependencies": {
     "husky": "^9.1.7"
   },
+  "devDependencies": {
+    "zod": "4.2.1"
+  },
   "scripts": {
     "prepare": "husky",
     "lint": "pnpm --filter ./frontend lint && pnpm --filter ./backend lint",

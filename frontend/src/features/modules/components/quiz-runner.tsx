@@ -75,7 +75,7 @@ export function QuizRunner(): React.ReactNode {
   // 1. Initialize Queue
   useEffect(() => {
     if (quiz?.questions && !hasInitialized.current) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const initializedQuestions = quiz.questions.map(
         (q: any, index: number) => ({
           ...q,
@@ -200,7 +200,7 @@ export function QuizRunner(): React.ReactNode {
     const nextQId = nextQ ? getQuestionKey(nextQ) : null;
     if (nextQ && completedIds.has(nextQId!)) {
       // If next question is also solved, restore its state from history
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const prevAnswer = history.find(
         (h: any) => getQuestionKey(h) === nextQId,
       );

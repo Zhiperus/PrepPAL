@@ -72,12 +72,15 @@ export const createAppRouter = (queryClient: QueryClient) =>
         },
         {
           path: paths.app.profile.path,
-          lazy: () => import('./routes/app/profile').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/app/profile/profile').then(convert(queryClient)),
         },
         {
           path: paths.app.profile.edit.path,
           lazy: () =>
-            import('./routes/app/edit-profile').then(convert(queryClient)),
+            import('./routes/app/profile/edit-profile').then(
+              convert(queryClient),
+            ),
         },
         {
           path: paths.app['community-posts'].path,
@@ -122,4 +125,3 @@ export function AppRouter() {
 
   return <RouterProvider router={router} />;
 }
-

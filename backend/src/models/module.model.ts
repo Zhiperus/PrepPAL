@@ -1,8 +1,8 @@
 import type { Module } from '@repo/shared/dist/schemas/module.schema';
-import mongoose, { Document, Schema, trusted } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IModule
-  extends Omit<Module, 'content' | 'createdAt'>,
+  extends Omit<Module, '_id' | 'content' | 'createdAt'>,
     Document {
   content: {
     imageUrl?: string | null;

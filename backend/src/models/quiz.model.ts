@@ -1,7 +1,7 @@
 import type { Quiz } from '@repo/shared/dist/schemas/quiz.schema';
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IQuiz extends Omit<Quiz, 'moduleId'>, Document {
+export interface IQuiz extends Omit<Quiz, '_id' | 'moduleId'>, Document {
   moduleId: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
