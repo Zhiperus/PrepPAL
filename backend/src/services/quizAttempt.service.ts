@@ -1,16 +1,16 @@
 import { QuizAttemptInput } from '@repo/shared/dist/schemas/quizAttempt.schema';
-import { UpdateModuleProgressInput } from '@repo/shared/dist/schemas/user.schema';
 import mongoose from 'mongoose';
 
 import { NotFoundError } from '../errors/index.js';
+import UserModel from '../models/user.model.js';
+import ModuleRepository from '../repositories/module.repository.js';
 import QuizRepository from '../repositories/quiz.repository.js';
 import QuizAttemptRepository from '../repositories/quizAttempt.repository.js';
-import UserRepository from '../repositories/user.repository.js';
 
 export default class QuizAttemptService {
   private quizAttemptRepo = new QuizAttemptRepository();
   private quizRepo = new QuizRepository();
-  private userRepo = new UserRepository();
+  private moduleRepo = new ModuleRepository();
 
   async gradeAttempt(
     userId: string,
@@ -43,7 +43,7 @@ export default class QuizAttemptService {
     // 3. Save the attempt to history
     await this.quizAttemptRepo.createQuizAttempt({
       userId,
-      quizId: (quiz._id as mongoose.Types.ObjectId).toString(),
+      quizId: (quiz._id as unknown as mongoose.Types.ObjectId).toString(),
       answersSubmitted: gradedAnswers,
       score,
       correctCount,
@@ -51,10 +51,15 @@ export default class QuizAttemptService {
       createdAt: new Date(),
     });
 
+    const totalModules = await this.moduleRepo.countAll();
+    const moduleWeight = 50 / (totalModules || 1);
+    const currentWeightedScore = (score / 100) * moduleWeight;
+
     const pointsAwarded = await this.calculatePointImprovement(
       userId,
       moduleId,
-      score,
+      score, // Save 100% in the array
+      currentWeightedScore, // Add 8.33 to the points balance
     );
 
     return {
@@ -69,39 +74,55 @@ export default class QuizAttemptService {
   async calculatePointImprovement(
     userId: string,
     moduleId: string,
-    newScore: number,
+    newScore: number, // e.g., 100
+    weightedValue: number, // e.g., 8.33
   ) {
-    const user = await this.userRepo.findById(userId);
-    if (!user) {
-      throw new NotFoundError('User not found');
-    }
+    const user = await UserModel.findById(userId);
+    if (!user) return 0;
 
-    const existingRecord = user.completedModules.find(
+    // 1. Get the current total module count for the math
+    const totalCount = await this.moduleRepo.countAll();
+    const MAX_MODULE_POINTS = 50;
+    const pointsPerModule = MAX_MODULE_POINTS / (totalCount || 1);
+
+    const existingModule = user.completedModules.find(
       (m) => m.moduleId.toString() === moduleId,
     );
 
-    const previousBest = existingRecord?.bestScore || 0;
-    let pointsToAward = 0;
+    let pointsToAdd = 0;
 
-    // Rule: Only award points if they improve their score
-    if (newScore > previousBest) {
-      const improvement = newScore - previousBest;
+    if (existingModule) {
+      // 2. Only update if they improved their actual percentage score
+      if (newScore > existingModule.bestScore) {
+        // Calculate exactly how many points they ALREADY had for this module
+        const oldWeightedValue =
+          (existingModule.bestScore / 100) * pointsPerModule;
 
-      // If you want a max of 10 points per module:
-      pointsToAward = Math.round(improvement * 0.1);
+        // The improvement is the difference
+        pointsToAdd = weightedValue - oldWeightedValue;
 
-      const updateData: UpdateModuleProgressInput = {
-        userId: userId,
-        moduleId: moduleId,
-        newScore: newScore,
-        pointsToAward: pointsToAward,
-      };
-
-      if (pointsToAward > 0) {
-        await this.userRepo.updateModuleProgress(updateData);
+        // Update the record with the new 0-100 percentage
+        existingModule.bestScore = newScore;
       }
+    } else {
+      // 3. First time completing this specific module
+      pointsToAdd = weightedValue;
+      user.completedModules.push({
+        moduleId,
+        bestScore: newScore, // Save 100 here, not 8.33
+        pointsAwarded: weightedValue, // The weighted points (e.g., 8.33)
+      });
     }
-    return pointsToAward;
+
+    // 4. Update the user's total points balance (the one shown on the dashboard)
+    // Use Math.min to ensure we never accidentally go over 50 due to rounding
+    user.points.modules = Math.min(
+      user.points.modules + pointsToAdd,
+      MAX_MODULE_POINTS,
+    );
+
+    await user.save();
+    return pointsToAdd;
   }
 
   async getQuizAttemptsByUserAndQuizId(userId: string, quizId: string) {

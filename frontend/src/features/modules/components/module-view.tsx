@@ -1,6 +1,7 @@
 import { GoArrowLeft } from 'react-icons/go';
 import { useNavigate, useParams } from 'react-router';
 
+import { paths } from '@/config/paths';
 import { useModule } from '@/features/modules/api/get-module';
 
 export default function ModuleView() {
@@ -93,7 +94,7 @@ export default function ModuleView() {
       <div className="pt-8">
         <div className="flex justify-center md:justify-end">
           <button
-            onClick={() => navigate(``)}
+            onClick={() => navigate(paths.app.quiz.getHref(moduleId!))}
             className="btn btn-soft bg-btn-primary btn-lg hover:bg-btn-primary-hover w-full text-lg text-white shadow-lg hover:shadow-md md:w-auto md:px-12"
           >
             Test Your Knowledge

@@ -21,9 +21,9 @@ export function LeaderboardList({
   isLoading,
 }: LeaderboardListProps) {
   return (
-    <div className="flex w-full flex-col">
+    <div className="relative flex w-full flex-col">
       {/* Header Section (Always Visible) */}
-      <div className="bg-base-200/95 z-30 w-full pt-4 pb-6 text-center backdrop-blur-sm">
+      <div className="bg-base-200/95 sticky top-0 z-30 w-full pt-4 pb-6 text-center backdrop-blur-sm">
         <h3 className="mb-2 text-lg font-semibold tracking-wider text-gray-500 uppercase">
           {title}
         </h3>

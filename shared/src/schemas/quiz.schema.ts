@@ -1,13 +1,14 @@
 import { z } from "zod";
 
 export const quizQuestionSchemaZod = z.object({
+  _id: z.string(),
   questionText: z.string().min(1, "Question text is required"),
   choices: z
     .array(
       z.object({
         id: z.number(), // The unique identifier for the choice
         text: z.string().min(1, "Choice text cannot be empty"),
-      })
+      }),
     )
     .min(2, "A question must have at least 2 choices"),
   // correctAnswer stores the 'id' of the correct choice
@@ -15,6 +16,7 @@ export const quizQuestionSchemaZod = z.object({
 });
 
 export const quizSchemaZod = z.object({
+  _id: z.string(),
   moduleId: z.string().min(1, "Module ID is required"),
   questions: z
     .array(quizQuestionSchemaZod)
@@ -22,3 +24,4 @@ export const quizSchemaZod = z.object({
 });
 
 export type Quiz = z.infer<typeof quizSchemaZod>;
+export type QuizQuestion = z.infer<typeof quizQuestionSchemaZod>;

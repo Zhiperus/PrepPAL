@@ -9,9 +9,9 @@ export default class ModuleService {
   /**
    * Gets all modules with pagination and optional search.
    */
-  async getAllModules(options: GetModulesOptions = {}) {
+  async getAllModules(userId: string, options: GetModulesOptions = {}) {
     // This supports the { page, limit } object from the controller
-    return this.moduleRepo.findAll(options);
+    return this.moduleRepo.findAll(userId, options);
   }
 
   /**
@@ -20,18 +20,23 @@ export default class ModuleService {
    */
   async getModuleById(moduleId: string) {
     const module = await this.moduleRepo.findById(moduleId);
-    
+
     if (!module) {
       throw new NotFoundError('Module not found');
     }
-    
+
     return module;
   }
 
   /**
    * Searches modules by query string (searches title and description).
    */
-  async searchModules(query: string, options: GetModulesOptions = {}) {
-    return this.moduleRepo.search(query, options);
+  async searchModules(
+    userId: string,
+    query: string,
+    options: GetModulesOptions = {},
+  ) {
+    return this.moduleRepo.search(userId, query, options);
   }
 }
+

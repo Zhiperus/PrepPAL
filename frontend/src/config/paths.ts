@@ -56,16 +56,15 @@ export const paths = {
     modules: {
       path: 'modules',
       getHref: () => '/app/modules',
-      search: {
-        path: 'modules/search', 
-        getHref: () => '/app/modules/search',
-      },
     },
     module: {
       path: 'modules/:moduleId',
       getHref: (moduleId: string) => `/app/modules/${moduleId}`,
     },
-
+    quiz: {
+      path: 'modules/:moduleId/quiz',
+      getHref: (moduleId: string) => `/app/modules/${moduleId}/quiz`,
+    },
     'community-posts': {
       path: 'community-posts',
       getHref: () => '/app/community-posts',

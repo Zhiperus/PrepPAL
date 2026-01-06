@@ -20,11 +20,23 @@ export default class ModuleController {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
+      const search = req.query.search as string;
+      const userId = req.userId;
 
-      const { modules, total } = await this.moduleService.getAllModules({
-        page,
-        limit,
-      });
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ success: false, message: 'Unauthorized' });
+      }
+
+      const { modules, total } = await this.moduleService.getAllModules(
+        userId,
+        {
+          page,
+          limit,
+          search,
+        },
+      );
 
       res.status(200).json({
         success: true,
@@ -49,14 +61,14 @@ export default class ModuleController {
     try {
       const { id } = req.params;
       const module = await this.moduleService.getModuleById(id);
-      
+
       if (!module) {
         return res.status(404).json({
           success: false,
           message: 'Module not found',
         });
       }
-      
+
       res.status(200).json({
         success: true,
         data: module,
@@ -84,10 +96,22 @@ export default class ModuleController {
         });
       }
 
-      const { modules, total } = await this.moduleService.searchModules(query, {
-        page,
-        limit,
-      });
+      const userId = req.userId;
+
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ success: false, message: 'Unauthorized' });
+      }
+
+      const { modules, total } = await this.moduleService.searchModules(
+        userId,
+        query,
+        {
+          page,
+          limit,
+        },
+      );
 
       res.status(200).json({
         success: true,
@@ -104,14 +128,18 @@ export default class ModuleController {
       handleInternalError(err, next);
     }
   };
-  
+
   /* --- Quiz Related Methods --- */
 
   /**
    * POST /api/modules/:id/quiz/submit
    * Validates and grades a quiz attempt.
    */
-  handleQuizSubmission = async (req: Request, res: Response, next: NextFunction) => {
+  handleQuizSubmission = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const validatedInput = quizAttemptSchema.parse(req.body);
       const { id: moduleId } = req.params;
@@ -133,7 +161,11 @@ export default class ModuleController {
    * GET /api/modules/:id/quiz/attempts
    * Returns the quiz attempt history for the user.
    */
-  getQuizAttemptsByUserAndQuizId = async (req: Request, res: Response, next: NextFunction) => {
+  getQuizAttemptsByUserAndQuizId = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const { id: moduleId } = req.params;
       const userId = req.userId;
@@ -147,10 +179,11 @@ export default class ModuleController {
         });
       }
 
-      const attempts = await this.quizAttemptService.getQuizAttemptsByUserAndQuizId(
-        userId!,
-        quiz.id,
-      );
+      const attempts =
+        await this.quizAttemptService.getQuizAttemptsByUserAndQuizId(
+          userId!,
+          quiz.id,
+        );
 
       res.status(200).json({
         success: true,

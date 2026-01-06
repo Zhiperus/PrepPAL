@@ -1,44 +1,31 @@
-import type { QuizAttemptInput } from '@repo/shared/dist/schemas/quizAttempt.schema';
-import { useMutation } from '@tanstack/react-query';
+import type { QuizAttemptInput } from '@repo/shared/dist/schemas/quizAttempt.schema'; // Adjust path if needed
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { MOCK_QUIZ } from './mock-data';
+import { api } from '@/lib/api-client';
+import type { MutationConfig } from '@/lib/react-query';
 
-type SubmitQuizPayload = {
-  moduleId: string;
-  answers: QuizAttemptInput['answers'];
+export const submitQuiz = (data: QuizAttemptInput & { moduleId: string }) => {
+  return api.post(`/modules/${data.moduleId}/quiz-attempt`, data);
 };
 
-export const submitQuiz = async (data: SubmitQuizPayload) => {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-
-  // MANUAL GRADING (Frontend Logic muna)
-  let correctCount = 0;
-  const totalQuestions = MOCK_QUIZ.questions.length;
-
-  data.answers.forEach((ans) => {
-    const question = MOCK_QUIZ.questions[ans.questionIndex];
-    const correctChoice = question?.choices.find((choice) => choice.isCorrect);
-    if (question && correctChoice?.id === ans.selectedAnswerId) {
-      correctCount++;
-    }
-  });
-
-  const score = (correctCount / totalQuestions) * 100;
-  const passed = score >= 70;
-
-  return {
-    success: true,
-    score,
-    passed,
-    correctCount,
-    totalQuestions,
-    pointsAwarded: passed ? 10 : 0 // Fake points logic
-  };
+type UseSubmitQuizOptions = {
+  mutationConfig?: MutationConfig<typeof submitQuiz>;
 };
 
-export const useSubmitQuiz = () => {
+export const useSubmitQuiz = ({
+  mutationConfig,
+}: UseSubmitQuizOptions = {}) => {
+  const queryClient = useQueryClient();
+
+  const { onSuccess, ...restConfig } = mutationConfig || {};
+
   return useMutation({
+    onSuccess: (...args) => {
+      onSuccess?.(...args);
+      queryClient.invalidateQueries({ queryKey: ['authenticated-user'] });
+    },
+    ...restConfig,
     mutationFn: submitQuiz,
   });
 };
+
