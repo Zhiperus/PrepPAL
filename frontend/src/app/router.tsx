@@ -61,6 +61,11 @@ export const createAppRouter = (queryClient: QueryClient) =>
       ErrorBoundary: AppRootErrorBoundary,
       children: [
         {
+          path: paths.app['dashboard'].path,
+          lazy: () =>
+            import('./routes/app/dashboard').then(convert(queryClient)),
+        },
+        {
           path: paths.app.onboarding.path,
           lazy: () =>
             import('./routes/app/onboarding').then(convert(queryClient)),
@@ -78,11 +83,6 @@ export const createAppRouter = (queryClient: QueryClient) =>
           path: paths.app['community-posts'].path,
           lazy: () =>
             import('./routes/app/community-posts').then(convert(queryClient)),
-        },
-        {
-          path: paths.app['dashboard'].path,
-          lazy: () =>
-            import('./routes/app/dashboard').then(convert(queryClient)),
         },
       ],
     },

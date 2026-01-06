@@ -1,5 +1,3 @@
-import type { DashboardLayout } from "@/components/layouts";
-
 export const paths = {
   home: {
     path: '/',
