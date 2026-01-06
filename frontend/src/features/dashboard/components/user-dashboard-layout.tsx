@@ -7,13 +7,22 @@ import { MdNavigateNext } from "react-icons/md";
 import { useInfiniteFeed } from '@/features/community-posts/api/get-posts';
 import PostCardModal from "@/features/community-posts/components/post-card";
 import { timeAgo } from '@/utils/dateUtil';
+import { getPercent } from "@/utils/getPercent";
 
 type ProfileHeaderProps = {
   user: User & { rank?: number };
 };
 
+const MAX_GOBAG_POINTS = 100;
+const MAX_MODULE_POINTS = 50;
+
 export function UserDashboard({ user }: ProfileHeaderProps) {
     const [postId, setPostId] = useState<string | null>(null);
+    
+    const { goBag, modules, community } = user.points;
+    const goBagPercent = getPercent(goBag, MAX_GOBAG_POINTS);
+    const modPercent = getPercent(modules, MAX_MODULE_POINTS);
+    const totalPercent = Math.round((goBagPercent + modPercent) / 2);
 
     const { data, isLoading } = useInfiniteFeed({
         sort: 'newest',
@@ -52,16 +61,16 @@ export function UserDashboard({ user }: ProfileHeaderProps) {
                             <div
                                 className="radial-progress text-[#2a4263] font-bold"
                                 style={{
-                                    "--value": 85,
+                                    "--value": totalPercent,
                                     "--size": "6.5rem",
                                     "--thickness": "0.8rem",
                                 } as React.CSSProperties}
                                 role="progressbar"
-                                aria-valuenow={85}
+                                aria-valuenow={totalPercent}
                             >
                                 <div className="flex flex-col items-center gap-1 mt-1">
                                     <FaThumbsUp className="w-6 h-6" />
-                                    <span className="text-xl">85%</span>
+                                    <span className="text-xl">{totalPercent}%</span>
                                 </div>
                             </div>
                             <span className="text-gray-500 font-medium text-sm">Preparedness</span>
@@ -72,11 +81,11 @@ export function UserDashboard({ user }: ProfileHeaderProps) {
                             <div>
                                 <div className="flex justify-between items-center mb-1">
                                     <span className="font-bold text-gray-800 text-sm">Go-Bag Preparation</span>
-                                    <span className="font-extrabold text-[#2a4263] text-sm">93%</span>
+                                    <span className="font-extrabold text-[#2a4263] text-sm">{goBagPercent}%</span>
                                 </div>
                                 <progress
                                     className="progress w-full h-3 border border-gray-200 bg-gray-100 [&::-webkit-progress-value]:bg-[#2a4263] [&::-moz-progress-bar]:bg-[#2a4263]"
-                                    value="93"
+                                    value={goBagPercent}
                                     max="100"
                                 ></progress>
                             </div>
@@ -84,11 +93,11 @@ export function UserDashboard({ user }: ProfileHeaderProps) {
                             <div>
                                 <div className="flex justify-between items-center mb-1">
                                     <span className="font-bold text-gray-800 text-sm">DRR Courses</span>
-                                    <span className="font-extrabold text-[#2a4263] text-sm">24%</span>
+                                    <span className="font-extrabold text-[#2a4263] text-sm">{modPercent}%</span>
                                 </div>
                                 <progress
                                     className="progress w-full h-3 border border-gray-200 bg-gray-100 [&::-webkit-progress-value]:bg-[#2a4263] [&::-moz-progress-bar]:bg-[#2a4263]"
-                                    value="24"
+                                    value={modPercent}
                                     max="100"
                                 ></progress>
                             </div>
