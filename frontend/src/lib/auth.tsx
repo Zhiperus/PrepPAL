@@ -28,9 +28,16 @@ async function getUser(): Promise<User | null> {
     const response = await api.get('/auth/me');
     return response.data;
   } catch (error: any) {
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    // If the error is 404 (Not Found) or 401 (Unauthorized),
+    // it simply means the user isn't logged in.
+    if (
+      error.response &&
+      (error.response.status === 404 || error.response.status === 401)
+    ) {
       return null;
     }
+
+    // For other errors (500, network issues), re-throw so React Query knows it's an actual error
     throw error;
   }
 }

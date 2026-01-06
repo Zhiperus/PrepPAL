@@ -1,7 +1,7 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { createBrowserRouter } from 'react-router';
-import { RouterProvider } from 'react-router/dom';
+import { RouterProvider } from 'react-router';
 
 import {
   default as AppRoot,
@@ -61,26 +61,57 @@ export const createAppRouter = (queryClient: QueryClient) =>
       ErrorBoundary: AppRootErrorBoundary,
       children: [
         {
+          path: paths.app['dashboard'].path,
+          lazy: () =>
+            import('./routes/app/dashboard').then(convert(queryClient)),
+        },
+        {
           path: paths.app.onboarding.path,
           lazy: () =>
             import('./routes/app/onboarding').then(convert(queryClient)),
         },
         {
           path: paths.app.profile.path,
-          lazy: () => import('./routes/app/profile').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/app/profile/profile').then(convert(queryClient)),
         },
         {
           path: paths.app.profile.edit.path,
           lazy: () =>
-            import('./routes/app/edit-profile').then(convert(queryClient)),
+            import('./routes/app/profile/edit-profile').then(
+              convert(queryClient),
+            ),
         },
         {
           path: paths.app['community-posts'].path,
           lazy: () =>
             import('./routes/app/community-posts').then(convert(queryClient)),
         },
+        {
+          path: paths.app['leaderboard'].path,
+          lazy: () =>
+            import('./routes/app/leaderboard').then(convert(queryClient)),
+        },
+        {
+          path: paths.app.modules.path,
+          lazy: () =>
+            import('./routes/app/modules/modules').then(convert(queryClient)),
+        },
+        {
+          path: paths.app.module.path,
+          lazy: () =>
+            import('./routes/app/modules/module').then(convert(queryClient)),
+        },
+        {
+          path: paths.app.quiz.path,
+          lazy: () =>
+            import('./routes/app/modules/quiz-runner').then(
+              convert(queryClient),
+            ),
+        },
       ],
     },
+
     {
       path: '*',
       lazy: () => import('./routes/not-found').then(convert(queryClient)),

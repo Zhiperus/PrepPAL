@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   GoHome,
   GoBook,
@@ -16,10 +16,16 @@ import { useLogout, useUser } from '@/lib/auth';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
-
   const { data: user, isLoading, isError } = useUser();
-
   const logout = useLogout();
+
+  const drawerRef = useRef<HTMLInputElement>(null);
+
+  const closeDrawer = () => {
+    if (drawerRef.current) {
+      drawerRef.current.checked = false;
+    }
+  };
 
   useEffect(() => {
     if (isLoading) return;
@@ -49,7 +55,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-screen bg-gray-50">
       <div className="drawer">
-        <input id="my-drawer-1" type="checkbox" className="drawer-toggle" />
+        <input
+          id="my-drawer-1"
+          type="checkbox"
+          className="drawer-toggle"
+          ref={drawerRef}
+        />
 
         <div className="drawer-content">
           <label
@@ -70,12 +81,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             className="drawer-overlay"
           ></label>
 
-          {/* Sidebar Container - Matches image shape */}
+          {/* Sidebar Container */}
           <div className="flex min-h-full w-72 flex-col rounded-tr-[50px] rounded-br-[50px] bg-white p-6 shadow-lg">
             {/* 1. Header: Profile */}
             <div
               className="mt-4 mb-6 flex items-center gap-4 pl-2 hover:cursor-pointer hover:bg-gray-100"
-              onClick={() => navigate(paths.app.profile.getHref())}
+              onClick={() => {
+                navigate(paths.app.profile.getHref());
+                closeDrawer(); // Close drawer on profile click
+              }}
             >
               <div className="avatar placeholder">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-black">
@@ -100,6 +114,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   to={paths.app.dashboard.getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                  onClick={closeDrawer} // Close drawer on link click
                 >
                   <GoHome className="h-6 w-6" />
                   <span>Home</span>
@@ -109,6 +124,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   to={paths.app.modules.getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                  onClick={closeDrawer}
                 >
                   <GoBook className="h-6 w-6" />
                   <span>Modules</span>
@@ -118,6 +134,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   to={paths.app['community-posts'].getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                  onClick={closeDrawer}
                 >
                   <GoPencil className="h-6 w-6" />
                   <span>Community Posts</span>
@@ -127,6 +144,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <Link
                   to={paths.app.leaderboard.getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                  onClick={closeDrawer}
                 >
                   <GoGraph className="h-6 w-6" />
                   <span>Leaderboard</span>
@@ -135,14 +153,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </ul>
 
             <div className="mt-auto mb-4 flex flex-col gap-4 font-medium text-gray-700">
-              <button className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100">
+              <Link
+                to={paths.home.getHref()}
+                className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                onClick={closeDrawer}
+              >
                 <GoInfo className="h-6 w-6" />
                 <span>About</span>
-              </button>
+              </Link>
 
               <button
                 className="flex cursor-pointer items-center gap-4 rounded-lg p-2 text-red-500 hover:bg-red-50"
-                onClick={() => logout.mutate({})}
+                onClick={() => {
+                  logout.mutate({});
+                  closeDrawer();
+                }}
               >
                 <GoSignOut className="h-6 w-6 rotate-180 transform" />{' '}
                 <span>Logout</span>

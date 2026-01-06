@@ -35,14 +35,14 @@ const userSchema = new Schema<IUser>(
     householdInfo: {
       memberCount: { type: Number, default: 0 },
       femaleCount: { type: Number, default: 0 },
-      dogCount: { type: Number, default: 0 },
-      catCount: { type: Number, default: 0 },
+      pets: { type: Number, default: 0 },
     },
     role: {
       type: String,
-      enum: ['citizen', 'lgu'],
+      enum: ['citizen', 'lgu', 'super_admin'],
       default: 'citizen',
     },
+    lguId: { type: Schema.Types.ObjectId, ref: 'Lgu', default: null },
     onboardingCompleted: { type: Boolean, default: false },
     notification: {
       email: { type: Boolean, default: true },
@@ -55,6 +55,13 @@ const userSchema = new Schema<IUser>(
     },
     profileImage: { type: String, default: null },
     profileImageId: { type: String, default: null },
+    completedModules: [
+      {
+        moduleId: { type: Schema.Types.ObjectId, ref: 'Module' },
+        bestScore: { type: Number, default: 0 },
+        pointsAwarded: { type: Number, default: 0 },
+      },
+    ],
     isEmailVerified: { type: Boolean, default: false },
     verificationToken: { type: String, select: false },
     verificationTokenExpires: { type: Date, select: false },
@@ -66,6 +73,11 @@ const userSchema = new Schema<IUser>(
   },
 );
 
+// -1 = Descending
+// This optimizes sorting by these specific point categories
+userSchema.index({ 'points.goBag': -1 });
+userSchema.index({ 'points.modules': -1 });
+userSchema.index({ 'points.community': -1 });
 userSchema.set('toJSON', {
   transform: (_: any, returnedObject: any) => {
     returnedObject.id = returnedObject._id.toString();

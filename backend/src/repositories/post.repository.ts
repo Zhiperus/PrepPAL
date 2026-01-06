@@ -179,6 +179,14 @@ export default class PostRepository {
   }
 
   /**
+   * Finds a post by its Cloudinary image ID.
+   * Used to check if an image has been posted to the community.
+   */
+  async findByImageId(imageId: string): Promise<IPost | null> {
+    return PostModel.findOne({ imageId });
+  }
+
+  /**
    * Creates a new post with a snapshot of the user's current GoBag items.
    * If user has no GoBag, creates post with empty bagSnapshot.
    */
