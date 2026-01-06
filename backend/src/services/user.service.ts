@@ -55,7 +55,7 @@ export default class UserService {
     }
 
     // Explicitly construct the update object
-    const updatePayload: any = {};
+    const updatePayload: Record<string, unknown> = {};
 
     // if (data.email) updatePayload.email = data.email;
     // if (data.phoneNumber) updatePayload.phoneNumber = data.phoneNumber;
@@ -70,10 +70,9 @@ export default class UserService {
     }
 
     if (data.householdInfo) {
-      Object.keys(data.householdInfo).forEach((key) => {
-        updatePayload[`householdInfo.${key}`] = (data.householdInfo as any)[
-          key
-        ];
+      const householdInfo = data.householdInfo as Record<string, unknown>;
+      Object.keys(householdInfo).forEach((key) => {
+        updatePayload[`householdInfo.${key}`] = householdInfo[key] as unknown;
       });
     }
 
@@ -101,5 +100,56 @@ export default class UserService {
       barangay: filterBarangay,
     });
     return users;
+  }
+
+  async getTopLeaderboard(limit: number = 50) {
+    const result = await this.userRepo.getTopLeaderboard(limit);
+
+    // Format the response with rank numbers
+    if (result.length > 0 && result[0].data) {
+      type AggUser = {
+        id: string;
+        householdName?: string;
+        location?: {
+          city?: string;
+          province?: string;
+          region?: string;
+          barangay?: string;
+        };
+        points?: { goBag?: number; community?: number; modules?: number };
+        totalPoints?: number;
+        profileImage?: string | null;
+      };
+
+      const leaderboardData = result[0].data.map(
+        (user: AggUser, index: number) => ({
+          ...user,
+          rank: index + 1,
+        }),
+      );
+
+      return {
+        totalUsers: result[0].metadata[0]?.total || 0,
+        users: leaderboardData,
+      };
+    }
+
+    return {
+      totalUsers: 0,
+      users: [],
+    };
+  }
+
+  async getUserStats(userId: string) {
+    const stats = await this.userRepo.getUserStats(userId);
+    return stats;
+  }
+
+  async getUserCompletedQuizzes(userId: string, minScore: number = 70) {
+    const quizzes = await this.userRepo.getUserCompletedQuizzes(
+      userId,
+      minScore,
+    );
+    return quizzes;
   }
 }

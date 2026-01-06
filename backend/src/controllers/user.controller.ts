@@ -101,4 +101,80 @@ export default class UserController {
       handleInternalError(err, next);
     }
   };
+
+  /**
+   * Retrieves the top 50 users globally ranked by totalPoints.
+   * Path: GET /api/users/leaderboard/top
+   */
+  getTopLeaderboard = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const limit = req.query.limit
+        ? parseInt(req.query.limit as string, 10)
+        : 50;
+
+      // Validate limit is within reasonable bounds
+      const validatedLimit = Math.min(Math.max(limit, 1), 100);
+
+      const result = await this.userService.getTopLeaderboard(validatedLimit);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      handleInternalError(err, next);
+    }
+  };
+
+  /**
+   * Retrieves current user's completed modules and total points.
+   * Path: GET /api/users/stats
+   */
+  getStats = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.userId!;
+
+      const stats = await this.userService.getUserStats(userId);
+
+      res.status(200).json({
+        success: true,
+        data: stats,
+      });
+    } catch (err) {
+      handleInternalError(err, next);
+    }
+  };
+
+  /**
+   * Retrieves quizzes the user has passed (best attempt >= minScore).
+   * Path: GET /api/users/quizzes/completed
+   */
+  getCompletedQuizzes = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const userId = req.userId!;
+      const minScore = req.query.minScore
+        ? Math.min(Math.max(parseInt(req.query.minScore as string, 10), 0), 100)
+        : 70;
+
+      const quizzes = await this.userService.getUserCompletedQuizzes(
+        userId,
+        minScore,
+      );
+
+      res.status(200).json({
+        success: true,
+        data: { quizzes },
+      });
+    } catch (err) {
+      handleInternalError(err, next);
+    }
+  };
 }

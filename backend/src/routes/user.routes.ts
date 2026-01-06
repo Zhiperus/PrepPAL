@@ -25,9 +25,23 @@ userRoutes.patch(
 );
 
 userRoutes.get(
+  '/leaderboard/top',
+  authenticate,
+  controller.getTopLeaderboard.bind(controller),
+);
+
+userRoutes.get(
   '/leaderboard',
   authenticate,
   controller.getLeaderboard.bind(controller),
+);
+
+userRoutes.get('/stats', authenticate, controller.getStats.bind(controller));
+
+userRoutes.get(
+  '/quizzes/completed',
+  authenticate,
+  controller.getCompletedQuizzes.bind(controller),
 );
 
 export default userRoutes;
