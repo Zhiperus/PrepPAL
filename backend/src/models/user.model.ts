@@ -40,9 +40,10 @@ const userSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ['citizen', 'lgu'],
+      enum: ['citizen', 'lgu', 'super_admin'],
       default: 'citizen',
     },
+    lguId: { type: Schema.Types.ObjectId, ref: 'Lgu', default: null },
     onboardingCompleted: { type: Boolean, default: false },
     notification: {
       email: { type: Boolean, default: true },

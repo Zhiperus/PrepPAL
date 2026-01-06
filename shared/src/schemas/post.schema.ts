@@ -14,6 +14,7 @@ export const CreatePostSchema = z.object({
 export const PostSchema = z.object({
   _id: z.string(),
   userId: z.string(),
+  lguId: z.string(),
   imageUrl: z.url(),
   imageId: z.string().optional(),
   caption: z.string().optional(),
