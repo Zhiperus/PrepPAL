@@ -9,6 +9,7 @@ import { configureAuth } from 'react-query-auth';
 import { Navigate, useLocation } from 'react-router';
 
 import { api } from './api-client';
+import { MOCK_USER_PROFILE } from './mockData';
 
 import { paths } from '@/config/paths';
 
@@ -25,7 +26,7 @@ export const resetPassword = (data: { password: string; token: string }) => {
 
 async function getUser(): Promise<User | null> {
   try {
-    const response = await api.get('/auth/me'); // or your specific endpoint
+    const response = await api.get('/auth/me'); 
     return response.data;
   } catch (error: any) {
     // If the error is 404 (Not Found) or 401 (Unauthorized),
@@ -41,6 +42,7 @@ async function getUser(): Promise<User | null> {
     throw error;
   }
 }
+        
 const logout = async () => {
   Cookies.remove('token');
   return Promise.resolve();

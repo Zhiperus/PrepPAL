@@ -33,7 +33,7 @@ export const MOCK_GOBAG_RESPONSE = {
 // ------------------------------------------------------------------
 export const MOCK_FEED_RESPONSE = [
   {
-    id: "post_101",
+    _id: "post_101",
     userId: "u_1",
     author: {
       name: "Kyle Developer",
@@ -57,7 +57,7 @@ export const MOCK_FEED_RESPONSE = [
     createdAt: "2025-12-28T10:00:00Z",
   },
   {
-    id: "post_102",
+    _id: "post_102",
     userId: "u_2",
     author: {
       name: "Jarence Designer",
