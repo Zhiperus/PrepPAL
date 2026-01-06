@@ -35,8 +35,7 @@ const userSchema = new Schema<IUser>(
     householdInfo: {
       memberCount: { type: Number, default: 0 },
       femaleCount: { type: Number, default: 0 },
-      dogCount: { type: Number, default: 0 },
-      catCount: { type: Number, default: 0 },
+      pets: { type: Number, default: 0 },
     },
     role: {
       type: String,

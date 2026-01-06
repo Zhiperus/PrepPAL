@@ -86,29 +86,15 @@ export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
         />
       </fieldset>
 
-      {/* Dog Count */}
       <fieldset className="fieldset mb-4 w-full">
         <legend className="fieldset-legend text-secondary-custom font-semibold">
-          Number of Dogs
+          Number of Pets
         </legend>
         <input
           type="number"
           min="0"
           className="input validator bg-primary-container border-container-secondary w-full"
-          {...register('householdInfo.dogCount')}
-        />
-      </fieldset>
-
-      {/* Cat Count */}
-      <fieldset className="fieldset mb-4 w-full">
-        <legend className="fieldset-legend text-secondary-custom font-semibold">
-          Number of Cats
-        </legend>
-        <input
-          type="number"
-          min="0"
-          className="input validator bg-primary-container border-container-secondary w-full"
-          {...register('householdInfo.catCount')}
+          {...register('householdInfo.pets')}
         />
       </fieldset>
 

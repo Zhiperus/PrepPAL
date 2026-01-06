@@ -56,8 +56,7 @@ export default function HouseholdForm({ user }: { user: User }) {
       householdInfo: {
         memberCount: user.householdInfo?.memberCount || 1,
         femaleCount: user.householdInfo?.femaleCount || 0,
-        dogCount: user.householdInfo?.dogCount || 0,
-        catCount: user.householdInfo?.catCount || 0,
+        pets: user.householdInfo?.pets || 0,
       },
     },
   });
@@ -131,27 +130,15 @@ export default function HouseholdForm({ user }: { user: User }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="block text-base font-bold text-[#4B5563]">
-              Dogs
-            </label>
-            <input
-              type="number"
-              {...register('householdInfo.dogCount', { valueAsNumber: true })}
-              className="w-full rounded-lg border border-[#9CA3AF] px-4 py-2.5 text-base font-medium text-gray-700 focus:ring-2 focus:ring-[#2A4263] focus:outline-none"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="block text-base font-bold text-[#4B5563]">
-              Cats
-            </label>
-            <input
-              type="number"
-              {...register('householdInfo.catCount', { valueAsNumber: true })}
-              className="w-full rounded-lg border border-[#9CA3AF] px-4 py-2.5 text-base font-medium text-gray-700 focus:ring-2 focus:ring-[#2A4263] focus:outline-none"
-            />
-          </div>
+        <div className="space-y-1">
+          <label className="block text-base font-bold text-[#4B5563]">
+            Pets
+          </label>
+          <input
+            type="number"
+            {...register('householdInfo.pets', { valueAsNumber: true })}
+            className="w-full rounded-lg border border-[#9CA3AF] px-4 py-2.5 text-base font-medium text-gray-700 focus:ring-2 focus:ring-[#2A4263] focus:outline-none"
+          />
         </div>
 
         <div className="mt-auto flex gap-4 border-t border-gray-100 pt-4">

@@ -42,8 +42,7 @@ export default function OnboardingRoute() {
       householdInfo: {
         memberCount: 1,
         femaleCount: 0,
-        dogCount: 0,
-        catCount: 0,
+        pets: 0,
       },
     },
     mode: 'onChange',
