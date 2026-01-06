@@ -61,6 +61,11 @@ export const paths = {
         getHref: () => '/app/modules/search',
       },
     },
+    module: {
+      path: 'modules/:moduleId',
+      getHref: (moduleId: string) => `/app/modules/${moduleId}`,
+    },
+
     'community-posts': {
       path: 'community-posts',
       getHref: () => '/app/community-posts',
