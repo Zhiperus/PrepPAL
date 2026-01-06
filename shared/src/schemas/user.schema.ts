@@ -17,8 +17,7 @@ const HouseholdSchema = z.object({
     .int()
     .min(1, { message: "At least one member is required." }),
   femaleCount: z.number().int().min(0),
-  dogCount: z.number().int().min(0),
-  catCount: z.number().int().min(0),
+  pets: z.number().int().min(0),
 });
 
 export const completedModuleSchema = z.object({
