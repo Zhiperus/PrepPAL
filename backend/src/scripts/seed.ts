@@ -25,6 +25,68 @@ const getRandomSubset = <T>(arr: T[], size: number): T[] => {
   return shuffled.slice(0, size);
 };
 
+// --- LOCATIONS ---
+// We define a "target" location to populate heavily for testing
+const TARGET_LOCATION = {
+  region: 'NCR',
+  province: 'Metro Manila',
+  city: 'Quezon City',
+  barangay: 'Batasan Hills',
+};
+
+const PH_LOCATIONS = [
+  TARGET_LOCATION, // Batasan Hills
+  {
+    region: 'NCR',
+    province: 'Metro Manila',
+    city: 'Quezon City',
+    barangay: 'Diliman',
+  },
+  {
+    region: 'NCR',
+    province: 'Metro Manila',
+    city: 'Manila',
+    barangay: 'Tondo',
+  },
+  {
+    region: 'NCR',
+    province: 'Metro Manila',
+    city: 'Makati',
+    barangay: 'Poblacion',
+  },
+  {
+    region: 'NCR',
+    province: 'Metro Manila',
+    city: 'Taguig',
+    barangay: 'Fort Bonifacio',
+  },
+  {
+    region: 'IV-A',
+    province: 'Laguna',
+    city: 'Santa Rosa',
+    barangay: 'Balibago',
+  },
+  {
+    region: 'IV-A',
+    province: 'Cavite',
+    city: 'Dasmarinas',
+    barangay: 'Salawag',
+  },
+  {
+    region: 'III',
+    province: 'Pampanga',
+    city: 'Angeles',
+    barangay: 'Balibago',
+  },
+  { region: 'VII', province: 'Cebu', city: 'Cebu City', barangay: 'Guadalupe' },
+  {
+    region: 'XI',
+    province: 'Davao del Sur',
+    city: 'Davao City',
+    barangay: 'Buhangin',
+  },
+];
+
 const CAPTIONS = [
   'Just updated my kit! 🎒',
   'Safety first. Ready for the typhoon season.',
@@ -85,8 +147,9 @@ const seed = async () => {
         password: hashedPassword,
         householdName: 'Chua Household',
         role: 'citizen',
-        points: { goBag: 50, community: 10, modules: 5 },
+        points: { goBag: 120, community: 50, modules: 25 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Iorie',
+        location: TARGET_LOCATION, // Batasan Hills
       },
       {
         email: 'kyle@example.com',
@@ -95,6 +158,12 @@ const seed = async () => {
         role: 'citizen',
         points: { goBag: 80, community: 150, modules: 20 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kyle',
+        location: {
+          region: 'NCR',
+          province: 'Metro Manila',
+          city: 'Taguig',
+          barangay: 'Fort Bonifacio',
+        },
       },
       {
         email: 'jarence@example.com',
@@ -103,26 +172,35 @@ const seed = async () => {
         role: 'citizen',
         points: { goBag: 30, community: 5, modules: 0 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jarence',
+        location: TARGET_LOCATION, // Also in Batasan Hills for competition
       },
     ];
 
-    // 3b. Generate Random Users
-    const randomUsersData = Array.from({ length: 20 }).map((_, i) => ({
-      email: `user${i + 1}@example.com`,
-      password: hashedPassword,
-      householdName: `Resident ${i + 1}`,
-      phoneNumber: `0917${getRandomInt(1000000, 9999999)}`,
-      role: 'citizen',
-      onboardingCompleted: true,
-      points: {
-        goBag: getRandomInt(10, 100),
-        community: getRandomInt(0, 50),
-        modules: getRandomInt(0, 10),
-      },
-      profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=User${
-        i + 1
-      }`,
-    }));
+    // 3b. Generate Random Users (Increased to 50 for density)
+    // FORCE 20+ users to be in "Batasan Hills" so the leaderboard is full
+    const randomUsersData = Array.from({ length: 50 }).map((_, i) => {
+      // 50% chance to be in target location, 50% random
+      const location =
+        Math.random() > 0.5 ? TARGET_LOCATION : getRandomItem(PH_LOCATIONS);
+
+      return {
+        email: `user${i + 1}@example.com`,
+        password: hashedPassword,
+        householdName: `Resident ${i + 1}`,
+        phoneNumber: `0917${getRandomInt(1000000, 9999999)}`,
+        role: 'citizen',
+        onboardingCompleted: true,
+        points: {
+          goBag: getRandomInt(10, 150),
+          community: getRandomInt(0, 100),
+          modules: getRandomInt(0, 50),
+        },
+        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=User${
+          i + 1
+        }`,
+        location: location,
+      };
+    });
 
     // Insert All Users
     const allUsers = await UserModel.create([...mainUsers, ...randomUsersData]);
@@ -130,14 +208,13 @@ const seed = async () => {
 
     // 4. CREATE GO BAGS FOR ALL USERS
     const goBagDocs = allUsers.map((user) => {
-      // Randomly decide which items this user has "packed" (between 5 and all items)
       const packedCount = getRandomInt(5, createdItems.length);
       const packedItems = getRandomSubset(createdItems, packedCount);
 
       return {
         userId: user._id,
         imageUrl: getRandomItem(IMAGES),
-        items: packedItems.map((i) => i._id.toString()), // Store just IDs
+        items: packedItems.map((i) => i._id.toString()),
         lastUpdated: new Date(),
       };
     });
@@ -145,15 +222,12 @@ const seed = async () => {
     const goBags = await GoBagModel.insertMany(goBagDocs);
     console.log(`✅ Created ${goBags.length} user go-bags`);
 
-    // 5. CREATE POSTS (100 Entries)
+    // 5. CREATE POSTS (150 Entries for density)
     const postsData = [];
-    const TOTAL_POSTS = 100;
+    const TOTAL_POSTS = 150;
 
     for (let i = 0; i < TOTAL_POSTS; i++) {
       const author = getRandomItem(allUsers);
-
-      // Create a snapshot for this post
-      // Pick 2-6 items from the catalog to "show off" in the post
       const snapshotCount = getRandomInt(2, 6);
       const snapshotItems = getRandomSubset(createdItems, snapshotCount).map(
         (item) => ({
@@ -163,7 +237,6 @@ const seed = async () => {
         }),
       );
 
-      // Random date within last 30 days
       const daysAgo = getRandomInt(0, 30);
       const postDate = new Date();
       postDate.setDate(postDate.getDate() - daysAgo);
@@ -174,18 +247,17 @@ const seed = async () => {
         caption: getRandomItem(CAPTIONS),
         bagSnapshot: snapshotItems,
         verificationCount: getRandomInt(0, 50),
-        verifiedItemCount: getRandomInt(0, snapshotCount), // Can't verify more than exists
+        verifiedItemCount: getRandomInt(0, snapshotCount),
         createdAt: postDate,
       });
     }
 
-    // Sort posts by date so they look natural in DB (optional, as query sorts anyway)
     postsData.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
     const createdPosts = await PostModel.insertMany(postsData);
     console.log(`✅ Created ${createdPosts.length} posts`);
 
-    // 6. SEED MODULES AND QUIZZES (Replace logo string with the correct react-icons keys)
+    // 6. SEED MODULES AND QUIZZES
     // 6A. Fire Safety Module and Quiz
     const fireSafetyModule = await ModuleModel.create({
       title: 'Fire Safety & Prevention (BFP Philippines)',

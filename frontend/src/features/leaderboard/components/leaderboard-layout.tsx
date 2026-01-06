@@ -1,72 +1,114 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 
-import { LeaderboardList } from './tab-content';
+import { LeaderboardList } from '../components/leaderboard-list';
 
-import { MOCK_LEADERBOARD_RESPONSE, MOCK_USER_PROFILE } from '@/lib/mockData';
-
-// data structure i used for leaderboard, not sure if this is correct , update if needed
-// MOCK_LEADERBOARD_RESPONSE = [
-//   { 
-//     userId: "u_101", 
-//     name: "Ria", 
-//     points: { allTime: 123, goBag: 48 } 
-//   },
-//   { 
-//     userId: "u_102", 
-//     name: "Cruz", 
-//     points: { allTime: 115, goBag: 42 } 
-// ] },
+import { useLeaderboard } from '@/features/leaderboard/api/get-leaderboard';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useUser } from '@/lib/auth';
 
 export default function LeaderboardPage() {
-  const [activeTab, setActiveTab] = useState<'allTime' | 'goBag'>('allTime');
-  const brgy = MOCK_USER_PROFILE.location.barangay
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // sort data
-  const sortedData = [...MOCK_LEADERBOARD_RESPONSE].sort((a, b) => {
-    return b.points[activeTab] - a.points[activeTab];
-  });
+  const activeTab =
+    (searchParams.get('tab') as 'allTime' | 'goBag') || 'allTime';
+  const urlSearch = searchParams.get('q') || '';
+
+  const [localSearch, setLocalSearch] = useState(urlSearch);
+  const debouncedSearch = useDebounce(localSearch, 500);
+
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      if (debouncedSearch) {
+        newParams.set('q', debouncedSearch);
+      } else {
+        newParams.delete('q');
+      }
+      if (!newParams.has('tab')) {
+        newParams.set('tab', activeTab);
+      }
+      return newParams;
+    });
+  }, [debouncedSearch, setSearchParams, activeTab]);
+
+  const handleTabChange = (tab: 'allTime' | 'goBag') => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('tab', tab);
+      return newParams;
+    });
+  };
+
+  const { data: user, isLoading: isUserLoading } = useUser();
+  const userBarangay = user?.location?.barangay;
+
+  const { data: leaderboardData, isLoading: isLeaderboardLoading } =
+    useLeaderboard({
+      params: {
+        barangay: userBarangay,
+        limit: 50,
+        search: urlSearch,
+        metric: activeTab,
+      },
+      queryConfig: {
+        enabled: !!userBarangay,
+        placeholderData: (previousData) => previousData,
+      },
+    });
+
+  if (isUserLoading) {
+    return (
+      <div className="bg-base-200 flex h-screen w-full items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-[#2a4263]"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-base-200 flex min-h-screen flex-col items-center pt-6 pb-20">
-      
-      <div role="tablist" className="tabs tabs-border tabs-lg w-full max-w-md justify-center">
-        
-        {/* All-time Tab */}
-        <input 
-            type="radio" 
-            name="leaderboard_tabs" 
-            role="tab" 
-            className="tab font-bold text-gray-600 aria-selected:text-[#2a4263] min-w-[120px]" 
-            aria-label="All-Time" 
-            defaultChecked 
-            onClick={() => setActiveTab('allTime')}
-        />
-        <div role="tabpanel" className="tab-content w-full bg-transparent p-4 col-span-2 border-none">
-            <LeaderboardList 
-                title="All-time Points"
-                data={sortedData} 
-                brgy={brgy}
-                activeMetric="allTime"
-            />
-        </div>
+      <div
+        role="tablist"
+        className="tabs tabs-border tabs-lg w-full max-w-md justify-center"
+      >
+        <a
+          role="tab"
+          className={`tab min-w-[120px] font-bold text-gray-600 transition-colors ${
+            activeTab === 'allTime'
+              ? 'tab-active aria-selected:text-[#2a4263]'
+              : ''
+          }`}
+          onClick={() => handleTabChange('allTime')}
+        >
+          All-Time
+        </a>
+        <a
+          role="tab"
+          className={`tab min-w-[120px] font-bold text-gray-600 transition-colors ${
+            activeTab === 'goBag'
+              ? 'tab-active aria-selected:text-[#2a4263]'
+              : ''
+          }`}
+          onClick={() => handleTabChange('goBag')}
+        >
+          Go Bag
+        </a>
+      </div>
 
-        {/* Go Bag Tab */}
-        <input 
-            type="radio" 
-            name="leaderboard_tabs" 
-            role="tab" 
-            className="tab font-bold text-gray-600 aria-selected:text-[#2a4263] min-w-[120px]" 
-            aria-label="Go Bag" 
-            onClick={() => setActiveTab('goBag')}
+      <div className="w-full max-w-md p-4">
+        <LeaderboardList
+          title={activeTab === 'allTime' ? 'All-time Points' : 'Go Bag Points'}
+          data={leaderboardData?.data || []}
+          location={
+            userBarangay
+              ? `${userBarangay}, ${user?.location?.city}`
+              : 'Unknown Location'
+          }
+          activeMetric={activeTab}
+          search={localSearch}
+          onSearchChange={setLocalSearch}
+          isLoading={isLeaderboardLoading}
         />
-        <div role="tabpanel" className="tab-content w-full bg-transparent p-4 col-span-2 border-none">
-            <LeaderboardList 
-                title="Go Bag Points" 
-                data={sortedData}
-                brgy={brgy}
-                activeMetric="goBag"
-            />
-        </div>
       </div>
     </div>
   );

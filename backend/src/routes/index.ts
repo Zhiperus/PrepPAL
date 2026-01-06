@@ -3,6 +3,7 @@ import { Router } from 'express';
 import authRoutes from './auth.routes.js';
 import goBagRoutes from './goBag.routes.js';
 import goBagItemRoutes from './goBagItem.routes.js';
+import leaderboardRoutes from './leaderboard.routes.js';
 import moduleRoutes from './module.routes.js';
 import postRoutes from './post.routes.js';
 import quizRoutes from './quiz.routes.js';
@@ -18,6 +19,7 @@ type Route = {
 const routes: Route[] = [
   { path: '/auth', router: authRoutes },
   { path: '/users', router: userRoutes },
+  { path: '/leaderboard', router: leaderboardRoutes },
   { path: '/goBags', router: goBagRoutes },
   { path: '/items', router: goBagItemRoutes },
   { path: '/modules', router: moduleRoutes },

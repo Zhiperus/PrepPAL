@@ -73,6 +73,11 @@ const userSchema = new Schema<IUser>(
   },
 );
 
+// -1 = Descending
+// This optimizes sorting by these specific point categories
+userSchema.index({ 'points.goBag': -1 });
+userSchema.index({ 'points.modules': -1 });
+userSchema.index({ 'points.community': -1 });
 userSchema.set('toJSON', {
   transform: (_: any, returnedObject: any) => {
     returnedObject.id = returnedObject._id.toString();

@@ -1,21 +1,40 @@
-// frontend/src/features/leaderboard/api/get-leaderboard.ts
-import type { GetLeaderboardQuery } from '@repo/shared/dist/schemas/user.schema';
-import axios from 'axios';
+import type { LeaderboardResponse } from '@repo/shared/dist/schemas/leaderboard.schema';
+import { useQuery, queryOptions } from '@tanstack/react-query';
 
-type LeaderboardUser = {
-  userId: string;
-  name: string;
-  avatarUrl?: string;
-  points: {
-    allTime: number;
-    goBag: number;
-  };
+import { api } from '@/lib/api-client';
+import type { QueryConfig } from '@/lib/react-query';
+
+type GetLeaderboardParams = {
+  barangay?: string;
+  limit?: number;
+  search?: string;
+  metric?: 'allTime' | 'goBag';
 };
 
-export const fetchLeaderboard = async (params: GetLeaderboardQuery) => {
-  // axios handles the query string serialization automatically
-  const { data } = await axios.get<LeaderboardUser[]>('/api/leaderboard', {
-    params, 
+export const getLeaderboard = (
+  params?: GetLeaderboardParams,
+): Promise<{ data: LeaderboardResponse }> => {
+  return api.get('/leaderboard', { params });
+};
+
+export const getLeaderboardQueryOptions = (params?: GetLeaderboardParams) => {
+  return queryOptions({
+    queryKey: ['leaderboard', params],
+    queryFn: () => getLeaderboard(params),
   });
-  return data;
+};
+
+type UseLeaderboardOptions = {
+  params?: GetLeaderboardParams;
+  queryConfig?: QueryConfig<typeof getLeaderboardQueryOptions>;
+};
+
+export const useLeaderboard = ({
+  params,
+  queryConfig,
+}: UseLeaderboardOptions = {}) => {
+  return useQuery({
+    ...getLeaderboardQueryOptions(params),
+    ...queryConfig,
+  });
 };
