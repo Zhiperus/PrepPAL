@@ -85,6 +85,11 @@ export const createAppRouter = (queryClient: QueryClient) =>
             import('./routes/app/community-posts').then(convert(queryClient)),
         },
         {
+          path: paths.app['leaderboard'].path,
+          lazy: () =>
+            import('./routes/app/leaderboard').then(convert(queryClient)),
+        },
+        {
           path: paths.app.module.path,
           lazy: () =>
             import('./routes/app/modules/module').then(convert(queryClient)),
