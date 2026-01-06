@@ -1,16 +1,17 @@
-import Links from 'react-router';
-import paths from '@/config/paths';
 
-import GoBag from '@/assets/graphic-bag.png';
-import Refresher from '@/assets/graphic-modules.png';
-import Leaderboard from '@/assets/graphic-leaderboard.png';
+import Link from 'react-router';
+import { paths } from '@/config/paths';
+
+import GoBag from '@/assets/school-bag.png';
+import Refresher from '@/assets/light-bulb.png';
+import Leaderboard from '@/assets/podium.png';
 import Logo from '@/public/logo.png';
 
 function App() {
 
   return (
     <>
-      <div class="min-h-screen scroll-smooth bg-white text-[#2A4362]">
+      <div className="min-h-screen scroll-smooth bg-white text-[#2A4362]">
         <div className="scroll-smooth flex flex-col items-center max-w-screen p-5 gap-8">
         {/* Hero Section */}
         <div id="top" className="hero max-h-screen min-w-screen">
