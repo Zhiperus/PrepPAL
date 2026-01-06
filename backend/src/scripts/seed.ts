@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import { GO_BAG_ITEMS } from '../lib/seedData.js';
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
+import LguModel from '../models/lgu.model.js';
 import ModuleModel from '../models/module.model.js';
 import PostModel from '../models/post.model.js';
 import QuizModel from '../models/quiz.model.js';
@@ -126,6 +127,7 @@ const seed = async () => {
     await Promise.all([
       UserModel.deleteMany({}),
       PostModel.deleteMany({}),
+      LguModel.deleteMany({}),
       GoBagItemModel.deleteMany({}),
       GoBagModel.deleteMany({}),
       ModuleModel.deleteMany({}),
@@ -137,17 +139,38 @@ const seed = async () => {
     const createdItems = await GoBagItemModel.insertMany(GO_BAG_ITEMS);
     console.log(`✅ Created ${createdItems.length} catalog items`);
 
-    // 3. CREATE USERS
+    // 3. CREATE LGUS
+    const lgus = await LguModel.insertMany([
+      {
+        name: 'Manila',
+        region: 'NCR',
+        province: 'Metro Manila',
+        city: 'Manila',
+      },
+      {
+        name: 'Quezon City',
+        region: 'NCR',
+        province: 'Metro Manila',
+        city: 'Quezon City',
+      },
+    ]);
+
+    const manilaId = lgus[0]._id;
+    const qcId = lgus[1]._id;
+
     const hashedPassword = await bcrypt.hash('password', 10);
 
-    // 3a. Specific Users (For Login)
+    // 4. CREATE USERS
+
+    // 4a. Specific Main Users
     const mainUsers = [
       {
         email: 'iorie@example.com',
         password: hashedPassword,
         householdName: 'Chua Household',
         role: 'citizen',
-        points: { goBag: 120, community: 50, modules: 25 },
+        lguId: qcId, // Batasan is in QC
+        points: { goBag: 50, community: 10, modules: 5 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Iorie',
         location: TARGET_LOCATION, // Batasan Hills
       },
@@ -156,6 +179,7 @@ const seed = async () => {
         password: hashedPassword,
         householdName: 'The Dev Cave',
         role: 'citizen',
+        lguId: null, // Taguig doesn't have an LGU record in this seed yet
         points: { goBag: 80, community: 150, modules: 20 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kyle',
         location: {
@@ -170,274 +194,29 @@ const seed = async () => {
         password: hashedPassword,
         householdName: 'Design Studio',
         role: 'citizen',
+        lguId: qcId,
         points: { goBag: 30, community: 5, modules: 0 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jarence',
         location: TARGET_LOCATION, // Also in Batasan Hills for competition
       },
     ];
 
-    // 3b. Generate Random Users (Increased to 50 for density)
-    // FORCE 20+ users to be in "Batasan Hills" so the leaderboard is full
-    const randomUsersData = Array.from({ length: 50 }).map((_, i) => {
-      // 50% chance to be in target location, 50% random
-      const location =
-        Math.random() > 0.5 ? TARGET_LOCATION : getRandomItem(PH_LOCATIONS);
-
-      return {
-        email: `user${i + 1}@example.com`,
+    // 4b. Admins
+    const adminsToCreate = [
+      {
+        email: 'super@test.com',
         password: hashedPassword,
-        householdName: `Resident ${i + 1}`,
-        phoneNumber: `0917${getRandomInt(1000000, 9999999)}`,
-        role: 'citizen',
-        onboardingCompleted: true,
-        points: {
-          goBag: getRandomInt(10, 150),
-          community: getRandomInt(0, 100),
-          modules: getRandomInt(0, 50),
-        },
-        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=User${
-          i + 1
-        }`,
-        location: location,
-      };
-    });
-
-    // Insert All Users
-    const allUsers = await UserModel.create([...mainUsers, ...randomUsersData]);
-    console.log(`✅ Created ${allUsers.length} users`);
-
-    // 4. CREATE GO BAGS FOR ALL USERS
-    const goBagDocs = allUsers.map((user) => {
-      const packedCount = getRandomInt(5, createdItems.length);
-      const packedItems = getRandomSubset(createdItems, packedCount);
-
-      return {
-        userId: user._id,
-        imageUrl: getRandomItem(IMAGES),
-        items: packedItems.map((i) => i._id.toString()),
-        lastUpdated: new Date(),
-      };
-    });
-
-    const goBags = await GoBagModel.insertMany(goBagDocs);
-    console.log(`✅ Created ${goBags.length} user go-bags`);
-
-    // 5. CREATE POSTS (150 Entries for density)
-    const postsData = [];
-    const TOTAL_POSTS = 150;
-
-    for (let i = 0; i < TOTAL_POSTS; i++) {
-      const author = getRandomItem(allUsers);
-      const snapshotCount = getRandomInt(2, 6);
-      const snapshotItems = getRandomSubset(createdItems, snapshotCount).map(
-        (item) => ({
-          itemId: item._id,
-          name: item.name,
-          category: item.category,
-        }),
-      );
-
-      const daysAgo = getRandomInt(0, 30);
-      const postDate = new Date();
-      postDate.setDate(postDate.getDate() - daysAgo);
-
-      postsData.push({
-        userId: author._id,
-        imageUrl: getRandomItem(IMAGES),
-        caption: getRandomItem(CAPTIONS),
-        bagSnapshot: snapshotItems,
-        verificationCount: getRandomInt(0, 50),
-        verifiedItemCount: getRandomInt(0, snapshotCount),
-        createdAt: postDate,
-      });
-    }
-
-    postsData.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-
-    const createdPosts = await PostModel.insertMany(postsData);
-    console.log(`✅ Created ${createdPosts.length} posts`);
-
-    // 6. SEED MODULES AND QUIZZES
-    // 6A. Fire Safety Module and Quiz
-    const fireSafetyModule = await ModuleModel.create({
-      title: 'Fire Safety & Prevention (BFP Philippines)',
-      description:
-        'A comprehensive guide on preventing household fires, understanding electrical hazards, and mastering emergency response protocols.',
-      logo: '🔥',
-      content: [
-        {
-          text: 'In the Philippines, the Bureau of Fire Protection (BFP) promotes the EDITH (Exit Drills In The Home) program to save lives. A proper fire escape plan requires every family member to know at least two ways out of every room. Since fires often occur at night, it is crucial to practice these drills in the dark. Families should also designate a "meeting place" outside—like a specific tree or neighbor’s gate—where everyone can be accounted for. Remember, once you get out, stay out; never re-enter a burning building for belongings.',
-          imageUrl:
-            'https://images.unsplash.com/photo-1599700403969-fcf019771e8c?q=80&w=1000',
-          reference: 'BFP Fire Safety Guide: EDITH Program',
-          referenceUrl: 'https://bfp.gov.ph/',
-        },
-        {
-          text: 'Electrical issues remain the leading cause of residential fires in Filipino households, often categorized as "octopus wiring." This occurs when too many high-wattage appliances are plugged into a single outlet or extension cord, leading to overheating and sparks. The BFP and Meralco advise checking for frayed wires, avoiding the use of damaged plugs, and ensuring that circuit breakers are not frequently tripping. Always unplug appliances like electric fans and irons when not in use, especially during the summer months when heat levels are at their peak.',
-          imageUrl:
-            'https://images.unsplash.com/photo-1580983218765-f663bec07b37?q=80&w=1000',
-          reference: 'RA 9514: The Fire Code of the Philippines',
-        },
-        {
-          text: 'Effective fire suppression starts with the correct use of a Portable Fire Extinguisher using the P.A.S.S. technique. First, Pull the pin to break the tamper seal. Second, Aim low, pointing the nozzle at the base of the fire—not the flames—to extinguish the fuel source. Third, Squeeze the lever slowly to release the extinguishing agent. Finally, Sweep the nozzle from side to side until the fire appears out. If the fire is too large or spreading toward your exit, abandon the extinguisher and evacuate immediately to prioritize your safety.',
-          imageUrl:
-            'https://images.unsplash.com/photo-1606202427441-268e0d4e330a?q=80&w=1000',
-          reference: 'BFP National Fire Prevention Month Training',
-          referenceUrl: 'https://bfp.gov.ph/fire-prevention-month/',
-        },
-      ],
-    });
-    await QuizModel.create({
-      moduleId: fireSafetyModule._id,
-      questions: [
-        {
-          questionText:
-            'When practicing the EDITH plan, what is the most important rule after escaping a burning building?',
-          choices: [
-            { id: 1, text: 'Go back inside for your Go Bag' },
-            {
-              id: 2,
-              text: 'Stay out and go to your designated meeting place',
-            },
-            { id: 3, text: 'Wait by the front door for the BFP' },
-            { id: 4, text: 'Call your neighbors from inside the house' },
-          ],
-          correctAnswer: 2,
-        },
-        {
-          questionText:
-            'What is the primary danger of "octopus wiring" in Filipino households?',
-          choices: [
-            { id: 1, text: 'It increases your monthly electric bill' },
-            { id: 2, text: 'It causes the lights to flicker only' },
-            {
-              id: 3,
-              text: 'It leads to overheating and potential electrical fires',
-            },
-            { id: 4, text: 'It attracts lightning strikes' },
-          ],
-          correctAnswer: 3,
-        },
-        {
-          questionText:
-            'During the P.A.S.S. method, where should you aim the fire extinguisher nozzle?',
-          choices: [
-            { id: 1, text: 'At the very top of the flames' },
-            { id: 2, text: 'At the person nearest to the fire' },
-            { id: 3, text: 'At the smoke clouds' },
-            { id: 4, text: 'At the base of the fire' },
-          ],
-          correctAnswer: 4,
-        },
-      ],
-    });
-
-    // 6B. Typhoon Safety Module and Quiz
-    const typhoonModule = await ModuleModel.create({
-      title: 'Typhoon & Flood Readiness',
-      description:
-        'Understanding PAGASA wind signals and essential safety protocols for the Philippine typhoon season.',
-      logo: 'FaWind',
-      content: [
-        {
-          text: 'In the Philippines, PAGASA issues Tropical Cyclone Wind Signals (TCWS) to warn the public of incoming threats. Signal No. 1 means winds are expected within 36 hours, while Signal No. 5 indicates a super typhoon with extreme danger. It is vital to understand that these signals refer to wind speed, but heavy rain and flooding can occur even at lower signal levels. Always monitor the "Red Warning" rainfall alerts, which signal a high risk of serious flooding and the immediate need for evacuation in low-lying areas.',
-          imageUrl:
-            'https://images.unsplash.com/photo-1545048702-793eec75f20c?q=80&w=1000',
-          reference: 'PAGASA Revised Tropical Cyclone Wind Signal System',
-          referenceUrl: 'https://www.pagasa.dost.gov.ph/',
-        },
-        {
-          text: 'Flood safety begins with elevation and communication. If you live in a flood-prone area, identify the highest point in your home or the nearest community evacuation center before the water starts to rise. Keep a battery-operated radio tuned to local news, as mobile networks may fail during a storm. Ensure your Go Bag is placed in an easy-to-reach, elevated spot. If water enters your home, turn off the main electricity switch immediately to prevent accidental electrocution, which is a leading cause of death during Philippine floods.',
-          imageUrl:
-            'https://images.unsplash.com/photo-1511055392925-d93540e163b0?q=80&w=1000',
-          reference: 'NDRRMC Typhoon Safety Protocols',
-        },
-      ],
-    });
-    await QuizModel.create({
-      moduleId: typhoonModule._id,
-      questions: [
-        {
-          questionText:
-            'What should you do immediately if floodwater begins to enter your home?',
-          choices: [
-            { id: 1, text: 'Open all windows to let water flow' },
-            { id: 2, text: 'Turn off the main electrical switch' },
-            { id: 3, text: 'Wait for the rain to stop before moving' },
-            { id: 4, text: 'Use a vacuum to remove the water' },
-          ],
-          correctAnswer: 2,
-        },
-        {
-          questionText:
-            'Which government agency provides the official Tropical Cyclone Wind Signals in the Philippines?',
-          choices: [
-            { id: 1, text: 'PHIVOLCS' },
-            { id: 2, text: 'DENR' },
-            { id: 3, text: 'PAGASA' },
-            { id: 4, text: 'DepEd' },
-          ],
-          correctAnswer: 3,
-        },
-      ],
-    });
-
-    // 6C. Earthquake Safety Module and Quiz
-    const earthquakeModule = await ModuleModel.create({
-      title: 'Earthquake Preparedness (PHIVOLCS)',
-      description:
-        'Mastering the Drop, Cover, and Hold On technique and preparing your household for seismic activity.',
-      logo: 'FaHouseDamage',
-      content: [
-        {
-          text: 'The Philippines is located along the Pacific Ring of Fire, making it highly susceptible to earthquakes. PHIVOLCS emphasizes the "Drop, Cover, and Hold On" method as the most effective survival tactic during shaking. Drop to your hands and knees to prevent being knocked over. Cover your head and neck under a sturdy table or desk. Hold On to your shelter until the shaking stops. If no shelter is available, move away from windows, heavy furniture, and hanging objects that could fall and cause injury.',
-          imageUrl:
-            'https://images.unsplash.com/photo-1590001158193-790411ef1f0c?q=80&w=1000',
-          reference: 'PHIVOLCS Earthquake Preparedness Guide',
-          referenceUrl: 'https://www.phivolcs.dost.gov.ph/',
-        },
-        {
-          text: 'After the shaking stops, the danger is not over. Be prepared for aftershocks, which can further damage weakened structures. Evacuate the building using stairs—never use elevators, as power cuts may trap you inside. Check yourself and others for injuries, but do not move seriously injured people unless they are in immediate danger. If you are near the coastline and notice the sea receding or hear a loud "roaring" sound from the ocean, move to higher ground immediately, as these are signs of an impending tsunami.',
-          imageUrl:
-            'https://images.unsplash.com/photo-1544365558-35aa4afcf11f?q=80&w=1000',
-          reference: 'Official PHIVOLCS Tsunami Warning Signs',
-        },
-      ],
-    });
-    await QuizModel.create({
-      moduleId: earthquakeModule._id,
-      questions: [
-        {
-          questionText:
-            'During an earthquake, what is the safest way to protect yourself if you are indoors?',
-          choices: [
-            { id: 1, text: 'Run outside as fast as possible' },
-            { id: 2, text: 'Drop, Cover, and Hold On under a sturdy table' },
-            { id: 3, text: 'Stand near a window to see what is happening' },
-            { id: 4, text: 'Take the elevator to the ground floor' },
-          ],
-          correctAnswer: 2,
-        },
-        {
-          questionText:
-            'What should you do if you are near the coast and notice the sea receding after an earthquake?',
-          choices: [
-            { id: 1, text: 'Go to the shore to pick up fish' },
-            { id: 2, text: 'Take photos of the phenomenon' },
-            { id: 3, text: 'Immediately move to higher ground' },
-            { id: 4, text: 'Stay where you are and wait for a broadcast' },
-          ],
-          correctAnswer: 3,
-        },
-      ],
-    });
-
-    console.log('✅ All Modules and Quizzes seeded');
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ Seeding failed:', error);
-    process.exit(1);
-  }
-};
-
-seed();
+        role: 'super_admin',
+        lguId: null, // Sees everything
+        householdName: 'Global HQ',
+      },
+      {
+        email: 'lgu.manila@test.com',
+        password: hashedPassword,
+        role: 'lgu',
+        lguId: manilaId, // Only sees Manila data
+        householdName: 'Manila City Hall',
+      },
+      {
+        email: 'lgu.qc@test.com',
+        password: hashedPassword

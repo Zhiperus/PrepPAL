@@ -40,7 +40,8 @@ export const UserSchema = z.object({
   householdInfo: HouseholdSchema.optional(),
   phoneNumber: z.string().nonempty({ message: "Phone number is required" }),
   onboardingCompleted: z.boolean().default(false),
-  role: z.enum(["citizen", "lgu"]).default("citizen"),
+  role: z.enum(["citizen", "lgu", "super_admin"]).default("citizen"),
+  lguId: z.string().optional(),
   notification: z.object({
     email: z.boolean().default(true),
     sms: z.boolean().default(false),

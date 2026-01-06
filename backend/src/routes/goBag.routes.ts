@@ -10,5 +10,6 @@ goBagRoutes.use(authenticate);
 
 goBagRoutes.get('/', controller.getGoBag.bind(controller));
 goBagRoutes.patch('/', controller.toggleGoBagItem.bind(controller));
+goBagRoutes.post('/image', controller.updateGoBagImage.bind(controller));
 
 export default goBagRoutes;

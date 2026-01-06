@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from 'express';
 
 import { handleInternalError } from '../errors/index.js';
 import PostService from '../services/post.service.js';
-import { parseFileRequest } from '../utils/image.util.js';
 
 export default class PostController {
   private postService = new PostService();
@@ -112,18 +111,16 @@ export default class PostController {
   /**
    * POST /api/posts
    * Creates a new post for the authenticated user.
-   * Expects multipart/form-data with an 'image' file field.
+   * Uses the user's stored go bag image (snapshot) and accepts a caption.
    * Automatically snapshots the user's current GoBag items into the post.
    */
   createPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.userId!;
-      const file = await parseFileRequest(req, res);
       const { caption } = req.body;
 
       const post = await this.postService.createPost({
         userId,
-        file,
         caption,
       });
 

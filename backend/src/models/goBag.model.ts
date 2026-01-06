@@ -3,6 +3,8 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IGoBag extends Omit<GoBag, 'userId' | 'items'>, Document {
   userId: mongoose.Types.ObjectId;
+  imageUrl: string;
+  imageId: string | null;
   items: string[];
 }
 

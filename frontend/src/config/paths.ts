@@ -57,6 +57,11 @@ export const paths = {
       path: 'modules',
       getHref: () => '/app/modules',
     },
+    module: {
+      path: 'modules/:moduleId',
+      getHref: (moduleId: string) => `/app/modules/${moduleId}`,
+    },
+
     'community-posts': {
       path: 'community-posts',
       getHref: () => '/app/community-posts',
