@@ -56,6 +56,10 @@ export const paths = {
     modules: {
       path: 'modules',
       getHref: () => '/app/modules',
+      search: {
+        path: 'modules/search', 
+        getHref: () => '/app/modules/search',
+      },
     },
     'community-posts': {
       path: 'community-posts',
