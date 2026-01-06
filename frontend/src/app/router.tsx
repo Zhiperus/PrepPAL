@@ -61,6 +61,11 @@ export const createAppRouter = (queryClient: QueryClient) =>
       ErrorBoundary: AppRootErrorBoundary,
       children: [
         {
+          path: paths.app['dashboard'].path,
+          lazy: () =>
+            import('./routes/app/dashboard').then(convert(queryClient)),
+        },
+        {
           path: paths.app.onboarding.path,
           lazy: () =>
             import('./routes/app/onboarding').then(convert(queryClient)),
