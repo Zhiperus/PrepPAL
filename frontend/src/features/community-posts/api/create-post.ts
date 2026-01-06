@@ -1,6 +1,8 @@
 import type { CreatePostRequest } from '@repo/shared/dist/schemas/post.schema';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { getInfiniteFeedQueryOptions } from './get-posts';
+
 import { api } from '@/lib/api-client';
 
 export const createPost = ({ caption, image }: CreatePostRequest) => {
@@ -19,7 +21,7 @@ export const useCreatePost = () => {
   return useMutation({
     mutationFn: createPost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      queryClient.invalidateQueries(getInfiniteFeedQueryOptions());
     },
   });
 };

@@ -33,7 +33,7 @@ export const MOCK_GOBAG_RESPONSE = {
 // ------------------------------------------------------------------
 export const MOCK_FEED_RESPONSE = [
   {
-    id: "post_101",
+    _id: "post_101",
     userId: "u_1",
     author: {
       name: "Kyle Developer",
@@ -57,7 +57,7 @@ export const MOCK_FEED_RESPONSE = [
     createdAt: "2025-12-28T10:00:00Z",
   },
   {
-    id: "post_102",
+    _id: "post_102",
     userId: "u_2",
     author: {
       name: "Jarence Designer",
@@ -103,5 +103,63 @@ export const MOCK_USER_PROFILE = {
   },
   role: "citizen",
   isEmailVerified: true,
-  createdAt: "2025-01-01T00:00:00Z"
+  createdAt: "2025-01-01T00:00:00Z",
+  onboardingCompleted: true
 };
+
+// ------------------------------------------------------------------
+// 5. LEADERBOARD (GET /api/leaderboard)
+// Single list of users. Each user object contains both score types.
+// ------------------------------------------------------------------
+export const MOCK_LEADERBOARD_RESPONSE = [
+  { 
+    userId: "u_101", 
+    name: "Ria", 
+    points: { allTime: 123, goBag: 48 } 
+  },
+  { 
+    userId: "u_102", 
+    name: "Cruz", 
+    points: { allTime: 115, goBag: 42 } 
+  },
+  { 
+    userId: "u_103", 
+    name: "Dizon", 
+    points: { allTime: 110, goBag: 45 } 
+  },
+  { 
+    userId: "u_104", 
+    name: "Abad", 
+    points: { allTime: 90,  goBag: 40 } 
+  },
+  { 
+    userId: "u_105", 
+    name: "Santos", 
+    points: { allTime: 80,  goBag: 50 } // Note: Higher Go Bag score than Abad
+  },
+  { 
+    userId: "u_106", 
+    name: "Mendoza", 
+    points: { allTime: 78,  goBag: 35 } 
+  },
+  { 
+    userId: "u_107", 
+    name: "Garcia", 
+    points: { allTime: 73,  goBag: 28 } 
+  },
+  { 
+    userId: "u_108", 
+    name: "Cortez", 
+    points: { allTime: 60,  goBag: 30 } 
+  },
+  { 
+    userId: "u_109", 
+    name: "Bill", 
+    points: { allTime: 58,  goBag: 20 } 
+  },
+  { 
+    userId: "u_110", 
+    name: "Lim", 
+    points: { allTime: 55,  goBag: 25 } 
+  },
+];
