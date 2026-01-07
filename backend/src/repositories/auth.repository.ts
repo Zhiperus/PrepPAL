@@ -40,7 +40,11 @@ export default class AuthRepository {
   }
 
   // Generate JWT
-  generateToken(payload: { userId: string }): string {
+  generateToken(payload: {
+    userId: string;
+    role?: string;
+    lguId?: string | null;
+  }): string {
     return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
   }
 
