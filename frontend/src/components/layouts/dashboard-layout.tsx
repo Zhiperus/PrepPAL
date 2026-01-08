@@ -24,6 +24,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const closeDrawer = () => {
     if (drawerRef.current) {
       drawerRef.current.checked = false;
+      window.scrollTo(0, 0);
     }
   };
 
