@@ -1,13 +1,11 @@
+import 'dotenv/config';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import express from 'express';
 import type { Express } from 'express';
 import mongoose from 'mongoose';
 
 import errorHandler from './middleware/errorHandler.js';
 import routes from './routes/index.js';
-
-dotenv.config();
 
 const app: Express = express();
 app.use(express.json());
