@@ -135,4 +135,10 @@ export default class PostService {
       verifiedCount: newVerifiedItemCount,
     };
   }
+
+  async deletePost(postId: string) {
+    const post = await this.postRepo.findById(postId);
+    if (!post) throw new NotFoundError('Post not found');
+    await this.postRepo.findByIdAndDelete(postId);
+  }
 }
