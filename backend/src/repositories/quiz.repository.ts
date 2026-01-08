@@ -1,5 +1,4 @@
 import QuizModel, { IQuiz } from '../models/quiz.model.js';
-import Quiz from '../models/quiz.model.js';
 
 export default class QuizRepository {
   async getQuizById(id: string): Promise<IQuiz | null> {
@@ -10,7 +9,15 @@ export default class QuizRepository {
     return QuizModel.findOne({ moduleId }).exec();
   }
 
+  async create(data: any) {
+    return QuizModel.create(data);
+  }
+
+  async update(id: string, data: any) {
+    return QuizModel.findByIdAndUpdate(id, data, { new: true }).exec();
+  }
+
   async deleteQuiz(id: string) {
-    return Quiz.findByIdAndDelete(id);
+    return QuizModel.findByIdAndDelete(id);
   }
 }

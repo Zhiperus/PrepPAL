@@ -1,4 +1,5 @@
 import { NotFoundError } from '../errors/index.js';
+import { IModule } from '../models/module.model.js';
 import ModuleRepository, {
   GetModulesOptions,
 } from '../repositories/module.repository.js';
@@ -37,6 +38,32 @@ export default class ModuleService {
     options: GetModulesOptions = {},
   ) {
     return this.moduleRepo.search(userId, query, options);
+  }
+
+  /* --- Admin Methods --- */
+
+  async createModule(data: Partial<IModule>) {
+    return this.moduleRepo.create(data);
+  }
+
+  async updateModule(id: string, data: Partial<IModule>) {
+    const existing = await this.moduleRepo.findById(id);
+
+    if (!existing) {
+      throw new NotFoundError('Module not found');
+    }
+
+    return this.moduleRepo.update(id, data);
+  }
+
+  async deleteModule(id: string) {
+    const existing = await this.moduleRepo.findById(id);
+
+    if (!existing) {
+      throw new NotFoundError('Module not found');
+    }
+
+    return this.moduleRepo.delete(id);
   }
 }
 

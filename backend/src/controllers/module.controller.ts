@@ -1,3 +1,4 @@
+import { moduleSchemaZod } from '@repo/shared/dist/schemas/module.schema';
 import { quizAttemptSchema } from '@repo/shared/dist/schemas/quizAttempt.schema';
 import { NextFunction, Request, Response } from 'express';
 
@@ -213,6 +214,77 @@ export default class ModuleController {
       res.status(200).json({
         success: true,
         data: quiz,
+      });
+    } catch (err) {
+      handleInternalError(err, next);
+    }
+  };
+
+  /* --- Admin Endpoints --- */
+
+  /**
+   * POST /api/modules
+   * Creates a new module.
+   * Protected: super_admin
+   */
+  createModule = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Validate input using Zod, omitting auto-generated fields
+      const createSchema = moduleSchemaZod.omit({ _id: true, createdAt: true });
+      const validatedData = createSchema.parse(req.body);
+
+      const module = await this.moduleService.createModule(validatedData);
+
+      res.status(201).json({
+        success: true,
+        data: module,
+      });
+    } catch (err) {
+      handleInternalError(err, next);
+    }
+  };
+
+  /**
+   * PUT /api/modules/:id
+   * Updates an existing module.
+   * Protected: super_admin
+   */
+  updateModule = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      // Partial updates allowed
+      const updateSchema = moduleSchemaZod
+        .omit({ _id: true, createdAt: true })
+        .partial();
+      const validatedData = updateSchema.parse(req.body);
+
+      const updatedModule = await this.moduleService.updateModule(
+        id,
+        validatedData,
+      );
+
+      res.status(200).json({
+        success: true,
+        data: updatedModule,
+      });
+    } catch (err) {
+      handleInternalError(err, next);
+    }
+  };
+
+  /**
+   * DELETE /api/modules/:id
+   * Deletes a module.
+   * Protected: super_admin
+   */
+  deleteModule = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      await this.moduleService.deleteModule(id);
+
+      res.status(200).json({
+        success: true,
+        message: 'Module deleted successfully',
       });
     } catch (err) {
       handleInternalError(err, next);
