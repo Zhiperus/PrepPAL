@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import adminRoutes from './admin.routes.js';
 import authRoutes from './auth.routes.js';
 import contentReportRoutes from './contentReport.routes.js';
 import goBagRoutes from './goBag.routes.js';
@@ -20,6 +21,7 @@ type Route = {
 const routes: Route[] = [
   { path: '/auth', router: authRoutes },
   { path: '/users', router: userRoutes },
+  { path: '/admin', router: adminRoutes },
   { path: '/leaderboard', router: leaderboardRoutes },
   { path: '/goBags', router: goBagRoutes },
   { path: '/items', router: goBagItemRoutes },

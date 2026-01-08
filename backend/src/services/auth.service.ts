@@ -54,7 +54,7 @@ export default class AuthService {
     const token = this.AuthRepo.generateToken({
       userId: String(newUser._id),
       role: newUser.role,
-      lguId: newUser.lguId,
+      lguId: newUser.lguId ? String(newUser.lguId) : null,
     });
 
     this.sendVerificationEmail(String(newUser._id));
@@ -87,7 +87,7 @@ export default class AuthService {
     const token = this.AuthRepo.generateToken({
       userId: String(user._id),
       role: user.role,
-      lguId: user.lguId,
+      lguId: user.lguId ? String(user.lguId) : null,
     });
 
     return {
