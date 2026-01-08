@@ -74,4 +74,11 @@ export const paths = {
       getHref: () => '/app/leaderboard',
     },
   },
+  
+  admin :{
+    'tenant-manager':{
+      path:"tenant-manager",
+      getHref: () => '/admin/tenant-manager'
+    }
+  }
 } as const;
