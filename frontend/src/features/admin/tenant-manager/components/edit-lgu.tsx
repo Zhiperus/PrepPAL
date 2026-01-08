@@ -169,7 +169,6 @@ export function EditLGUModal({ isOpen, onClose, tenant }: EditLGUModalProps) {
     // --- Submit Handler ---
     const onSubmit = (data: LGUFormData) => {
         console.log("Updating LGU:", data);
-        useUpdateLgu()
         onClose();
     };
 

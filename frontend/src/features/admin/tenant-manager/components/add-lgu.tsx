@@ -145,7 +145,6 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
     // --- Submit Handler ---
     const onSubmit = (data: LGUFormData) => {
         reset();
-        useCreateLgu()
         onClose();
     };
 
