@@ -7,6 +7,10 @@ import {
   default as AppRoot,
   ErrorBoundary as AppRootErrorBoundary,
 } from './routes/app/root';
+import {
+  default as LguRoot,
+  ErrorBoundary as LguRootErrorBoundary,
+} from './routes/lgu/root'
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
@@ -110,6 +114,23 @@ export const createAppRouter = (queryClient: QueryClient) =>
             ),
         },
       ],
+    },
+
+    {
+      path: paths.lgu.root.path,
+      element:(
+        <ProtectedRoute>
+          <LguRoot />
+        </ProtectedRoute>
+        
+      ),
+      ErrorBoundary: AppRootErrorBoundary, 
+      children:[
+        {
+          index: true, 
+          lazy: () => import('./routes/lgu/dashboard').then(convert(queryClient)),
+        }
+      ]
     },
 
     {
