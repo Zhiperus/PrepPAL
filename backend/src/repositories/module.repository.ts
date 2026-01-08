@@ -1,6 +1,6 @@
 import { FilterQuery, PipelineStage } from 'mongoose';
 
-import Module from '../models/module.model.js';
+import Module, { IModule } from '../models/module.model.js';
 import UserModel from '../models/user.model.js';
 
 export type GetModulesOptions = {
@@ -87,5 +87,17 @@ export default class ModuleRepository {
 
   async countAll(): Promise<number> {
     return Module.countDocuments();
+  }
+
+  async create(data: Partial<IModule>) {
+    return Module.create(data);
+  }
+
+  async update(id: string, data: Partial<IModule>) {
+    return Module.findByIdAndUpdate(id, data, { new: true }).lean();
+  }
+
+  async delete(id: string) {
+    return Module.findByIdAndDelete(id);
   }
 }
