@@ -53,10 +53,17 @@ export default class PostService {
     const goBag = await this.goBagRepo.findBagByUserId(userId);
     if (!goBag) throw new NotFoundError('Go Bag not found');
 
+    const user = await this.userRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+
     if (!goBag.imageUrl || !goBag.imageId || goBag.imageUrl === 'pending') {
       throw new BadRequestError(
         'No go bag image found. Please upload a go bag image first.',
       );
+    }
+
+    if (!user.lguId) {
+      throw new BadRequestError('No LGU to monitor the posts yet');
     }
 
     // 2. Create the post with the snapshot of the go bag image
@@ -65,6 +72,7 @@ export default class PostService {
       caption,
       imageUrl: goBag.imageUrl,
       imageId: goBag.imageId,
+      lguId: user.lguId,
     });
   }
 

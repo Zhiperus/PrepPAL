@@ -19,35 +19,38 @@ export default class GoBagController {
     }
   };
 
-  toggleGoBagItem = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const result = await this.goBagService.toggleItem({
-        userId: req.userId!,
-        ...req.body,
-      });
-
-      res.status(200).json({
-        message: 'Item updated',
-        ...result,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  updateGoBagImage = async (req: Request, res: Response, next: NextFunction) => {
+  updateGoBag = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.userId!;
+
       const file = await parseFileRequest(req, res);
 
-      const result = await this.goBagService.updateGoBagImage({
+      if (!file) {
+        throw new Error('An image file is required to update the Go Bag.');
+      }
+
+      if (!req.body.items) {
+        throw new Error('The list of Go Bag items is required.');
+      }
+
+      let items = [];
+      try {
+        items = JSON.parse(req.body.items);
+      } catch (err) {
+        throw new Error(
+          'Invalid format for items. Expected a valid JSON string.',
+        );
+      }
+
+      const result = await this.goBagService.updateGoBag({
         userId,
         file,
+        items,
       });
 
       res.status(200).json({
         success: true,
-        message: 'Go bag image updated successfully',
+        message: 'Go Bag updated successfully',
         data: result,
       });
     } catch (error) {
