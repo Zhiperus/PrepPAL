@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const quizQuestionSchemaZod = z.object({
-  _id: z.string(),
+  _id: z.string().optional(),
   questionText: z.string().min(1, "Question text is required"),
   choices: z
     .array(
