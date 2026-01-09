@@ -3,12 +3,13 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IQuizAttempt
   extends Omit<
-      QuizAttemptResult,
-      'quizId' | 'userId' | 'createdAt' | 'answersSubmitted'
-    >,
-    Document {
+    QuizAttemptResult,
+    'quizId' | 'userId' | 'createdAt' | 'answersSubmitted'
+  >,
+  Document {
   quizId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
+  answers: number[];
   answersSubmitted: {
     questionIndex: number;
     selectedAnswerId: number;
@@ -31,6 +32,7 @@ const quizAttemptSchema = new Schema<IQuizAttempt>(
       required: true,
       index: true,
     },
+    answers: { type: [Number], default: [] },
     answersSubmitted: [
       {
         questionIndex: { type: Number, required: true },
