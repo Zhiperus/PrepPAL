@@ -45,12 +45,16 @@ export default class AuthService {
     const newUser = await this.AuthRepo.createUser({
       email,
       password: hashedPassword,
+      role: userData.role || 'citizen',
+      lguId: userData.lguId || null,
     });
 
     await this.GoBagRepo.findBagByUserId(String(newUser._id));
 
     const token = this.AuthRepo.generateToken({
       userId: String(newUser._id),
+      role: newUser.role,
+      lguId: newUser.lguId ? String(newUser.lguId) : null,
     });
 
     this.sendVerificationEmail(String(newUser._id));
@@ -80,7 +84,11 @@ export default class AuthService {
       throw new NotFoundError('Invalid email or password');
     }
 
-    const token = this.AuthRepo.generateToken({ userId: String(user._id) });
+    const token = this.AuthRepo.generateToken({
+      userId: String(user._id),
+      role: user.role,
+      lguId: user.lguId ? String(user.lguId) : null,
+    });
 
     return {
       user: user,

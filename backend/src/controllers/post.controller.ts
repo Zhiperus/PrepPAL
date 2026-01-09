@@ -1,10 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 
 import { handleInternalError } from '../errors/index.js';
+import LeaderboardRepository from '../repositories/leaderboard.repository.js';
 import PostService from '../services/post.service.js';
 
 export default class PostController {
   private postService = new PostService();
+  private leaderboardRepo = new LeaderboardRepository();
 
   verifyPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -36,6 +38,7 @@ export default class PostController {
       const limit = parseInt(req.query.limit as string) || 10;
       const { sortBy, order, search } = req.query;
 
+      // 1. Fetch Posts
       const { posts, total } = await this.postService.getAllPosts({
         page,
         limit,
@@ -44,20 +47,35 @@ export default class PostController {
         order: order as 'asc' | 'desc',
       });
 
+      // 2. Extract Unique User IDs from the current page of posts
+      // We filter out null/undefined users just in case
+      const userIds = [
+        ...new Set(
+          posts
+            .map((post: any) => post.userId?._id?.toString())
+            .filter((id: string): id is string => !!id),
+        ),
+      ] as string[];
+      // 3. Get Actual Ranks for these users
+      // This calculates their global standing dynamically
+      const rankMap = await this.leaderboardRepo.getUserRanks(userIds);
+
+      // 4. Map Ranks back to Posts
       const formattedPosts = posts.map((post: any) => {
         const user = post.userId || {};
+        const userIdString = user._id?.toString();
 
-        const points = user.points?.goBag || 0;
-        const rank = Math.floor(points / 50) + 1;
+        // Get the real rank from our map, or default to 0/null if not found
+        const actualRank = rankMap.get(userIdString) || 0;
 
         return {
           ...post,
           _id: post._id.toString(),
-          userId: user._id?.toString(), // Ensure we handle the object safely
+          userId: userIdString,
           author: {
             name: user.householdName || 'Unknown',
             userImage: user.profileImage,
-            rank: rank,
+            rank: actualRank, // <--- Now uses the real DB rank
           },
         };
       });
@@ -75,7 +93,6 @@ export default class PostController {
       handleInternalError(err, next);
     }
   };
-
   /**
    * GET /posts/user/:userId
    * Retrieves all posts for a specific user.

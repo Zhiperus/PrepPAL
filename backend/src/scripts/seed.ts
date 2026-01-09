@@ -3,12 +3,14 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
 import { GO_BAG_ITEMS } from '../lib/seedData.js';
+import ContentReportModel from '../models/contentReport.model.js';
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
 import LguModel from '../models/lgu.model.js';
 import ModuleModel from '../models/module.model.js';
 import PostModel from '../models/post.model.js';
 import QuizModel from '../models/quiz.model.js';
+import QuizAttemptModel from '../models/quizAttempt.model.js';
 import UserModel from '../models/user.model.js';
 
 dotenv.config();
@@ -112,6 +114,8 @@ const seed = async () => {
       GoBagModel.deleteMany({}),
       ModuleModel.deleteMany({}),
       QuizModel.deleteMany({}),
+      ContentReportModel.deleteMany({}),
+      QuizAttemptModel.deleteMany({}),
     ]);
     console.log('🧹 Database cleared');
 
@@ -228,7 +232,9 @@ const seed = async () => {
           community: getRandomInt(0, 50),
           modules: getRandomInt(0, 10),
         },
-        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=User${i + 1}`,
+        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=User${
+          i + 1
+        }`,
       };
     });
 
@@ -250,7 +256,7 @@ const seed = async () => {
         userId: user._id,
         imageUrl: getRandomItem(IMAGES),
         // Simple string IDs as requested
-        items: packedItems.map((i) => i._id.toString()),
+        items: packedItems.map((i) => i.id.toString()),
         lastUpdated: new Date(),
       };
     });
@@ -582,7 +588,46 @@ const seed = async () => {
     });
 
     console.log('✅ All Modules and Quizzes seeded');
-    console.log('✅ All Modules and Quizzes seeded');
+
+    // 7. CREATE CONTENT REPORTS (Seed data for moderation)
+    console.log('🚩 Seeding Content Reports...');
+
+    // We need the posts we just created to report them
+    const allPosts = await PostModel.find();
+    const REASONS = [
+      'Contains misinformation about evacuation routes.',
+      'Inappropriate or offensive content in the background.',
+      'User is impersonating a government official.',
+      'Spamming the community feed.',
+      'Suspected fake Go Bag verification.',
+    ];
+
+    const reportStatuses = ['PENDING', 'RESOLVED', 'DISMISSED'];
+
+    const reportsData = Array.from({ length: 20 }).map(() => {
+      const reportedPost = getRandomItem(allPosts);
+      // Ensure the reporter isn't the one who made the post
+      const reporter = getRandomItem(
+        createdCitizens.filter(
+          (u: any) => u._id.toString() !== reportedPost.userId,
+        ),
+      );
+
+      return {
+        postId: reportedPost._id,
+        reporterId: reporter._id,
+        lguId: reportedPost.lguId, // Report belongs to the LGU of the post
+        reason: getRandomItem(REASONS),
+        status: getRandomItem(reportStatuses),
+        createdAt: new Date(
+          Date.now() - getRandomInt(0, 7) * 24 * 60 * 60 * 1000,
+        ), // Within last 7 days
+      };
+    });
+
+    const createdReports = await ContentReportModel.insertMany(reportsData);
+    console.log(`✅ Created ${createdReports.length} content reports`);
+
     process.exit(0);
   } catch (error) {
     console.error('❌ Seeding failed:', error);

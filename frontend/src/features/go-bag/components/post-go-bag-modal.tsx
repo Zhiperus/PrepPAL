@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LuX, LuSend, LuImage, LuUpload } from 'react-icons/lu';
 
 import Toast from '@/components/ui/toast/toast';
@@ -16,9 +16,6 @@ export default function PostBagModal({
   bagImage,
 }: PostBagModalProps) {
   const [caption, setCaption] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(bagImage);
-  const [isConverting, setIsConverting] = useState(false);
 
   const [toast, setToast] = useState<{
     show: boolean;
@@ -32,59 +29,13 @@ export default function PostBagModal({
 
   const createPostMutation = useCreatePost();
 
-  useEffect(() => {
-    const convertUrlToFile = async () => {
-      if (!bagImage) return;
-
-      try {
-        setIsConverting(true);
-        const response = await fetch(bagImage);
-        const blob = await response.blob();
-
-        const file = new File([blob], 'current-go-bag.jpg', {
-          type: blob.type,
-        });
-        setSelectedFile(file);
-      } catch (error) {
-        console.error('Failed to convert image:', error);
-        setToast({
-          show: true,
-          message:
-            'Could not load current image. Please upload your latest go-bag.',
-          type: 'error',
-        });
-      } finally {
-        setIsConverting(false);
-      }
-    };
-
-    convertUrlToFile();
-  }, [bagImage]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl && previewUrl !== bagImage) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl, bagImage]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!caption.trim() || !selectedFile) return;
+    if (!caption.trim()) return;
 
     createPostMutation.mutate(
       {
         caption,
-        image: selectedFile,
       },
       {
         onSuccess: () => {
@@ -137,17 +88,12 @@ export default function PostBagModal({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleFileChange}
                   className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                 />
 
-                {isConverting ? (
-                  <div className="flex h-full items-center justify-center">
-                    <span className="loading loading-spinner text-[#2A4263]"></span>
-                  </div>
-                ) : previewUrl ? (
+                {bagImage ? (
                   <img
-                    src={previewUrl}
+                    src={bagImage}
                     alt="Preview"
                     className="h-full w-full object-cover"
                   />
@@ -218,10 +164,8 @@ export default function PostBagModal({
             </button>
             <button
               type="submit"
-              disabled={
-                createPostMutation.isPending || !caption.trim() || !selectedFile
-              }
-              className="btn gap-2 border-none bg-[#2A4263] px-6 text-white hover:bg-[#1f324b]"
+              disabled={createPostMutation.isPending || !caption.trim()}
+              className="btn gap-2 border-none bg-[#2A4263] px-6 text-white hover:bg-[#1f324b] disabled:bg-gray-400"
             >
               {createPostMutation.isPending ? (
                 <span className="loading loading-spinner loading-sm"></span>

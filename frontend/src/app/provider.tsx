@@ -6,20 +6,13 @@ import { HelmetProvider } from 'react-helmet-async';
 
 import { MainErrorFallback } from '@/components/errors/main';
 import { AuthLoader } from '@/lib/auth';
-import { queryConfig } from '@/lib/react-query';
+import { queryClient } from '@/lib/react-query';
 
 type AppProviderProps = {
   children: React.ReactNode;
 };
 
 export function AppProvider({ children }: AppProviderProps) {
-  const [queryClient] = React.useState(
-    () =>
-      new QueryClient({
-        defaultOptions: queryConfig,
-      }),
-  );
-
   return (
     <React.Suspense
       fallback={
@@ -32,6 +25,7 @@ export function AppProvider({ children }: AppProviderProps) {
         <HelmetProvider>
           <QueryClientProvider client={queryClient}>
             {import.meta.env.DEV && <ReactQueryDevtools />}
+
             <AuthLoader
               renderLoading={() => (
                 <div className="flex h-screen w-screen items-center justify-center">
@@ -41,6 +35,7 @@ export function AppProvider({ children }: AppProviderProps) {
             >
               {children}
             </AuthLoader>
+            
           </QueryClientProvider>
         </HelmetProvider>
       </ErrorBoundary>

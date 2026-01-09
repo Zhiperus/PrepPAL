@@ -20,6 +20,7 @@ export interface CreatePostData {
   imageUrl: string;
   imageId: string;
   caption: string;
+  lguId: string;
 }
 
 export default class PostRepository {
@@ -191,7 +192,7 @@ export default class PostRepository {
    * If user has no GoBag, creates post with empty bagSnapshot.
    */
   async create(data: CreatePostData) {
-    const { userId, imageUrl, imageId } = data;
+    const { userId, imageUrl, imageId, lguId } = data;
 
     // 1. Get the user's current GoBag
     const goBag = await GoBagModel.findOne({
@@ -224,6 +225,7 @@ export default class PostRepository {
       bagSnapshot,
       verifiedItemCount: 0,
       verificationCount: 0,
+      lguId,
     });
 
     return post.save();
@@ -260,5 +262,9 @@ export default class PostRepository {
     await UserModel.findByIdAndUpdate(userId, {
       $inc: { 'points.goBag': pointsDelta },
     });
+  }
+
+  async findByIdAndDelete(postId: string) {
+    return PostModel.findByIdAndDelete(postId);
   }
 }
