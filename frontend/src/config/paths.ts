@@ -79,4 +79,24 @@ export const paths = {
       getHref: () => '/app/lgu-leaderboard',
     },
   },
+
+  lgu:{
+    root: {
+      path: '/lgu',
+      getHref: () => '/lgu',
+    },
+    dashboard: {
+      path: '',
+      getHref: () => '/lgu',
+    },
+    leaderboard: {
+      path: 'leaderboard',
+      getHref: () => '/lgu/leaderboard',
+    },
+    moderation: {
+      path: 'moderation',
+      getHref: () => '/lgu/moderation',
+    },
+  }
 } as const;
+

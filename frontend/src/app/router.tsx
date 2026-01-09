@@ -2,6 +2,14 @@ import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
+import {
+  default as AppRoot,
+  ErrorBoundary as AppRootErrorBoundary,
+} from './routes/app/root';
+import {
+  default as LguRoot,
+  ErrorBoundary as LguRootErrorBoundary,
+} from './routes/lgu/root'
 import { CommunityPostsRoute } from './routes/app/community-posts';
 import { DashboardRoute } from './routes/app/dashboard';
 import { LeaderboardRoute } from './routes/app/leaderboard';
@@ -107,6 +115,23 @@ export const createAppRouter = (queryClient: QueryClient) =>
     },
 
     // --- CATCH ALL ---
+    {
+      path: paths.lgu.root.path,
+      element:(
+        <ProtectedRoute>
+          <LguRoot />
+        </ProtectedRoute>
+        
+      ),
+      ErrorBoundary: AppRootErrorBoundary, 
+      children:[
+        {
+          index: true, 
+          lazy: () => import('./routes/lgu/dashboard').then(convert(queryClient)),
+        }
+      ]
+    },
+
     {
       path: '*',
       element: <NotFoundRoute />,
