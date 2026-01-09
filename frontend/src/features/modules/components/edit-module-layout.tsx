@@ -1,26 +1,3 @@
-/*
- * Objects in this component:
- * - Header
- *    - title header
- *    - publication status
- * - Module View and Controls
- *   - Card View, display all modules
- *      - Status Light
- *        - Green: Live, Published
- *        - Yellow: Live, with unpublished changes
- *        - Red: Unpublished (?)
- *      - Title
- *      - Module Description
- *      - Last Updated time
- *      - View, Edit, Delete Buttons
- *   - Control Buttons
- *      - Add: Create new modules, not published immediately
- *      - Publish: Upload changes
- *      - View: Read-only view
- *      - Edit: Modify exisiting modules
- *      - Delete: Remove module from database
- * */
-
 import { useRef, useState, useEffect } from 'react';
 import {
   LuSearch,
