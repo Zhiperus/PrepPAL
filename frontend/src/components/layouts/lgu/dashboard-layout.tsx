@@ -1,11 +1,9 @@
 import { useEffect, useRef } from 'react';
 import {
   GoHome,
-  GoBook,
-  GoPencil,
   GoGraph,
-  GoInfo,
   GoSignOut,
+  GoDiscussionClosed
 } from 'react-icons/go';
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { useNavigate } from 'react-router';
@@ -14,7 +12,7 @@ import { Link } from '@/components/ui/link';
 import { paths } from '@/config/paths';
 import { useLogout, useUser } from '@/lib/auth';
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+export function LguDashboardLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { data: user, isLoading, isError } = useUser();
   const logout = useLogout();
@@ -24,7 +22,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const closeDrawer = () => {
     if (drawerRef.current) {
       drawerRef.current.checked = false;
-      window.scrollTo(0, 0);
     }
   };
 
@@ -113,7 +110,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <ul className="flex flex-col gap-8 font-medium text-gray-700">
               <li>
                 <Link
-                  to={paths.app.dashboard.getHref()}
+                  to={paths.lgu.dashboard.getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
                   onClick={closeDrawer} // Close drawer on link click
                 >
@@ -123,27 +120,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </li>
               <li>
                 <Link
-                  to={paths.app.modules.getHref()}
-                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
-                  onClick={closeDrawer}
-                >
-                  <GoBook className="h-6 w-6" />
-                  <span>Modules</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={paths.app['community-posts'].getHref()}
-                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
-                  onClick={closeDrawer}
-                >
-                  <GoPencil className="h-6 w-6" />
-                  <span>Community Posts</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={paths.app.leaderboard.getHref()}
+                  to={paths.lgu.leaderboard.getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
                   onClick={closeDrawer}
                 >
@@ -151,17 +128,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   <span>Leaderboard</span>
                 </Link>
               </li>
+              <li>
+                <Link
+                  to={paths.lgu.moderation.getHref()}
+                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                  onClick={closeDrawer}
+                >
+                  <GoDiscussionClosed className="h-6 w-6" />
+                  <span>Moderation</span>
+                </Link>
+              </li>
             </ul>
 
             <div className="mt-auto mb-4 flex flex-col gap-4 font-medium text-gray-700">
-              <Link
-                to={paths.home.getHref()}
-                className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
-                onClick={closeDrawer}
-              >
-                <GoInfo className="h-6 w-6" />
-                <span>About</span>
-              </Link>
 
               <button
                 className="flex cursor-pointer items-center gap-4 rounded-lg p-2 text-red-500 hover:bg-red-50"

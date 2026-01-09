@@ -7,6 +7,8 @@ export default class GoBagRepository {
   }
 
   // --- User Bag Operations ---
+
+  // Renamed to findOrCreate for clarity, though keeping findBagByUserId signature is fine
   async findBagByUserId(userId: string): Promise<IGoBag | null> {
     return GoBagModel.findOneAndUpdate(
       { userId },
@@ -27,7 +29,7 @@ export default class GoBagRepository {
     await GoBagModel.updateOne(
       { userId },
       { $addToSet: { items: itemId } },
-      { upsert: true }, // Ensure bag exists when adding items
+      { upsert: true },
     );
   }
 
@@ -36,34 +38,40 @@ export default class GoBagRepository {
     await GoBagModel.updateOne({ userId }, { $pull: { items: itemId } });
   }
 
-  // Update go bag image
-  async updateGoBagImage(
-    userId: string,
-    imageUrl: string,
-    imageId: string,
-  ): Promise<void> {
-    await GoBagModel.updateOne(
-      { userId },
-      {
-        $set: {
-          imageUrl: imageUrl,
-          imageId: imageId,
-          lastUpdated: new Date(),
-        },
-      },
-      { upsert: true },
-    );
-  }
-
-  // Get go bag image
+  // Get go bag image details only
   async getGoBagImage(
     userId: string,
   ): Promise<{ imageUrl: string; imageId: string | null } | null> {
-    const goBag = await GoBagModel.findOne({ userId }).select('imageUrl imageId');
+    const goBag = await GoBagModel.findOne({ userId }).select(
+      'imageUrl imageId',
+    );
     if (!goBag) return null;
     return {
       imageUrl: goBag.imageUrl || '',
       imageId: goBag.imageId || null,
     };
+  }
+
+  /**
+   * Unified Update: Updates both the Items list and the Image details
+   */
+  async updateFullGoBag(
+    userId: string,
+    items: string[],
+    imageUrl: string,
+    imageId: string,
+  ): Promise<IGoBag | null> {
+    return GoBagModel.findOneAndUpdate(
+      { userId },
+      {
+        $set: {
+          items: items,
+          imageUrl: imageUrl,
+          imageId: imageId, // Store the publicId for future deletion
+          lastUpdated: new Date(),
+        },
+      },
+      { new: true, upsert: true },
+    );
   }
 }

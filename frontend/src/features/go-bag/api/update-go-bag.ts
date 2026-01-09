@@ -9,13 +9,13 @@ import { api } from '@/lib/api-client';
 export const updateGoBag = async ({ items, image }: UpdateGoBagRequest) => {
   const formData = new FormData();
 
-  items.forEach((id) => formData.append('items[]', id));
+  formData.append('items', JSON.stringify(items));
 
   if (image) {
     formData.append('image', image);
   }
 
-  return api.put('/gobag', formData, {
+  return api.patch('/goBags', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
