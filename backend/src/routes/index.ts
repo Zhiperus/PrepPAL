@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import adminRoutes from './admin.routes.js';
 import authRoutes from './auth.routes.js';
+import contentReportRoutes from './contentReport.routes.js';
 import goBagRoutes from './goBag.routes.js';
 import goBagItemRoutes from './goBagItem.routes.js';
 import leaderboardRoutes from './leaderboard.routes.js';
@@ -29,6 +30,7 @@ const routes: Route[] = [
   { path: '/quiz', router: quizRoutes },
   { path: '/quiz-attempt', router: quizAttemptRoutes },
   { path: '/ratings', router: ratingRoutes },
+  { path: '/reports', router: contentReportRoutes },
 ];
 
 export default routes;

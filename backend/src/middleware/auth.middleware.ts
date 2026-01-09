@@ -20,7 +20,7 @@ export const authenticate = (
     // verify the token and decode the payload
     const decoded = jwt.verify(token, JWT_SECRET) as {
       userId: string;
-      role: 'citizen' | 'admin' | 'super_admin';
+      role: 'citizen' | 'lgu' | 'super_admin';
       lguId: string;
     };
 
@@ -36,9 +36,10 @@ export const authenticate = (
 };
 
 export const authorizeRoles = (
-  ...allowedRoles: ('citizen' | 'admin' | 'super_admin')[]
+  ...allowedRoles: ('citizen' | 'lgu' | 'super_admin')[]
 ) => {
   return (req: Request, _res: Response, next: NextFunction) => {
+    console.log(req.role);
     if (!req.role) {
       return next(new UnauthorizedError('User role not identified'));
     }

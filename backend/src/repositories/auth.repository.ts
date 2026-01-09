@@ -3,6 +3,11 @@ import jwt from 'jsonwebtoken';
 
 import UserModel, { IUser } from '../models/user.model.js';
 
+interface TokenPayload {
+  userId: string;
+  role: 'citizen' | 'lgu' | 'super_admin';
+  lguId?: string | null;
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'DEFAULT-SECRET';
 const BCRYPT_SALT_ROUNDS: number = process.env.BCRYPT_SALT_ROUNDS
   ? parseInt(process.env.BCRYPT_SALT_ROUNDS, 10)
@@ -34,17 +39,18 @@ export default class AuthRepository {
   }
 
   // Create a new user
-  async createUser(data: { email: string; password: string }): Promise<IUser> {
+  async createUser(data: {
+    email: string;
+    password: string;
+    role: string;
+    lguId: string | null;
+  }): Promise<IUser> {
     const user = new UserModel(data);
     return user.save();
   }
 
   // Generate JWT
-  generateToken(payload: {
-    userId: string;
-    role?: string;
-    lguId?: string | null;
-  }): string {
+  generateToken(payload: TokenPayload): string {
     return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
   }
 

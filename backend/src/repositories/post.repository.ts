@@ -263,4 +263,8 @@ export default class PostRepository {
       $inc: { 'points.goBag': pointsDelta },
     });
   }
+
+  async findByIdAndDelete(postId: string) {
+    return PostModel.findByIdAndDelete(postId);
+  }
 }

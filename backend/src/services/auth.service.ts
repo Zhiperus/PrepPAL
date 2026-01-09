@@ -45,6 +45,8 @@ export default class AuthService {
     const newUser = await this.AuthRepo.createUser({
       email,
       password: hashedPassword,
+      role: userData.role || 'citizen',
+      lguId: userData.lguId || null,
     });
 
     await this.GoBagRepo.findBagByUserId(String(newUser._id));
