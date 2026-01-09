@@ -73,6 +73,11 @@ export const paths = {
       path: 'leaderboard',
       getHref: () => '/app/leaderboard',
     },
+    // New LGU Leaderboard Path
+    lguLeaderboard: {
+      path: 'lgu-leaderboard',
+      getHref: () => '/app/lgu-leaderboard',
+    },
   },
 
   lgu:{
@@ -94,3 +99,4 @@ export const paths = {
     },
   }
 } as const;
+
