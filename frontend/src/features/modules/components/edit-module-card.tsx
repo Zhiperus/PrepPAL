@@ -27,10 +27,6 @@ export function EditModuleCard({ module, onEdit }: EditModuleCardProps) {
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-2xl text-[#2a4263] transition-colors">
             {module.logo || <LuBookOpen />}
           </div>
-          <div
-            aria-label="success"
-            className="status status-success status-lg"
-          ></div>
         </div>
 
         <h3 className="mb-2 text-xl font-bold text-gray-900 group-hover:text-[#2a4263]">

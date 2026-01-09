@@ -350,6 +350,9 @@ export const EditModuleModal = forwardRef<
           <form method="dialog">
             <button className="btn">Cancel</button>
           </form>
+          <button className="btn hover:!bg-[#EF4444] hover:!text-white">
+            Delete Module
+          </button>
           <button
             className="btn !bg-[#2a4362] text-white"
             onClick={() => console.log('Payload:', formData)}
