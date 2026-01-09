@@ -1,56 +1,58 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { createBrowserRouter } from 'react-router';
-import { RouterProvider } from 'react-router';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import {
-  default as AppRoot,
-  ErrorBoundary as AppRootErrorBoundary,
-} from './routes/app/root';
+import { CommunityPostsRoute } from './routes/app/community-posts';
+import { DashboardRoute } from './routes/app/dashboard';
+import { LeaderboardRoute } from './routes/app/leaderboard';
+import { LguLeaderboardRoute } from './routes/app/lgu-leaderboard'; // New Import
+import { ModuleRoute } from './routes/app/modules/module';
+import { ModulesRoute } from './routes/app/modules/modules';
+import { QuizRunnerRoute } from './routes/app/modules/quiz-runner';
+import { OnboardingRoute } from './routes/app/onboarding';
+import { EditProfileRoute } from './routes/app/profile/edit-profile';
+import { ProfileRoute } from './routes/app/profile/profile';
+import { AppRoot } from './routes/app/root';
+import { ForgotPasswordRoute } from './routes/auth/forget-password';
+import { LoginRoute } from './routes/auth/login';
+import { RegisterRoute } from './routes/auth/register';
+import { ResetPasswordRoute } from './routes/auth/reset-password';
+import { VerifyEmailRoute } from './routes/auth/verify-email';
+import { LandingRoute } from './routes/landing';
+import { NotFoundRoute } from './routes/not-found';
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
 
-const convert = (queryClient: QueryClient) => (m: any) => {
-  const { clientLoader, clientAction, default: Component, ...rest } = m;
-  return {
-    ...rest,
-    loader: clientLoader?.(queryClient),
-    action: clientAction?.(queryClient),
-    Component,
-  };
-};
-
 export const createAppRouter = (queryClient: QueryClient) =>
   createBrowserRouter([
+    // --- PUBLIC ROUTES ---
     {
       path: paths.home.path,
-      lazy: () => import('./routes/landing').then(convert(queryClient)),
-    },
-    {
-      path: paths.auth['forget-password'].path,
-      lazy: () =>
-        import('./routes/auth/forget-password').then(convert(queryClient)),
-    },
-    {
-      path: paths.auth['reset-password'].path,
-      lazy: () =>
-        import('./routes/auth/reset-password').then(convert(queryClient)),
-    },
-    {
-      path: paths.auth['verify-email'].path,
-      lazy: () =>
-        import('./routes/auth/verify-email').then(convert(queryClient)),
+      element: <LandingRoute />,
     },
     {
       path: paths.auth.login.path,
-      lazy: () => import('./routes/auth/login').then(convert(queryClient)),
+      element: <LoginRoute />,
     },
     {
       path: paths.auth.register.path,
-      lazy: () => import('./routes/auth/register').then(convert(queryClient)),
+      element: <RegisterRoute />,
+    },
+    {
+      path: paths.auth.verifyEmail.path,
+      element: <VerifyEmailRoute />,
+    },
+    {
+      path: paths.auth.resetPassword.path,
+      element: <ResetPasswordRoute />,
+    },
+    {
+      path: paths.auth.forgotPassword.path,
+      element: <ForgotPasswordRoute />,
     },
 
+    // --- PROTECTED APP ROUTES ---
     {
       path: paths.app.root.path,
       element: (
@@ -58,70 +60,61 @@ export const createAppRouter = (queryClient: QueryClient) =>
           <AppRoot />
         </ProtectedRoute>
       ),
-      ErrorBoundary: AppRootErrorBoundary,
       children: [
         {
-          path: paths.app['dashboard'].path,
-          lazy: () =>
-            import('./routes/app/dashboard').then(convert(queryClient)),
+          path: paths.app.dashboard.path,
+          element: <DashboardRoute />,
         },
         {
           path: paths.app.onboarding.path,
-          lazy: () =>
-            import('./routes/app/onboarding').then(convert(queryClient)),
+          element: <OnboardingRoute />,
         },
         {
           path: paths.app.profile.path,
-          lazy: () =>
-            import('./routes/app/profile/profile').then(convert(queryClient)),
+          element: <ProfileRoute />,
         },
         {
-          path: paths.app.profile.edit.path,
-          lazy: () =>
-            import('./routes/app/profile/edit-profile').then(
-              convert(queryClient),
-            ),
+          path: paths.app.editProfile.path,
+          element: <EditProfileRoute />,
         },
         {
-          path: paths.app['community-posts'].path,
-          lazy: () =>
-            import('./routes/app/community-posts').then(convert(queryClient)),
-        },
-        {
-          path: paths.app['leaderboard'].path,
-          lazy: () =>
-            import('./routes/app/leaderboard').then(convert(queryClient)),
+          path: paths.app.community.path,
+          element: <CommunityPostsRoute />,
         },
         {
           path: paths.app.modules.path,
-          lazy: () =>
-            import('./routes/app/modules/modules').then(convert(queryClient)),
+          element: <ModulesRoute />,
         },
         {
           path: paths.app.module.path,
-          lazy: () =>
-            import('./routes/app/modules/module').then(convert(queryClient)),
+          element: <ModuleRoute />,
         },
         {
           path: paths.app.quiz.path,
-          lazy: () =>
-            import('./routes/app/modules/quiz-runner').then(
-              convert(queryClient),
-            ),
+          element: <QuizRunnerRoute />,
+        },
+        // Citizen Leaderboard
+        {
+          path: paths.app.leaderboard.path,
+          element: <LeaderboardRoute />,
+        },
+        // LGU Leaderboard (New Route)
+        {
+          path: paths.app.lguLeaderboard.path,
+          element: <LguLeaderboardRoute />,
         },
       ],
     },
 
+    // --- CATCH ALL ---
     {
       path: '*',
-      lazy: () => import('./routes/not-found').then(convert(queryClient)),
+      element: <NotFoundRoute />,
     },
   ]);
 
 export function AppRouter() {
   const queryClient = useQueryClient();
-
   const router = useMemo(() => createAppRouter(queryClient), [queryClient]);
-
   return <RouterProvider router={router} />;
 }
