@@ -79,6 +79,12 @@ export const paths = {
       getHref: () => '/app/lgu-leaderboard',
     },
   },
+  
+  admin :{
+    'tenant-manager':{
+      path:"tenant-manager",
+      getHref: () => '/admin/tenant-manager'
+    },
 
   lgu:{
     root: {
@@ -97,6 +103,5 @@ export const paths = {
       path: 'moderation',
       getHref: () => '/lgu/moderation',
     },
-  }
 } as const;
 

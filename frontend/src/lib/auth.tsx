@@ -12,6 +12,32 @@ import { api } from './api-client';
 
 import { paths } from '@/config/paths';
 
+const MOCK_USER_PROFILE = {
+  id: "u_1",
+  email: "kyle@example.com",
+  householdName: "The Dev Household",
+  location: {
+    city: "Naga City",
+    barangay: "San Felipe"
+  },
+  householdInfo: {
+    memberCount: 4,
+    femaleCount: 2,
+    dogCount: 1,
+    catCount: 0
+  },
+  points: {
+    goBag: 25,      // High Score
+    community: 42,  // Reputation
+    modules: 5      // Learning
+  },
+  role: "citizen",
+  isEmailVerified: true,
+  createdAt: "2025-01-01T00:00:00Z",
+  onboardingCompleted: true
+};
+
+
 // api call definitions for auth (types, schemas, requests):
 // these are not part of features as this is a module shared across features
 
@@ -24,22 +50,24 @@ export const resetPassword = (data: { password: string; token: string }) => {
 };
 
 async function getUser(): Promise<User | null> {
-  try {
-    const response = await api.get('/auth/me');
-    return response.data;
-  } catch (error: any) {
-    // If the error is 404 (Not Found) or 401 (Unauthorized),
-    // it simply means the user isn't logged in.
-    if (
-      error.response &&
-      (error.response.status === 404 || error.response.status === 401)
-    ) {
-      return null;
-    }
+  // try {
+  //   const response = await api.get('/auth/me');
+  //   return response.data;
+  // } catch (error: any) {
+  //   // If the error is 404 (Not Found) or 401 (Unauthorized),
+  //   // it simply means the user isn't logged in.
+  //   if (
+  //     error.response &&
+  //     (error.response.status === 404 || error.response.status === 401)
+  //   ) {
+  //     return null
+  //   }
 
-    // For other errors (500, network issues), re-throw so React Query knows it's an actual error
-    throw error;
-  }
+  //   // For other errors (500, network issues), re-throw so React Query knows it's an actual error
+  //   throw error;
+  // }
+
+  return MOCK_USER_PROFILE;
 }
 
 const logout = async () => {
