@@ -1,16 +1,19 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { createBrowserRouter } from 'react-router';
-import { RouterProvider } from 'react-router';
+import { createBrowserRouter, RouterProvider } from 'react-router';
 
-import {
-  default as AppRoot,
-  ErrorBoundary as AppRootErrorBoundary,
-} from './routes/app/root';
+import AdminRoot from './routes/admin/root';
+import AppRoot from './routes/app/root';
+import LandingRoute from './routes/landing';
+import LguRoot from './routes/lgu/root';
+import NotFoundRoute from './routes/not-found';
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
 
+/**
+ * Helper to inject queryClient into lazy-loaded loaders and actions
+ */
 const convert = (queryClient: QueryClient) => (m: any) => {
   const { clientLoader, clientAction, default: Component, ...rest } = m;
   return {
@@ -23,24 +26,10 @@ const convert = (queryClient: QueryClient) => (m: any) => {
 
 export const createAppRouter = (queryClient: QueryClient) =>
   createBrowserRouter([
+    // --- PUBLIC ROUTES ---
     {
       path: paths.home.path,
-      lazy: () => import('./routes/landing').then(convert(queryClient)),
-    },
-    {
-      path: paths.auth['forget-password'].path,
-      lazy: () =>
-        import('./routes/auth/forget-password').then(convert(queryClient)),
-    },
-    {
-      path: paths.auth['reset-password'].path,
-      lazy: () =>
-        import('./routes/auth/reset-password').then(convert(queryClient)),
-    },
-    {
-      path: paths.auth['verify-email'].path,
-      lazy: () =>
-        import('./routes/auth/verify-email').then(convert(queryClient)),
+      element: <LandingRoute />,
     },
     {
       path: paths.auth.login.path,
@@ -50,7 +39,23 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.auth.register.path,
       lazy: () => import('./routes/auth/register').then(convert(queryClient)),
     },
+    {
+      path: paths.auth['verify-email'].path,
+      lazy: () =>
+        import('./routes/auth/verify-email').then(convert(queryClient)),
+    },
+    {
+      path: paths.auth['reset-password'].path,
+      lazy: () =>
+        import('./routes/auth/reset-password').then(convert(queryClient)),
+    },
+    {
+      path: paths.auth['forget-password'].path,
+      lazy: () =>
+        import('./routes/auth/forget-password').then(convert(queryClient)),
+    },
 
+    // --- PROTECTED APP ROUTES (Citizen) ---
     {
       path: paths.app.root.path,
       element: (
@@ -58,10 +63,9 @@ export const createAppRouter = (queryClient: QueryClient) =>
           <AppRoot />
         </ProtectedRoute>
       ),
-      ErrorBoundary: AppRootErrorBoundary,
       children: [
         {
-          path: paths.app['dashboard'].path,
+          path: paths.app.dashboard.path,
           lazy: () =>
             import('./routes/app/dashboard').then(convert(queryClient)),
         },
@@ -88,7 +92,7 @@ export const createAppRouter = (queryClient: QueryClient) =>
             import('./routes/app/community-posts').then(convert(queryClient)),
         },
         {
-          path: paths.app['leaderboard'].path,
+          path: paths.app.leaderboard.path,
           lazy: () =>
             import('./routes/app/leaderboard').then(convert(queryClient)),
         },
@@ -112,16 +116,68 @@ export const createAppRouter = (queryClient: QueryClient) =>
       ],
     },
 
+    // --- PROTECTED LGU ROUTES ---
+    {
+      path: paths.lgu.root.path,
+      element: (
+        <ProtectedRoute>
+          <LguRoot />
+        </ProtectedRoute>
+      ),
+      children: [
+        {
+          index: true,
+          lazy: () =>
+            import('./routes/lgu/dashboard').then(convert(queryClient)),
+        },
+        {
+          path: paths.lgu.leaderboard.path,
+          lazy: () =>
+            import('./routes/lgu/lgu-leaderboard').then(convert(queryClient)),
+        },
+        {
+          path: paths.lgu.moderation.path,
+          lazy: () =>
+            import('./routes/lgu/moderation').then(convert(queryClient)),
+        },
+        {
+          path: paths.lgu['go-bags'].path,
+          lazy: () =>
+            import('./routes/lgu/resident-gobags').then(convert(queryClient)),
+        },
+      ],
+    },
+
+    // --- ADMIN ROUTES ---
+    {
+      path: paths.admin.root.path,
+      element: (
+        <ProtectedRoute>
+          <AdminRoot />
+        </ProtectedRoute>
+      ),
+      children: [
+        {
+          path: paths.admin['tenant-manager'].path,
+          lazy: () =>
+            import('./routes/admin/tenant-manager').then(convert(queryClient)),
+        },
+        {
+          path: paths.admin['module-editor'].path,
+          lazy: () =>
+            import('./routes/admin/module-editor').then(convert(queryClient)),
+        },
+      ],
+    },
+
     {
       path: '*',
-      lazy: () => import('./routes/not-found').then(convert(queryClient)),
+      element: <NotFoundRoute />,
     },
   ]);
 
 export function AppRouter() {
   const queryClient = useQueryClient();
-
   const router = useMemo(() => createAppRouter(queryClient), [queryClient]);
-
   return <RouterProvider router={router} />;
 }

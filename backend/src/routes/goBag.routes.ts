@@ -9,7 +9,6 @@ const controller = new GoBagController();
 goBagRoutes.use(authenticate);
 
 goBagRoutes.get('/', controller.getGoBag.bind(controller));
-goBagRoutes.patch('/', controller.toggleGoBagItem.bind(controller));
-goBagRoutes.post('/image', controller.updateGoBagImage.bind(controller));
+goBagRoutes.patch('/', controller.updateGoBag.bind(controller));
 
 export default goBagRoutes;

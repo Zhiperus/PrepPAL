@@ -24,6 +24,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const closeDrawer = () => {
     if (drawerRef.current) {
       drawerRef.current.checked = false;
+      window.scrollTo(0, 0);
     }
   };
 
@@ -32,6 +33,16 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
     if (isError || !user) {
       navigate(paths.auth.login.getHref());
+      return;
+    }
+
+    if (user.role === 'lgu') {
+      navigate(paths.lgu.root.getHref());
+      return;
+    }
+
+    if (user.role === 'super_admin') {
+      navigate(paths.admin.root.getHref());
       return;
     }
 

@@ -47,3 +47,4 @@ export function AppProvider({ children }: AppProviderProps) {
     </React.Suspense>
   );
 }
+

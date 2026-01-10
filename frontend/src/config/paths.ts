@@ -74,4 +74,42 @@ export const paths = {
       getHref: () => '/app/leaderboard',
     },
   },
+
+  admin: {
+    root: {
+      path: '/admin',
+      getHref: () => '/admin',
+    },
+    'tenant-manager': {
+      path: 'tenant-manager',
+      getHref: () => '/admin/tenant-manager',
+    },
+    'module-editor': {
+      path: 'module-editor',
+      getHref: () => '/admin/module-editor',
+    },
+  },
+
+  lgu: {
+    root: {
+      path: '/lgu',
+      getHref: () => '/lgu',
+    },
+    dashboard: {
+      path: '',
+      getHref: () => '/lgu',
+    },
+    leaderboard: {
+      path: 'leaderboard',
+      getHref: () => '/lgu/leaderboard',
+    },
+    moderation: {
+      path: 'moderation',
+      getHref: () => '/lgu/moderation',
+    },
+    'go-bags': {
+      path: 'go-bags',
+      getHref: () => '/lgu/go-bags',
+    },
+  },
 } as const;
