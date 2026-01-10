@@ -1,16 +1,15 @@
-import type { ModuleListEntry } from '@repo/shared/dist/schemas/module.schema';
+import type { Module } from '@repo/shared/dist/schemas/module.schema';
 import { clsx } from 'clsx';
 import {
   LuBookOpen,
   LuDumbbell,
-  LuClock,
   LuCircleCheck,
   LuCircleAlert,
 } from 'react-icons/lu';
 import { useNavigate } from 'react-router';
 
 interface ModuleCardProps {
-  module: ModuleListEntry & { userScore?: number | null };
+  module: Module & { userScore?: number | null };
 }
 
 export function ModuleCard({ module }: ModuleCardProps) {
@@ -80,10 +79,6 @@ export function ModuleCard({ module }: ModuleCardProps) {
         </p>
 
         <div className="mb-6 flex items-center gap-4 text-xs font-medium">
-          <div className="flex items-center gap-1 text-gray-500">
-            <LuClock className="h-3.5 w-3.5" />
-            <span>{module.readingTime} mins</span>
-          </div>
           {renderStatus()}
         </div>
       </div>
