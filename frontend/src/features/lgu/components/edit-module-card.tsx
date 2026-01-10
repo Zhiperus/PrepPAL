@@ -1,24 +1,18 @@
-import type { ModuleListEntry } from '@repo/shared/dist/schemas/module.schema';
-import { clsx } from 'clsx';
+import type { Module } from '@repo/shared/dist/schemas/module.schema';
 import {
   LuBookOpen,
   LuEye,
   LuEyeClosed,
-  LuTrash,
-  LuTrash2,
   LuPencil,
   LuPencilLine,
 } from 'react-icons/lu';
-import { useNavigate } from 'react-router';
 
 interface ModuleCardProps {
-  module: ModuleListEntry;
+  module: Module;
   onEdit: () => void;
 }
 
-export function EditModuleCard({ module, onEdit }: EditModuleCardProps) {
-  const navigate = useNavigate();
-
+export function EditModuleCard({ module, onEdit }: ModuleCardProps) {
   return (
     <div className="group relative flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
       <div>

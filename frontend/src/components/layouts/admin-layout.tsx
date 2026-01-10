@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { GoHome, GoGraph, GoSignOut, GoDiscussionClosed } from 'react-icons/go';
-import { LuBaggageClaim } from 'react-icons/lu';
+import { GoHome, GoOrganization, GoDatabase, GoSignOut } from 'react-icons/go'; // Icons for Admin tasks
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { useNavigate } from 'react-router';
 
@@ -8,7 +7,7 @@ import { Link } from '@/components/ui/link';
 import { paths } from '@/config/paths';
 import { useLogout, useUser } from '@/lib/auth';
 
-export function LguDashboardLayout({
+export function AdminDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -28,7 +27,8 @@ export function LguDashboardLayout({
   useEffect(() => {
     if (isLoading) return;
 
-    if (isError || !user || user.role != 'lgu') {
+    // Fixed: Ensure only super_admin can access this layout
+    if (isError || !user || user.role !== 'super_admin') {
       navigate(paths.auth.login.getHref());
       return;
     }
@@ -82,7 +82,7 @@ export function LguDashboardLayout({
               className="mt-4 mb-6 flex items-center gap-4 pl-2 hover:cursor-pointer hover:bg-gray-100"
               onClick={() => {
                 navigate(paths.app.profile.getHref());
-                closeDrawer(); // Close drawer on profile click
+                closeDrawer();
               }}
             >
               <div className="avatar placeholder">
@@ -106,43 +106,35 @@ export function LguDashboardLayout({
             <ul className="flex flex-col gap-8 font-medium text-gray-700">
               <li>
                 <Link
-                  to={paths.lgu.dashboard.getHref()}
+                  to={paths.admin.root.getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
-                  onClick={closeDrawer} // Close drawer on link click
+                  onClick={closeDrawer}
                 >
                   <GoHome className="h-6 w-6" />
-                  <span>Home</span>
+                  <span>Dashboard</span>
                 </Link>
               </li>
+
+              {/* --- NEW ADMIN ROUTES --- */}
               <li>
                 <Link
-                  to={paths.lgu.leaderboard.getHref()}
+                  to={paths.admin['tenant-manager'].getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
                   onClick={closeDrawer}
                 >
-                  <GoGraph className="h-6 w-6" />
-                  <span>Leaderboard</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={paths.lgu.moderation.getHref()}
-                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
-                  onClick={closeDrawer}
-                >
-                  <GoDiscussionClosed className="h-6 w-6" />
-                  <span>Moderation</span>
+                  <GoOrganization className="h-6 w-6" />
+                  <span>Tenant Manager</span>
                 </Link>
               </li>
 
               <li>
                 <Link
-                  to={paths.lgu['go-bags'].getHref()}
+                  to={paths.admin['module-editor'].getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
                   onClick={closeDrawer}
                 >
-                  <LuBaggageClaim className="h-6 w-6" />
-                  <span>Go Bags</span>
+                  <GoDatabase className="h-6 w-6" />
+                  <span>Module Editor</span>
                 </Link>
               </li>
             </ul>

@@ -2,6 +2,7 @@ import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 
+import AdminRoot from './routes/admin/root';
 import AppRoot from './routes/app/root';
 import LandingRoute from './routes/landing';
 import LguRoot from './routes/lgu/root';
@@ -149,12 +150,22 @@ export const createAppRouter = (queryClient: QueryClient) =>
 
     // --- ADMIN ROUTES ---
     {
-      path: '/admin',
+      path: paths.admin.root.path,
+      element: (
+        <ProtectedRoute>
+          <AdminRoot />
+        </ProtectedRoute>
+      ),
       children: [
         {
           path: paths.admin['tenant-manager'].path,
           lazy: () =>
             import('./routes/admin/tenant-manager').then(convert(queryClient)),
+        },
+        {
+          path: paths.admin['module-editor'].path,
+          lazy: () =>
+            import('./routes/admin/module-editor').then(convert(queryClient)),
         },
       ],
     },

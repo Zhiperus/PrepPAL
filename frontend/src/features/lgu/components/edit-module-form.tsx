@@ -1,15 +1,16 @@
-import type { ModuleListEntry } from '@repo/shared/dist/schemas/module.schema';
+import type { Content, Module } from '@repo/shared/dist/schemas/module.schema';
+import type { Quiz, QuizQuestion } from '@repo/shared/dist/schemas/quiz.schema';
 import { forwardRef, useState, useEffect } from 'react';
 import { LuBookOpenText, LuBrainCircuit, LuInfo } from 'react-icons/lu';
 
-import { useModule } from '../api/get-module';
-import { useQuiz } from '../api/get-quiz';
+import { useModule } from '@/features/modules/api/get-module';
+import { useQuiz } from '@/features/modules/api/get-quiz';
 
 // MODULE CONTROLS
 // 1. Fetching
 export const EditModuleModal = forwardRef<
   HTMLDialogElement,
-  { module: ModuleListEntry | null }
+  { module: Module | null }
 >(({ module }, ref) => {
   const {
     data: response,

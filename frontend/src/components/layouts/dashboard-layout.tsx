@@ -41,6 +41,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (user.role === 'super_admin') {
+      navigate(paths.admin.root.getHref());
+      return;
+    }
+
     if (!user.onboardingCompleted) {
       navigate(paths.app.onboarding.getHref());
     }

@@ -76,9 +76,17 @@ export const paths = {
   },
 
   admin: {
+    root: {
+      path: '/admin',
+      getHref: () => '/admin',
+    },
     'tenant-manager': {
       path: 'tenant-manager',
       getHref: () => '/admin/tenant-manager',
+    },
+    'module-editor': {
+      path: 'module-editor',
+      getHref: () => '/admin/module-editor',
     },
   },
 

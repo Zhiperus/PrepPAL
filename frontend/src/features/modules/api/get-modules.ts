@@ -1,4 +1,4 @@
-import type { ModuleListEntry } from '@repo/shared/dist/schemas/module.schema';
+import type { Module } from '@repo/shared/dist/schemas/module.schema';
 import { queryOptions, useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
@@ -15,7 +15,7 @@ export const getModules = ({
   limit = 10,
   search = '',
 }: GetModulesParams = {}): Promise<{
-  data: ModuleListEntry[];
+  data: Module[];
   meta: { total: number; totalPages: number; page: number };
 }> => {
   return api.get('/modules', {

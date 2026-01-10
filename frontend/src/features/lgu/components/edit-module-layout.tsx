@@ -1,30 +1,22 @@
+import type { Module } from '@repo/shared/dist/schemas/module.schema';
 import { useRef, useState, useEffect } from 'react';
-import {
-  LuSearch,
-  LuBookOpen,
-  LuTrophy,
-  LuBrainCircuit,
-  LuChevronLeft,
-  LuChevronRight,
-} from 'react-icons/lu';
-import { useNavigate, useSearchParams } from 'react-router';
+import { LuSearch, LuChevronLeft, LuChevronRight } from 'react-icons/lu';
+import { useSearchParams } from 'react-router';
 
-import { useModules } from '../api/get-modules';
 import { EditModuleCard } from '../components/edit-module-card.tsx';
 import { EditModuleModal } from '../components/edit-module-form.tsx';
 
 import { ModuleCardSkeleton } from '@/components/ui/skeletons/module-card-skeleton';
+import { useModules } from '@/features/modules/api/get-modules.ts';
 import { useDebounce } from '@/hooks/use-debounce';
-import { useUser } from '@/lib/auth';
 
-export default function ModuleDiscovery() {
-  const navigate = useNavigate();
+export default function EditModulePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const modalRef = useRef<HTMLDialogElement>(null);
-  const [selectedModule, setSelectedModule] = useState(null);
+  const [selectedModule, setSelectedModule] = useState<Module | null>(null);
 
   // Open Modal
-  const handleEditClick = (module) => {
+  const handleEditClick = (module: Module) => {
     setSelectedModule(module);
     modalRef.current?.showModal();
   };
@@ -48,8 +40,6 @@ export default function ModuleDiscovery() {
     }
     setSearchParams(params, { replace: true });
   }, [debouncedSearch, pageParam, setSearchParams, queryParam]);
-
-  const { data: user, isLoading: isUserLoading } = useUser();
 
   const {
     data: modulesData,
