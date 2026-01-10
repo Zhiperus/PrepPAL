@@ -139,6 +139,11 @@ export const createAppRouter = (queryClient: QueryClient) =>
           lazy: () =>
             import('./routes/lgu/moderation').then(convert(queryClient)),
         },
+        {
+          path: paths.lgu['go-bags'].path,
+          lazy: () =>
+            import('./routes/lgu/resident-gobags').then(convert(queryClient)),
+        },
       ],
     },
 

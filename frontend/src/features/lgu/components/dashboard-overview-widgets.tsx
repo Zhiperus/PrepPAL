@@ -329,111 +329,109 @@ function GoBagBreakdown({ data }: { data?: ItemStat[] }) {
 function ReadinessDistribution({ data }: { data?: ReadinessStat }) {
   if (!data)
     return (
-      <div className="border-border-container h-full w-full animate-pulse rounded-2xl border bg-white p-6" />
+      <div className="h-64 animate-pulse rounded-2xl border bg-white p-6" />
     );
 
   const { fullyPrepared, partiallyPrepared, atRisk, total } = data;
 
-  // Calculate Percentages
-  const getPct = (val: number) =>
-    total > 0 ? Math.round((val / total) * 100) : 0;
+  // Handle the case where no citizens have verified bags yet
+  if (total === 0) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed bg-white p-8">
+        <FiPackage className="mb-2 text-4xl text-slate-300" />
+        <p className="font-medium text-slate-500">
+          No verified citizen data found.
+        </p>
+        <p className="mt-1 text-center text-xs text-slate-400">
+          Once citizen reports are approved, their readiness status will appear
+          here.
+        </p>
+      </div>
+    );
+  }
+
+  const getPct = (val: number) => Math.round((val / total) * 100);
 
   const categories = [
     {
       label: 'Fully Prepared',
-      desc: 'Go Bags 80-100% Complete',
       count: fullyPrepared,
       pct: getPct(fullyPrepared),
       icon: FaShieldAlt,
       color: 'text-emerald-600',
       bg: 'bg-emerald-100',
       bar: 'bg-emerald-500',
+      desc: '80-100% complete',
     },
     {
       label: 'Partially Prepared',
-      desc: 'Go Bags 40-79% Complete',
       count: partiallyPrepared,
       pct: getPct(partiallyPrepared),
       icon: FaCheckCircle,
       color: 'text-amber-600',
       bg: 'bg-amber-100',
       bar: 'bg-amber-500',
+      desc: '40-79% complete',
     },
     {
       label: 'At Risk',
-      desc: 'Go Bags < 40% Complete',
       count: atRisk,
       pct: getPct(atRisk),
       icon: FiAlertTriangle,
       color: 'text-red-600',
       bg: 'bg-red-100',
       bar: 'bg-red-500',
+      desc: 'Below 40% complete',
     },
   ];
 
   return (
-    <div className="border-border-container flex h-full flex-col rounded-2xl border bg-white p-6 md:p-8">
-      <div className="mb-6">
-        <h3 className="text-text-primary text-lg font-bold">
-          Citizen Readiness Distribution
-        </h3>
-        <p className="text-text-secondary text-sm">
-          Categorization of citizens based on Go Bag completeness.
-        </p>
-      </div>
+    <div className="flex h-full flex-col rounded-2xl border bg-white p-6 md:p-8">
+      <h3 className="text-lg font-bold text-slate-800">
+        Citizen Readiness Distribution
+      </h3>
+      <p className="mb-6 text-sm text-slate-500">
+        Based on latest verified Go Bags.
+      </p>
 
-      <div className="flex flex-1 flex-col justify-center space-y-6">
+      <div className="flex-1 space-y-6">
         {categories.map((cat) => (
-          <div key={cat.label} className="group">
-            <div className="mb-2 flex items-start justify-between">
+          <div key={cat.label}>
+            <div className="mb-2 flex items-end justify-between">
               <div className="flex items-center gap-3">
-                <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg ${cat.bg} ${cat.color}`}
-                >
-                  <cat.icon size={14} />
+                <div className={`rounded-lg p-2 ${cat.bg} ${cat.color}`}>
+                  <cat.icon />
                 </div>
                 <div>
-                  <div className="font-bold text-slate-700">{cat.label}</div>
-                  <div className="text-xs text-slate-400">{cat.desc}</div>
+                  <p className="leading-none font-bold text-slate-700">
+                    {cat.label}
+                  </p>
+                  <p className="mt-1 text-[10px] text-slate-400 uppercase">
+                    {cat.desc}
+                  </p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-lg font-bold text-slate-800">
+                <span className="text-lg font-bold text-slate-800">
                   {cat.pct}%
-                </div>
-                <div className="text-[10px] font-medium text-slate-400">
-                  {cat.count.toLocaleString()} Citizens
-                </div>
+                </span>
+                <p className="text-[10px] text-slate-400">
+                  {cat.count} Citizens
+                </p>
               </div>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
               <div
-                className={`h-full rounded-full ${cat.bar} transition-all duration-1000`}
+                className={`h-full ${cat.bar} transition-all duration-1000`}
                 style={{ width: `${cat.pct}%` }}
-              ></div>
+              />
             </div>
           </div>
         ))}
       </div>
-
-      {/* Dynamic Recommendation Box */}
-      <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50/50 p-4">
-        <div className="flex gap-3">
-          <FaLightbulb className="mt-0.5 shrink-0 text-blue-500" />
-          <div>
-            <h4 className="text-sm font-bold text-blue-900">Recommendation</h4>
-            <p className="text-xs leading-relaxed text-blue-700">
-              {atRisk > partiallyPrepared
-                ? 'High number of At-Risk citizens. Prioritize basic Go Bag education campaigns.'
-                : 'Most citizens are partially prepared. Focus on distributing checklist completion guides.'}
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
-
 // --- MAIN PAGE ---
 
 export default function LguDashboardPage() {
@@ -447,7 +445,6 @@ export default function LguDashboardPage() {
   const lguId = user?.lguId || '';
 
   const { data: analyticsData } = useGoBagAnalytics(lguId);
-  console.log(analyticsData);
 
   // Loading State
   if (isMetricsLoading) {

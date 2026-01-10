@@ -99,5 +99,9 @@ export const paths = {
       path: 'moderation',
       getHref: () => '/lgu/moderation',
     },
+    'go-bags': {
+      path: 'go-bags',
+      getHref: () => '/lgu/go-bags',
+    },
   },
 } as const;

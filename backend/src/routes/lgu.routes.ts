@@ -21,4 +21,11 @@ lguRoutes.get(
   controller.getLguAnalytics.bind(controller),
 );
 
+lguRoutes.get(
+  '/go-bags',
+  authenticate,
+  authorizeRoles('lgu'),
+  controller.getLguResidentGoBags.bind(controller),
+);
+
 export default lguRoutes;

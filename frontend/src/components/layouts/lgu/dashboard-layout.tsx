@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router';
 import { Link } from '@/components/ui/link';
 import { paths } from '@/config/paths';
 import { useLogout, useUser } from '@/lib/auth';
+import { LuBaggageClaim } from 'react-icons/lu';
 
 export function LguDashboardLayout({
   children,
@@ -131,6 +132,17 @@ export function LguDashboardLayout({
                 >
                   <GoDiscussionClosed className="h-6 w-6" />
                   <span>Moderation</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to={paths.lgu['go-bags'].getHref()}
+                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                  onClick={closeDrawer}
+                >
+                  <LuBaggageClaim className="h-6 w-6" />
+                  <span>Go Bags</span>
                 </Link>
               </li>
             </ul>
