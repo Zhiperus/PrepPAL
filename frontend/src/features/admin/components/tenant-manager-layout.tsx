@@ -1,61 +1,46 @@
 import { useState } from 'react';
 import { IoMdMore } from 'react-icons/io';
-import { LuSearch, LuPlus, LuMapPin, LuMail } from 'react-icons/lu';
+// 1. Fixed: LuLoader2 corrected to LuLoader
+import { LuSearch, LuPlus, LuMapPin, LuMail, LuLoader } from 'react-icons/lu';
 
+// 2. Fixed: Import order (edit before get)
 import { useUpdateLgu } from '../api/edit-lgu';
+import { useLgus } from '../api/get-lgus';
 
 import { AddLGUModal } from './add-lgu';
 import { EditLGUModal } from './edit-lgu';
 
-// --- Mock Data ---
-const MOCK_TENANTS = [
-  {
-    id: '1',
-    name: 'Brgy. Batong Malake',
-    region: 'Calabarzon',
-    province: 'Laguna',
-    city: 'Los Baños',
-    adminEmail: 'admin@batongmalake.gov.ph',
-    status: 'active',
-    registeredUsers: 1420,
-  },
-  {
-    id: '2',
-    name: 'Brgy. Mayondon',
-    region: 'Calabarzon',
-    province: 'Laguna',
-    city: 'Los Baños',
-    adminEmail: 'kapitan@mayondon.ph',
-    status: 'active',
-    registeredUsers: 850,
-  },
-  {
-    id: '3',
-    name: 'Brgy. San Antonio',
-    region: 'Calabarzon',
-    province: 'Laguna',
-    city: 'Biñan',
-    adminEmail: 'sec@sanantonio.gov',
-    status: 'inactive',
-    registeredUsers: 0,
-  },
-];
+// Define the LGU type locally or import it if available
+interface LguTenant {
+  id: string;
+  name: string;
+  region: string;
+  province: string;
+  city: string;
+  adminEmail: string;
+  status: 'active' | 'inactive';
+  registeredUsers?: number;
+}
 
 export function TenantManagerLayout() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [lguId, setLguId] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const [lguId, setLguId] = useState<string | null>(null); // For Edit
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // For Add
+  const { data, isLoading, isError } = useLgus();
+  const { mutate: updateLgu } = useUpdateLgu();
 
-  const filteredTenants = MOCK_TENANTS.filter(
-    (tenant) =>
+  // 3. Fixed: Accessing data from Axios response and adding types
+  // Assuming useLgus returns the AxiosResponse, we need data.data or handle it via the hook
+  const lgus = Array.isArray(data) ? data : data?.data || [];
+
+  const filteredTenants = lgus.filter(
+    (tenant: LguTenant) =>
       tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tenant.city.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const selectedTenant = MOCK_TENANTS.find((t) => t.id === lguId);
-
-  const { mutate: updateLgu } = useUpdateLgu();
+  const selectedTenant = lgus.find((t: LguTenant) => t.id === lguId);
 
   const handleDeactivate = (id: string) => {
     if (confirm('Are you sure you want to deactivate this account?')) {
@@ -77,7 +62,6 @@ export function TenantManagerLayout() {
 
   return (
     <div className="min-h-screen w-full bg-gray-50 pb-20">
-      {/* --- Header Section --- */}
       <div className="border-b border-gray-200 shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -101,7 +85,6 @@ export function TenantManagerLayout() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* --- Toolbar --- */}
         <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="relative w-full sm:w-96">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -117,7 +100,6 @@ export function TenantManagerLayout() {
           </div>
         </div>
 
-        {/* --- Data Table --- */}
         <div className="flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div className="max-h-[600px] min-h-[300px] overflow-auto rounded-t-2xl">
             <table className="w-full text-left text-sm text-gray-500">
@@ -132,19 +114,36 @@ export function TenantManagerLayout() {
               </thead>
 
               <tbody className="divide-y divide-gray-100 bg-white">
-                {filteredTenants.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-20 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <LuLoader className="h-8 w-8 animate-spin text-[#2a4263]" />
+                        <span className="text-gray-500">Loading LGUs...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : isError ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-10 text-center text-red-500"
+                    >
+                      Failed to load LGU data.
+                    </td>
+                  </tr>
+                ) : filteredTenants.length === 0 ? (
                   <tr>
                     <td
                       colSpan={5}
                       className="px-6 py-10 text-center text-gray-400"
                     >
-                      No tenants found matching &#34;{searchTerm}&#34;
+                      No tenants found matching {searchTerm}
                     </td>
                   </tr>
                 ) : (
-                  filteredTenants.map((tenant, index) => {
+                  filteredTenants.map((tenant: LguTenant, index: number) => {
                     const isLastRows = index >= filteredTenants.length - 2;
-
                     return (
                       <tr
                         key={tenant.id}
@@ -161,30 +160,24 @@ export function TenantManagerLayout() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2 text-gray-600">
+                        <td className="px-6 py-4 text-gray-600">
+                          <div className="flex items-center gap-2">
                             <LuMail size={14} className="text-gray-400" />
                             {tenant.adminEmail}
                           </div>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10 ring-inset">
-                            {tenant.registeredUsers} citizens
+                          <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10">
+                            {tenant.registeredUsers ?? 0} citizens
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          {tenant.status === 'active' ? (
-                            <div className="badge badge-success badge-sm gap-2 p-3 font-semibold text-white">
-                              Active
-                            </div>
-                          ) : (
-                            <div className="badge badge-ghost badge-sm gap-2 p-3 font-semibold text-gray-500">
-                              Inactive
-                            </div>
-                          )}
+                          <div
+                            className={`badge ${tenant.status === 'active' ? 'badge-success text-white' : 'badge-ghost text-gray-500'} badge-sm p-3 font-semibold`}
+                          >
+                            {tenant.status === 'active' ? 'Active' : 'Inactive'}
+                          </div>
                         </td>
-
-                        {/* Actions */}
                         <td className="px-6 py-4 text-right">
                           <div
                             className={`dropdown dropdown-end dropdown-left ${isLastRows ? 'dropdown-top' : 'dropdown-bottom'}`}
@@ -200,31 +193,28 @@ export function TenantManagerLayout() {
                               tabIndex={0}
                               className="dropdown-content menu rounded-box z-50 my-1 w-52 border border-gray-100 bg-white p-2 shadow-lg"
                             >
-                              {/* Edit Button - Sets the ID to open the modal */}
                               <li>
-                                <button
-                                  onClick={() => setLguId(tenant.id)}
-                                  className="font-medium text-gray-600"
-                                >
+                                <button onClick={() => setLguId(tenant.id)}>
                                   Edit Account
                                 </button>
                               </li>
                               <li>
-                                {tenant.status === 'active' ? (
-                                  <button
-                                    className="w-full rounded-md px-2 py-1 text-left font-medium text-red-500 hover:bg-red-50"
-                                    onClick={() => handleDeactivate(tenant.id)}
-                                  >
-                                    Deactivate
-                                  </button>
-                                ) : (
-                                  <button
-                                    className="w-full rounded-md px-2 py-1 text-left font-medium text-green-600 hover:bg-green-50"
-                                    onClick={() => handleActivate(tenant.id)}
-                                  >
-                                    Activate
-                                  </button>
-                                )}
+                                <button
+                                  className={
+                                    tenant.status === 'active'
+                                      ? 'text-red-500'
+                                      : 'text-green-600'
+                                  }
+                                  onClick={() =>
+                                    tenant.status === 'active'
+                                      ? handleDeactivate(tenant.id)
+                                      : handleActivate(tenant.id)
+                                  }
+                                >
+                                  {tenant.status === 'active'
+                                    ? 'Deactivate'
+                                    : 'Activate'}
+                                </button>
                               </li>
                             </ul>
                           </div>
@@ -233,13 +223,8 @@ export function TenantManagerLayout() {
                     );
                   })
                 )}
-                <tr className="h-32"></tr>
               </tbody>
             </table>
-          </div>
-
-          <div className="flex items-center justify-between rounded-b-2xl border-t border-gray-200 bg-gray-50 px-6 py-3 text-xs text-gray-500">
-            <span>Showing {filteredTenants.length} results</span>
           </div>
         </div>
       </div>
@@ -249,7 +234,6 @@ export function TenantManagerLayout() {
         tenant={selectedTenant}
         onClose={() => setLguId(null)}
       />
-
       <AddLGUModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}

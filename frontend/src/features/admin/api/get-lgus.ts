@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-
-import { api } from '@/lib/api-client'; 
+import { api } from '@/lib/api-client';
 import type { QueryConfig } from '@/lib/react-query';
 
 // Define the shape of an LGU Tenant
@@ -25,7 +24,11 @@ export type GetLgusOptions = {
 };
 
 // API function
-export const getLgus = ({ search, page = 1, limit = 10 }: GetLgusOptions = {}) => {
+export const getLgus = ({
+  search,
+  page = 1,
+  limit = 10,
+}: GetLgusOptions = {}) => {
   return api.get<LguTenant[]>('/admin/lgus', {
     params: {
       search,
@@ -48,3 +51,4 @@ export const useLgus = ({ params, queryConfig }: UseLgusOptions = {}) => {
     queryFn: () => getLgus(params),
   });
 };
+

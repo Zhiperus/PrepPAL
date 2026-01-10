@@ -5,7 +5,6 @@ import type { LguTenant } from './get-lgus';
 import { api } from '@/lib/api-client';
 import type { MutationConfig } from '@/lib/react-query';
 
-
 // Data required to update an LGU
 export type UpdateLguDTO = {
   lguId: string; // Needed for the URL
@@ -19,7 +18,10 @@ export type UpdateLguDTO = {
   };
 };
 
-export const updateLgu = ({ lguId, data }: UpdateLguDTO): Promise<LguTenant> => {
+export const updateLgu = ({
+  lguId,
+  data,
+}: UpdateLguDTO): Promise<LguTenant> => {
   return api.patch(`/admin/lgus/${lguId}`, data);
 };
 
@@ -39,3 +41,4 @@ export const useUpdateLgu = ({ config }: UseUpdateLguOptions = {}) => {
     mutationFn: updateLgu,
   });
 };
+

@@ -5,7 +5,6 @@ import type { LguTenant } from './get-lgus';
 import { api } from '@/lib/api-client';
 import type { MutationConfig } from '@/lib/react-query';
 
-
 // Data required to create an LGU
 export type AddLguDTO = {
   name: string;
@@ -36,3 +35,4 @@ export const useCreateLgu = ({ config }: UseCreateLguOptions = {}) => {
     mutationFn: createLgu,
   });
 };
+
