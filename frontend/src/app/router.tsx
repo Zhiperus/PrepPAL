@@ -1,23 +1,17 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router';
 
-import {
-  default as AppRoot,
-  ErrorBoundary as AppRootErrorBoundary,
-} from './routes/app/root';
-import {
-  default as LguRoot,
-} from './routes/lgu/root';
-import { LandingRoute } from './routes/landing';
-import { NotFoundRoute } from './routes/not-found';
+import AppRoot from './routes/app/root';
+import LandingRoute from './routes/landing';
+import LguRoot from './routes/lgu/root';
+import NotFoundRoute from './routes/not-found';
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
 
 /**
- * Helper to convert lazy-loaded modules into React Router route objects,
- * injecting the queryClient into loaders and actions.
+ * Helper to inject queryClient into lazy-loaded loaders and actions
  */
 const convert = (queryClient: QueryClient) => (m: any) => {
   const { clientLoader, clientAction, default: Component, ...rest } = m;
@@ -29,8 +23,8 @@ const convert = (queryClient: QueryClient) => (m: any) => {
   };
 };
 
-export const createAppRouter = (queryClient: QueryClient) => {
-  return createBrowserRouter([
+export const createAppRouter = (queryClient: QueryClient) =>
+  createBrowserRouter([
     // --- PUBLIC ROUTES ---
     {
       path: paths.home.path,
@@ -45,16 +39,19 @@ export const createAppRouter = (queryClient: QueryClient) => {
       lazy: () => import('./routes/auth/register').then(convert(queryClient)),
     },
     {
-      path: paths.auth.verifyEmail.path,
-      lazy: () => import('./routes/auth/verify-email').then(convert(queryClient)),
+      path: paths.auth['verify-email'].path,
+      lazy: () =>
+        import('./routes/auth/verify-email').then(convert(queryClient)),
     },
     {
-      path: paths.auth.resetPassword.path,
-      lazy: () => import('./routes/auth/reset-password').then(convert(queryClient)),
+      path: paths.auth['reset-password'].path,
+      lazy: () =>
+        import('./routes/auth/reset-password').then(convert(queryClient)),
     },
     {
-      path: paths.auth.forgotPassword.path,
-      lazy: () => import('./routes/auth/forget-password').then(convert(queryClient)),
+      path: paths.auth['forget-password'].path,
+      lazy: () =>
+        import('./routes/auth/forget-password').then(convert(queryClient)),
     },
 
     // --- PROTECTED APP ROUTES (Citizen) ---
@@ -68,43 +65,52 @@ export const createAppRouter = (queryClient: QueryClient) => {
       children: [
         {
           path: paths.app.dashboard.path,
-          lazy: () => import('./routes/app/dashboard').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/app/dashboard').then(convert(queryClient)),
         },
         {
           path: paths.app.onboarding.path,
-          lazy: () => import('./routes/app/onboarding').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/app/onboarding').then(convert(queryClient)),
         },
         {
           path: paths.app.profile.path,
-          lazy: () => import('./routes/app/profile/profile').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/app/profile/profile').then(convert(queryClient)),
         },
         {
-          path: paths.app.editProfile.path,
-          lazy: () => import('./routes/app/profile/edit-profile').then(convert(queryClient)),
+          path: paths.app.profile.edit.path,
+          lazy: () =>
+            import('./routes/app/profile/edit-profile').then(
+              convert(queryClient),
+            ),
         },
         {
-          path: paths.app.community.path,
-          lazy: () => import('./routes/app/community-posts').then(convert(queryClient)),
+          path: paths.app['community-posts'].path,
+          lazy: () =>
+            import('./routes/app/community-posts').then(convert(queryClient)),
         },
         {
           path: paths.app.leaderboard.path,
-          lazy: () => import('./routes/app/leaderboard').then(convert(queryClient)),
-        },
-        {
-          path: paths.app.lguLeaderboard.path,
-          lazy: () => import('./routes/app/lgu-leaderboard').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/app/leaderboard').then(convert(queryClient)),
         },
         {
           path: paths.app.modules.path,
-          lazy: () => import('./routes/app/modules/modules').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/app/modules/modules').then(convert(queryClient)),
         },
         {
           path: paths.app.module.path,
-          lazy: () => import('./routes/app/modules/module').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/app/modules/module').then(convert(queryClient)),
         },
         {
           path: paths.app.quiz.path,
-          lazy: () => import('./routes/app/modules/quiz-runner').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/app/modules/quiz-runner').then(
+              convert(queryClient),
+            ),
         },
       ],
     },
@@ -117,11 +123,21 @@ export const createAppRouter = (queryClient: QueryClient) => {
           <LguRoot />
         </ProtectedRoute>
       ),
-      ErrorBoundary: AppRootErrorBoundary,
       children: [
         {
           index: true,
-          lazy: () => import('./routes/lgu/dashboard').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/lgu/dashboard').then(convert(queryClient)),
+        },
+        {
+          path: paths.lgu.leaderboard.path,
+          lazy: () =>
+            import('./routes/lgu/lgu-leaderboard').then(convert(queryClient)),
+        },
+        {
+          path: paths.lgu.moderation.path,
+          lazy: () =>
+            import('./routes/lgu/moderation').then(convert(queryClient)),
         },
       ],
     },
@@ -132,18 +148,17 @@ export const createAppRouter = (queryClient: QueryClient) => {
       children: [
         {
           path: paths.admin['tenant-manager'].path,
-          lazy: () => import('./routes/admin/tenant-manager').then(convert(queryClient)),
+          lazy: () =>
+            import('./routes/admin/tenant-manager').then(convert(queryClient)),
         },
       ],
     },
 
-    // --- CATCH ALL ---
     {
       path: '*',
       element: <NotFoundRoute />,
     },
   ]);
-};
 
 export function AppRouter() {
   const queryClient = useQueryClient();

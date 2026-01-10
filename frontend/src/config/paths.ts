@@ -73,20 +73,16 @@ export const paths = {
       path: 'leaderboard',
       getHref: () => '/app/leaderboard',
     },
-    // New LGU Leaderboard Path
-    lguLeaderboard: {
-      path: 'lgu-leaderboard',
-      getHref: () => '/app/lgu-leaderboard',
+  },
+
+  admin: {
+    'tenant-manager': {
+      path: 'tenant-manager',
+      getHref: () => '/admin/tenant-manager',
     },
   },
-  
-  admin :{
-    'tenant-manager':{
-      path:"tenant-manager",
-      getHref: () => '/admin/tenant-manager'
-    },
 
-  lgu:{
+  lgu: {
     root: {
       path: '/lgu',
       getHref: () => '/lgu',
@@ -103,5 +99,5 @@ export const paths = {
       path: 'moderation',
       getHref: () => '/lgu/moderation',
     },
+  },
 } as const;
-

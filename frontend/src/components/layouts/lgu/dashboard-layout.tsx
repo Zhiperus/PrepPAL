@@ -1,10 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  GoHome,
-  GoGraph,
-  GoSignOut,
-  GoDiscussionClosed
-} from 'react-icons/go';
+import { GoHome, GoGraph, GoSignOut, GoDiscussionClosed } from 'react-icons/go';
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { useNavigate } from 'react-router';
 
@@ -12,7 +7,11 @@ import { Link } from '@/components/ui/link';
 import { paths } from '@/config/paths';
 import { useLogout, useUser } from '@/lib/auth';
 
-export function LguDashboardLayout({ children }: { children: React.ReactNode }) {
+export function LguDashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const navigate = useNavigate();
   const { data: user, isLoading, isError } = useUser();
   const logout = useLogout();
@@ -28,13 +27,9 @@ export function LguDashboardLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (isLoading) return;
 
-    if (isError || !user) {
+    if (isError || !user || user.role != 'lgu') {
       navigate(paths.auth.login.getHref());
       return;
-    }
-
-    if (!user.onboardingCompleted) {
-      navigate(paths.app.onboarding.getHref());
     }
   }, [user, isLoading, isError, navigate]);
 
@@ -46,7 +41,7 @@ export function LguDashboardLayout({ children }: { children: React.ReactNode }) 
     );
   }
 
-  if (isError || !user || !user.onboardingCompleted) {
+  if (isError || !user) {
     return null;
   }
 
@@ -141,7 +136,6 @@ export function LguDashboardLayout({ children }: { children: React.ReactNode }) 
             </ul>
 
             <div className="mt-auto mb-4 flex flex-col gap-4 font-medium text-gray-700">
-
               <button
                 className="flex cursor-pointer items-center gap-4 rounded-lg p-2 text-red-500 hover:bg-red-50"
                 onClick={() => {

@@ -4,6 +4,7 @@ export const contentReportSchema = z.object({
   id: z.string(),
   postId: z.string(),
   reporterId: z.string(),
+  lguId: z.string(),
   reason: z
     .string()
     .min(10, "Please provide a more detailed reason (min 10 characters)")

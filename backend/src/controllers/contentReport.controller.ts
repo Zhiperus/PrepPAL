@@ -30,7 +30,8 @@ export default class ContentReportController {
       const result = await this.reportService.findAll(filters);
       res.status(200).json({
         success: true,
-        ...result,
+        data: result.data.data,
+        meta: result.meta,
       });
     } catch (error) {
       next(error);

@@ -1,4 +1,3 @@
-import type { LeaderboardEntry } from '@repo/shared/dist/schemas/leaderboard.schema';
 import { useState, useMemo } from 'react';
 import { CgSpinner } from 'react-icons/cg';
 import { GoSearch, GoDownload, GoCheckCircle, GoClock } from 'react-icons/go';
@@ -6,54 +5,65 @@ import { MdLocationOn, MdClose } from 'react-icons/md';
 
 import { useLeaderboard } from '../api/get-leaderboard';
 
-import { LguLeaderboardTable } from './path-to-correct-file';
+import { LguLeaderboardTable } from './lgu-leaderboard-table';
 
-// Import the Hook & Type
+import { useUser } from '@/lib/auth';
 
 type MetricType = 'allTime' | 'goBag';
 
-export function LguLeaderboardLayout() {
+export default function LguLeaderboardLayout() {
+  const { data: user } = useUser();
+
   const [activeModalTab, setActiveModalTab] = useState<MetricType>('allTime');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const TARGET_BARANGAY = 'Batong Malake, Los Baños, Laguna'; 
+  const TARGET_BARANGAY = user?.location?.barangay;
 
   // --- API HOOKS (Fetch Real Data) ---
-  
-  // 1. Fetch ALL TIME Leaders (Top 50 para ready na sa modal)
-  const allTimeQuery = useLeaderboard({ 
-    barangay: TARGET_BARANGAY, 
-    metric: 'allTime',
-    limit: 50 
+
+  // 1. Fetch ALL TIME Leaders (Top 50)
+  const allTimeQuery = useLeaderboard({
+    params: {
+      barangay: TARGET_BARANGAY,
+      metric: 'allTime',
+      limit: 50,
+    },
   });
 
   // 2. Fetch GO BAG Leaders (Top 50)
-  const goBagQuery = useLeaderboard({ 
-    barangay: TARGET_BARANGAY, 
-    metric: 'goBag',
-    limit: 50 
+  const goBagQuery = useLeaderboard({
+    params: {
+      barangay: TARGET_BARANGAY,
+      metric: 'goBag',
+      limit: 50,
+    },
   });
 
   // --- DATA PROCESSING ---
-  const allTimeData = allTimeQuery.data || [];
-  const goBagData = goBagQuery.data || [];
+  const allTimeData = allTimeQuery.data?.data || [];
+  const goBagData = goBagQuery.data?.data || [];
 
-  // Filter Logic for Modal (Client-side search para mabilis)
+  console.log(allTimeData, goBagData);
+
+  // Filter Logic for Modal (Client-side search)
   const modalDisplayData = useMemo(() => {
     const sourceData = activeModalTab === 'allTime' ? allTimeData : goBagData;
-    
+
     if (!searchTerm) return sourceData;
 
     return sourceData.filter((item) =>
-      item.householdName?.toLowerCase().includes(searchTerm.toLowerCase())
+      item.householdName?.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [activeModalTab, searchTerm, allTimeData, goBagData]);
 
-
   // --- TOAST & DOWNLOAD STATES ---
   const [isDownloading, setIsDownloading] = useState(false);
-  const [toast, setToast] = useState<{ show: boolean; type: 'loading' | 'success'; message: string }>({
+  const [toast, setToast] = useState<{
+    show: boolean;
+    type: 'loading' | 'success';
+    message: string;
+  }>({
     show: false,
     type: 'loading',
     message: '',
@@ -63,11 +73,19 @@ export function LguLeaderboardLayout() {
   const handleDownloadReport = () => {
     if (isDownloading) return;
     setIsDownloading(true);
-    setToast({ show: true, type: 'loading', message: 'Generating Excel Report...' });
-    
+    setToast({
+      show: true,
+      type: 'loading',
+      message: 'Generating Excel Report...',
+    });
+
     setTimeout(() => {
       setIsDownloading(false);
-      setToast({ show: true, type: 'success', message: 'Report Downloaded Successfully!' });
+      setToast({
+        show: true,
+        type: 'success',
+        message: 'Report Downloaded Successfully!',
+      });
       setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
     }, 2000);
   };
@@ -78,16 +96,15 @@ export function LguLeaderboardLayout() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-50/50 p-4 md:p-8 relative">
+    <div className="relative min-h-screen w-full bg-gray-50/50 p-4 md:p-8">
       <div className="mx-auto max-w-5xl space-y-8">
-        
         {/* HEADER SECTION */}
         <div className="flex flex-col gap-2 px-1">
           <div className="flex flex-wrap items-center gap-4">
-            <h1 className="text-4xl font-black tracking-tight text-[#2A4263]">
+            <h1 className="pt-10 text-4xl font-black tracking-tight text-[#2A4263] lg:pt-0">
               Leaderboard
             </h1>
-            
+
             {/* Term Countdown Badge */}
             <div className="flex items-center gap-1.5 rounded-full border border-[#0891B2]/20 bg-[#E0F7FA] px-3 py-1 text-xs font-bold text-[#0891B2] shadow-sm">
               <GoClock className="text-sm" />
@@ -97,27 +114,27 @@ export function LguLeaderboardLayout() {
 
           <div className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
             <MdLocationOn className="text-xl text-[#2A4263]" />
-            <span className="font-bold text-[#2A4263]">Brgy. {TARGET_BARANGAY}</span>
+            <span className="font-bold text-[#2A4263]">
+              Brgy. {TARGET_BARANGAY}
+            </span>
           </div>
         </div>
 
         {/* --- MAIN DASHBOARD (TWO CARDS) --- */}
         <div className="grid gap-6 md:grid-cols-2">
-          
           {/* CARD 1: ALL TIME */}
           <div className="flex flex-col rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition-all hover:shadow-md">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-[#2A4263]">All Time</h2>
             </div>
             <div className="flex-1">
-               <LguLeaderboardTable 
-                  // Slice Top 5 for preview
-                  data={allTimeData.slice(0, 5)} 
-                  isLoading={allTimeQuery.isLoading} 
-                  activeMetric="allTime" 
-               />
+              <LguLeaderboardTable
+                data={allTimeData.slice(0, 5)}
+                isLoading={allTimeQuery.isLoading}
+                activeMetric="allTime"
+              />
             </div>
-            <button 
+            <button
               onClick={() => openModal('allTime')}
               className="mt-6 w-full rounded-xl bg-gray-50 py-3 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-100 hover:text-[#2A4263]"
             >
@@ -131,14 +148,13 @@ export function LguLeaderboardLayout() {
               <h2 className="text-xl font-bold text-[#2A4263]">Go Bag</h2>
             </div>
             <div className="flex-1">
-               <LguLeaderboardTable 
-                  // Slice Top 5 for preview
-                  data={goBagData.slice(0, 5)} 
-                  isLoading={goBagQuery.isLoading} 
-                  activeMetric="goBag" 
-               />
+              <LguLeaderboardTable
+                data={goBagData.slice(0, 5)}
+                isLoading={goBagQuery.isLoading}
+                activeMetric="goBag"
+              />
             </div>
-            <button 
+            <button
               onClick={() => openModal('goBag')}
               className="mt-6 w-full rounded-xl bg-gray-50 py-3 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-100 hover:text-[#2A4263]"
             >
@@ -149,38 +165,46 @@ export function LguLeaderboardLayout() {
 
         {/* --- DOWNLOAD BUTTON --- */}
         <div className="flex justify-center pb-8">
-          <button 
+          <button
             disabled={isDownloading}
-            className={`group flex w-full md:w-auto items-center justify-center gap-2 rounded-xl border-2 border-[#0891B2] px-8 py-3.5 text-sm font-bold transition-all active:scale-95
-              ${isDownloading 
-                ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed' 
+            className={`group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#0891B2] px-8 py-3.5 text-sm font-bold transition-all active:scale-95 md:w-auto ${
+              isDownloading
+                ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400'
                 : 'bg-transparent text-[#0891B2] hover:bg-[#E0F7FA] hover:shadow-lg'
-              }`}
-            onClick={handleDownloadReport} 
+            }`}
+            onClick={handleDownloadReport}
           >
             {isDownloading ? (
               <CgSpinner className="animate-spin text-lg" />
             ) : (
-              <GoDownload size={18} className="transition-transform group-hover:-translate-y-0.5" />
+              <GoDownload
+                size={18}
+                className="transition-transform group-hover:-translate-y-0.5"
+              />
             )}
             {isDownloading ? 'Processing...' : 'Download Detailed Report'}
           </button>
         </div>
-
       </div>
 
       {/* --- MODAL --- */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="animate-in fade-in fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm duration-200">
           <div className="flex h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-gray-200">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4">
-              <h2 className="text-xl font-black text-[#2A4263]">Full Leaderboard</h2>
-              <button onClick={() => setIsModalOpen(false)} className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500" title="Close modal">
+              <h2 className="text-xl font-black text-[#2A4263]">
+                Full Leaderboard
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-red-500"
+                title="Close modal"
+              >
                 <MdClose size={24} />
               </button>
             </div>
-            
+
             {/* Modal Controls */}
             <div className="flex flex-col gap-4 border-b border-gray-50 bg-gray-50/50 px-6 py-4 md:flex-row md:items-center md:justify-between">
               <div className="flex rounded-lg bg-gray-200 p-1">
@@ -197,14 +221,14 @@ export function LguLeaderboardLayout() {
                   Go Bag
                 </button>
               </div>
-              
-              {/* Client-side Search (Filters the list below) */}
+
+              {/* Client-side Search */}
               <div className="relative w-full md:w-72">
-                <GoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <GoSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search list..."
-                  className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none transition-all focus:border-[#2A4263] focus:ring-2 focus:ring-[#2A4263]/10"
+                  className="h-10 w-full rounded-xl border border-gray-200 bg-white pr-4 pl-10 text-sm transition-all outline-none focus:border-[#2A4263] focus:ring-2 focus:ring-[#2A4263]/10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -213,10 +237,14 @@ export function LguLeaderboardLayout() {
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto bg-white p-6">
-              <LguLeaderboardTable 
-                data={modalDisplayData} 
-                isLoading={activeModalTab === 'allTime' ? allTimeQuery.isLoading : goBagQuery.isLoading} 
-                activeMetric={activeModalTab} 
+              <LguLeaderboardTable
+                data={modalDisplayData}
+                isLoading={
+                  activeModalTab === 'allTime'
+                    ? allTimeQuery.isLoading
+                    : goBagQuery.isLoading
+                }
+                activeMetric={activeModalTab}
               />
             </div>
           </div>
@@ -224,17 +252,24 @@ export function LguLeaderboardLayout() {
       )}
 
       {/* --- TOAST --- */}
-      <div className={`toast toast-end toast-bottom z-50 transition-all duration-300 ${toast.show ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
-        <div className={`alert flex items-center gap-3 font-bold shadow-lg ${
-            toast.type === 'loading' 
-              ? 'bg-[#2A4263] text-white' 
-              : 'bg-[#D1FAE5] text-[#10B981] border border-[#10B981]/20'
-        }`}>
-          {toast.type === 'loading' ? <CgSpinner className="animate-spin text-xl" /> : <GoCheckCircle className="text-xl" />}
+      <div
+        className={`toast toast-end toast-bottom z-50 transition-all duration-300 ${toast.show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-10 opacity-0'}`}
+      >
+        <div
+          className={`alert flex items-center gap-3 font-bold shadow-lg ${
+            toast.type === 'loading'
+              ? 'bg-[#2A4263] text-white'
+              : 'border border-[#10B981]/20 bg-[#D1FAE5] text-[#10B981]'
+          }`}
+        >
+          {toast.type === 'loading' ? (
+            <CgSpinner className="animate-spin text-xl" />
+          ) : (
+            <GoCheckCircle className="text-xl" />
+          )}
           <span>{toast.message}</span>
         </div>
       </div>
-
     </div>
   );
 }

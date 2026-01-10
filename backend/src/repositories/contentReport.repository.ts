@@ -12,16 +12,19 @@ export default class ContentReportRepository {
   }
 
   async findAll(filters: GetReportsQuery) {
-    const { page, limit, sortBy, order, lguId, status } = filters;
+    // Ensure numbers for pagination math
+    const page = Math.max(1, Number(filters.page) || 1);
+    const limit = Math.max(1, Number(filters.limit) || 10);
+    const { sortBy, order, lguId, status } = filters;
 
     const pipeline: any[] = [];
 
-    // 1. Filter by Status (exists on Report)
+    // 1. Filter by Status
     if (status && status !== 'ALL') {
       pipeline.push({ $match: { status } });
     }
 
-    // 2. Join with Posts to get lguId
+    // 2. Join with Posts
     pipeline.push({
       $lookup: {
         from: 'posts',
@@ -31,37 +34,58 @@ export default class ContentReportRepository {
       },
     });
 
-    // Unwind the array created by lookup
     pipeline.push({ $unwind: '$postDetails' });
 
-    // 3. Filter by lguId
+    // 3. Filter by lguId (Logic preserved as requested)
     if (lguId) {
       pipeline.push({
         $match: { 'postDetails.lguId': new mongoose.Types.ObjectId(lguId) },
       });
     }
 
-    // 4. Sort, Skip, Limit
-    pipeline.push({ $sort: { [sortBy]: order === 'desc' ? -1 : 1 } });
-    pipeline.push({ $skip: (page - 1) * limit });
-    pipeline.push({ $limit: limit });
+    // 4. ADDED: Facet for Data + Count
+    // This runs two parallel pipelines: one for pagination, one for counting total
+    pipeline.push({
+      $facet: {
+        data: [
+          { $sort: { [sortBy || 'createdAt']: order === 'desc' ? -1 : 1 } },
+          { $skip: (page - 1) * limit },
+          { $limit: limit },
+        ],
+        totalCount: [{ $count: 'count' }],
+      },
+    });
 
     // Execute
-    const results = await ContentReportModel.aggregate(pipeline);
+    const [result] = await ContentReportModel.aggregate(pipeline);
 
-    // Note: Manual population is needed after aggregate or use $lookup for everything
-    return ContentReportModel.populate(results, [
+    // Extract results
+    const data = result.data;
+    const total = result.totalCount[0]?.count || 0;
+
+    // 5. Populate the data array
+    await ContentReportModel.populate(data, [
       { path: 'reporterId', select: 'householdName email profileImage lguId' },
       {
         path: 'postId',
         populate: {
-          path: 'userId',
+          path: 'userId', // Assuming the Post model refers to the author as 'userId' or 'authorId'
           select: 'householdName email profileImage lguId',
         },
       },
     ]);
-  }
 
+    // 6. Return Structured Response
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
   async count(filters: GetReportsQuery) {
     const { lguId, status } = filters;
 

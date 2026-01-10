@@ -6,6 +6,7 @@ import contentReportRoutes from './contentReport.routes.js';
 import goBagRoutes from './goBag.routes.js';
 import goBagItemRoutes from './goBagItem.routes.js';
 import leaderboardRoutes from './leaderboard.routes.js';
+import lguRoutes from './lgu.routes.js';
 import moduleRoutes from './module.routes.js';
 import postRoutes from './post.routes.js';
 import quizRoutes from './quiz.routes.js';
@@ -23,6 +24,7 @@ const routes: Route[] = [
   { path: '/users', router: userRoutes },
   { path: '/admin', router: adminRoutes },
   { path: '/leaderboard', router: leaderboardRoutes },
+  { path: '/lgu', router: lguRoutes },
   { path: '/goBags', router: goBagRoutes },
   { path: '/items', router: goBagItemRoutes },
   { path: '/modules', router: moduleRoutes },

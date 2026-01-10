@@ -36,6 +36,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (user.role === 'lgu') {
+      navigate(paths.lgu.root.getHref());
+      return;
+    }
+
     if (!user.onboardingCompleted) {
       navigate(paths.app.onboarding.getHref());
     }
