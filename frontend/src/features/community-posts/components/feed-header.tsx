@@ -36,11 +36,13 @@ export function FeedHeader() {
   const currentSort = (searchParams.get('sort') as SortOption) || 'newest';
 
   return (
-    <div className="sticky top-0 z-30 w-full bg-white shadow-sm border-b border-gray-200">
-      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">        {/* Title Section */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="sticky top-0 z-30 w-full border-b border-gray-200 bg-white shadow-sm">
+      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {' '}
+        {/* Title Section */}
+        <div className="flex flex-col gap-4 pt-10 md:flex-row md:items-center md:justify-between lg:pt-0">
           <div>
-            <h1 className="text-3xl font-extrabold text-[#2a4263] tracking-tight">
+            <h1 className="text-3xl font-extrabold tracking-tight text-[#2a4263]">
               Community Posts
             </h1>
             <p className="mt-1 text-sm text-gray-500">
@@ -48,16 +50,15 @@ export function FeedHeader() {
             </p>
           </div>
         </div>
-
         <div className="mt-6 flex gap-3">
           {/* Search Bar */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative max-w-md flex-1">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <LuSearch className="h-5 w-5 text-gray-400" />
             </div>
             <input
               type="text"
-              className="block w-full rounded-lg border-gray-300 bg-gray-100 py-3 pr-3 pl-10 text-sm focus:border-[#2a4263] focus:bg-white focus:ring-[#2a4263] focus:outline-none transition-all shadow-sm"
+              className="block w-full rounded-lg border-gray-300 bg-gray-100 py-3 pr-3 pl-10 text-sm shadow-sm transition-all focus:border-[#2a4263] focus:bg-white focus:ring-[#2a4263] focus:outline-none"
               placeholder="Search items or captions..."
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
@@ -69,18 +70,18 @@ export function FeedHeader() {
             <div
               tabIndex={0}
               role="button"
-              className="btn bg-[#2a4263] hover:bg-[#1e3a5a] text-white border-none gap-2 shadow-sm rounded-lg h-[46px]"
+              className="btn h-[46px] gap-2 rounded-lg border-none bg-[#2a4263] text-white shadow-sm hover:bg-[#1e3a5a]"
               title="Sort Feed"
             >
               <LuArrowUpDown className="h-5 w-5" />
-              <span className="hidden sm:inline font-medium">
+              <span className="hidden font-medium sm:inline">
                 {currentSort.charAt(0).toUpperCase() + currentSort.slice(1)}
               </span>
             </div>
 
             <ul
               tabIndex={0}
-              className="menu dropdown-content rounded-box bg-white border border-gray-100 z-[10] mt-2 w-40 p-2 shadow-xl"
+              className="menu dropdown-content rounded-box z-[10] mt-2 w-40 border border-gray-100 bg-white p-2 shadow-xl"
             >
               {['newest', 'oldest', 'popular'].map((option) => (
                 <li key={option}>
@@ -103,3 +104,4 @@ export function FeedHeader() {
     </div>
   );
 }
+
