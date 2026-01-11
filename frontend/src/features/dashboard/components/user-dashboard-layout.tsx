@@ -111,7 +111,7 @@ export function UserDashboard() {
               { label: 'Go-Bag', val: goBag, icon: LuPackage, color: 'blue' },
               {
                 label: 'Courses',
-                val: modules.toFixed(1),
+                val: modules,
                 icon: LuBookOpen,
                 color: 'indigo',
               },
