@@ -38,6 +38,9 @@ export function AppProvider({ children }: AppProviderProps) {
                   <span className="loading loading-spinner loading-xl"></span>
                 </div>
               )}
+              renderError={(error) => (
+                <MainErrorFallback error={error as Error} />
+              )}
             >
               {children}
             </AuthLoader>
@@ -47,4 +50,3 @@ export function AppProvider({ children }: AppProviderProps) {
     </React.Suspense>
   );
 }
-

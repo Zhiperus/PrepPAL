@@ -38,8 +38,6 @@ export function FeedHeader() {
   return (
     <div className="sticky top-0 z-30 w-full border-b border-gray-200 bg-white shadow-sm">
       <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        {' '}
-        {/* Title Section */}
         <div className="flex flex-col gap-4 pt-10 md:flex-row md:items-center md:justify-between lg:pt-0">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-[#2a4263]">
@@ -51,7 +49,6 @@ export function FeedHeader() {
           </div>
         </div>
         <div className="mt-6 flex gap-3">
-          {/* Search Bar */}
           <div className="relative max-w-md flex-1">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <LuSearch className="h-5 w-5 text-gray-400" />
@@ -64,8 +61,6 @@ export function FeedHeader() {
               onChange={(e) => setLocalSearch(e.target.value)}
             />
           </div>
-
-          {/* Sort Dropdown */}
           <div className="dropdown dropdown-end">
             <div
               tabIndex={0}
