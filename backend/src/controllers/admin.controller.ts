@@ -62,15 +62,17 @@ export default class AdminController {
             role: 'citizen',
           });
 
+          const lguInfo = await LguModel.findById(lgu.lguId);
+
           return {
             id: lgu._id,
             name: lgu.householdName,
             adminEmail: lgu.email,
             status: 'active',
-            region: lgu.location?.region,
-            province: lgu.location?.province,
-            city: lgu.location?.city,
-            barangay: lgu.location?.barangay,
+            region: lguInfo?.region,
+            province: lguInfo?.province,
+            city: lguInfo?.city,
+            barangay: lguInfo?.barangay,
             registeredUsers: citizenCount,
           };
         }),

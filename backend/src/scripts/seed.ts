@@ -17,6 +17,7 @@ dotenv.config();
 
 const MONGO_URI = process.env.DATABASE_URL || '';
 
+// --- UTILS ---
 const getRandomInt = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -28,16 +29,15 @@ const getRandomSubset = <T>(arr: T[], size: number): T[] => {
   return shuffled.slice(0, size);
 };
 
-// --- LOCATIONS ---
-const TARGET_LOCATION = {
-  region: 'NCR',
-  province: 'Metro Manila',
-  city: 'Quezon City',
-  barangay: 'Batasan Hills',
-};
+// --- DATA CONSTANTS ---
 
 const PH_LOCATIONS = [
-  TARGET_LOCATION,
+  {
+    region: 'NCR',
+    province: 'Metro Manila',
+    city: 'Quezon City',
+    barangay: 'Batasan Hills',
+  },
   {
     region: 'NCR',
     province: 'Metro Manila',
@@ -68,24 +68,32 @@ const PH_LOCATIONS = [
     city: 'Santa Rosa',
     barangay: 'Balibago',
   },
+  {
+    region: 'VII',
+    province: 'Cebu',
+    city: 'Cebu City',
+    barangay: 'Lahug',
+  },
 ];
 
 const CAPTIONS = [
-  'Just updated my kit! 🎒',
+  'Just updated my kit! 🎒 #Ready',
   'Safety first. Ready for the typhoon season.',
-  'Finally bought a proper flashlight.',
-  'Checking expiration dates on my canned goods.',
-  'Added a whistle to my bag today.',
-  'My Go Bag is finally 100% complete!',
+  'Finally bought a proper flashlight. 🔦',
+  'Checking expiration dates on my canned goods today.',
+  'Added a whistle and mask to my bag.',
+  'My Go Bag is finally 100% complete! Feels good.',
   'Hope I never have to use this, but glad I have it.',
-  'Reminder: Check your batteries!',
-  'Packing light but essential.',
+  'Reminder: Check your batteries every 6 months!',
+  'Packing light but essential. Rate my setup?',
   'Got this new multi-tool, highly recommend it.',
-  'Preparing for the worst, hoping for the best.',
+  'Preparing for the worst, hoping for the best. 🙏',
   'Family safety is priority #1.',
-  'Reviewing my checklist...',
-  'Don’t forget your important documents!',
+  'Reviewing my checklist... seems I missed water.',
+  'Don’t forget your important documents in a waterproof bag!',
   'Water supply refreshed. 💧',
+  'Staying alert with the heavy rains coming. Stay safe everyone!',
+  'Just finished the Fire Safety module. Learned a lot!',
 ];
 
 const IMAGES = [
@@ -99,6 +107,8 @@ const IMAGES = [
   'https://images.unsplash.com/photo-1534081333815-ae5019106622?q=80&w=1000',
   'https://images.unsplash.com/photo-1615655406736-b37c4fabf923?q=80&w=1000',
 ];
+
+// --- SEED FUNCTION ---
 
 const seed = async () => {
   try {
@@ -123,7 +133,8 @@ const seed = async () => {
     const createdItems = await GoBagItemModel.insertMany(GO_BAG_ITEMS);
     console.log(`✅ Created ${createdItems.length} catalog items`);
 
-    // 3. CREATE LGUS (Per Barangay)
+    // 3. CREATE LGUs (Per Barangay)
+    // The Location data lives HERE now
     const lguData = PH_LOCATIONS.map((loc) => ({
       name: `Brgy. ${loc.barangay}`,
       region: loc.region,
@@ -135,7 +146,6 @@ const seed = async () => {
     const createdLgus = await LguModel.insertMany(lguData);
     console.log(`✅ Created ${createdLgus.length} Barangay LGUs`);
 
-    // Helper: Find LGU ID by matching Name (Safest way)
     const getLguId = (barangayName: string) => {
       const match = createdLgus.find((l) => l.name.includes(barangayName));
       return match?._id || null;
@@ -143,30 +153,26 @@ const seed = async () => {
 
     const hashedPassword = await bcrypt.hash('password', 10);
 
-    // 3a. Create LGU ADMINS
-    const lguUsers = createdLgus.map((lgu: any) => {
-      // FIX: Use lgu.name to guarantee uniqueness.
-      // e.g. "Brgy. Batasan Hills" -> "lgu.brgybatasanhills@test.com"
+    // 4. CREATE USERS
+
+    // 4a. LGU ADMINS (CLEAN - No Location, No Points)
+    const lguAdmins = createdLgus.map((lgu: any) => {
       const rawSlug = lgu.name;
       const emailSlug = rawSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
 
       return {
-        email: `lgu.${emailSlug}@test.com`,
+        email: `admin.${emailSlug}@prep.gov.ph`,
         password: hashedPassword,
         role: 'lgu',
         lguId: lgu._id,
-        householdName: `${lgu.name} Hall`,
-        location: {
-          region: lgu.region,
-          province: lgu.province,
-          city: lgu.city,
-          // Fallback if schema stripped the barangay field
-          barangay: lgu.barangay || lgu.name.replace('Brgy. ', ''),
-        },
+        householdName: `${lgu.name} Admin`,
+        // CLEAN OBJECT: No location, no points, no householdInfo
+        isEmailVerified: true,
+        onboardingCompleted: true,
       };
     });
 
-    // 3b. Specific Citizen Users
+    // 4b. CITIZENS (Have Location & Points defaults)
     const mainUsers = [
       {
         email: 'iorie@example.com',
@@ -174,9 +180,17 @@ const seed = async () => {
         householdName: 'Chua Household',
         role: 'citizen',
         lguId: getLguId('Batasan Hills'),
+        location: {
+          region: 'NCR',
+          province: 'Metro Manila',
+          city: 'Taguig',
+          barangay: 'Fort Bonifacio',
+        },
         points: { goBag: 50, community: 10, modules: 5 },
+        householdInfo: { memberCount: 4, femaleCount: 2, pets: 1 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Iorie',
-        location: TARGET_LOCATION,
+        isEmailVerified: true,
+        onboardingCompleted: true,
       },
       {
         email: 'kyle@example.com',
@@ -184,93 +198,96 @@ const seed = async () => {
         householdName: 'The Dev Cave',
         role: 'citizen',
         lguId: getLguId('Fort Bonifacio'),
-        points: { goBag: 80, community: 150, modules: 20 },
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kyle',
         location: {
           region: 'NCR',
           province: 'Metro Manila',
           city: 'Taguig',
           barangay: 'Fort Bonifacio',
         },
-      },
-      {
-        email: 'jarence@example.com',
-        password: hashedPassword,
-        householdName: 'Design Studio',
-        role: 'citizen',
-        lguId: getLguId('Batasan Hills'),
-        points: { goBag: 30, community: 5, modules: 0 },
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jarence',
-        location: TARGET_LOCATION,
+        points: { goBag: 80, community: 150, modules: 20 },
+        householdInfo: { memberCount: 1, femaleCount: 0, pets: 0 },
+        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kyle',
+        isEmailVerified: true,
+        onboardingCompleted: true,
       },
     ];
 
-    // 3c. Super Admin
     const superAdmin = {
-      email: 'super@test.com',
+      email: 'super@prep.gov.ph',
       password: hashedPassword,
       role: 'super_admin',
       lguId: null,
-      householdName: 'Global HQ',
-      location: TARGET_LOCATION,
+      householdName: 'National HQ',
+      isEmailVerified: true,
+      onboardingCompleted: true,
     };
 
-    // 3d. Random Citizens
-    const randomUsersData = Array.from({ length: 40 }).map((_, i) => {
+    // 4c. RANDOM CITIZENS
+    const randomUsersData = Array.from({ length: 60 }).map((_, i) => {
       const location = getRandomItem(PH_LOCATIONS);
-      // Find the specific LGU document for this location's barangay
       const userLguId = getLguId(location.barangay);
 
       return {
-        email: `user${i + 1}@example.com`,
+        email: `resident${i + 1}@example.com`,
         password: hashedPassword,
         householdName: `Resident ${i + 1}`,
         phoneNumber: `0917${getRandomInt(1000000, 9999999)}`,
         role: 'citizen',
         lguId: userLguId,
-        location: location,
+        location: location, // Location is required for Citizens
         onboardingCompleted: true,
+        householdInfo: {
+          memberCount: getRandomInt(1, 6),
+          femaleCount: getRandomInt(0, 3),
+          pets: getRandomInt(0, 2),
+        },
         points: {
           goBag: getRandomInt(10, 100),
           community: getRandomInt(0, 50),
           modules: getRandomInt(0, 10),
         },
-        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=User${
-          i + 1
-        }`,
+        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=Resident${i}`,
       };
     });
 
+    // Create All Users
+    // Mongoose Discriminators will handle the schema differences based on 'role'
     const createdUsers = await UserModel.create([
       superAdmin,
-      ...lguUsers,
+      ...lguAdmins,
       ...mainUsers,
       ...randomUsersData,
     ]);
 
     const createdCitizens = createdUsers.filter((u) => u.role === 'citizen');
-    console.log(`✅ Created ${createdUsers.length} total users`);
+    console.log(
+      `✅ Created ${createdUsers.length} Users (${lguAdmins.length} Admins, ${createdCitizens.length} Citizens)`,
+    );
 
-    // 4. CREATE GO BAGS
+    // 5. CREATE GO BAGS
     const goBagDocs = createdCitizens.map((user) => {
-      const packedCount = getRandomInt(5, createdItems.length);
+      const packedCount = getRandomInt(3, createdItems.length);
       const packedItems = getRandomSubset(createdItems, packedCount);
+
       return {
         userId: user._id,
         imageUrl: getRandomItem(IMAGES),
         items: packedItems.map((i) => i.id.toString()),
-        lastUpdated: new Date(),
+        lastUpdated: new Date(
+          Date.now() - getRandomInt(0, 60) * 24 * 60 * 60 * 1000,
+        ),
       };
     });
-    await GoBagModel.insertMany(goBagDocs);
-    console.log(`✅ Created Go Bags`);
 
-    // 5. CREATE POSTS
+    await GoBagModel.insertMany(goBagDocs);
+    console.log(`✅ Created ${goBagDocs.length} Go Bags`);
+
+    // 6. CREATE POSTS (Increased volume for analytics)
     const postsData = [];
     const eligibleAuthors = createdCitizens.filter((u) => u.lguId);
 
     if (eligibleAuthors.length > 0) {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 200; i++) {
         const author = getRandomItem(eligibleAuthors);
         const snapshotCount = getRandomInt(2, 6);
         const snapshotItems = getRandomSubset(createdItems, snapshotCount).map(
@@ -280,6 +297,7 @@ const seed = async () => {
             category: item.category,
           }),
         );
+
         const daysAgo = getRandomInt(0, 30);
         const postDate = new Date();
         postDate.setDate(postDate.getDate() - daysAgo);
@@ -295,65 +313,130 @@ const seed = async () => {
           createdAt: postDate,
         });
       }
+
       postsData.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
       await PostModel.insertMany(postsData);
-      console.log(`✅ Created Posts`);
+      console.log(`✅ Created ${postsData.length} Community Posts`);
     }
 
-    // 6. SEED MODULES & QUIZZES
+    // 7. SEED MODULES & QUIZZES
     console.log('📚 Seeding Educational Modules...');
-    const fireSafetyModule = await ModuleModel.create({
-      title: 'Fire Safety',
-      description: 'Prevention and EDITH.',
-      logo: '🔥',
-      content: [{ text: 'Exit Drills In The Home', imageUrl: '' }],
-    });
-    await QuizModel.create({
-      moduleId: fireSafetyModule._id,
-      questions: [
-        {
-          questionText: 'Smell smoke?',
-          choices: [{ id: 1, text: 'Evacuate' }],
-          correctAnswer: 1,
-        },
-      ],
-    });
-    console.log('✅ Modules seeded');
 
-    // 7. CREATE CONTENT REPORTS
+    const modulesData = [
+      {
+        title: 'Earthquake Readiness',
+        description: 'Drop, Cover, and Hold strategies.',
+        logo: '🌋',
+        content: [
+          {
+            text: 'If you are indoors, stay there. Get under a desk.',
+            imageUrl: '',
+          },
+        ],
+        questions: [
+          {
+            q: 'What is the first thing to do?',
+            choices: ['Run', 'Drop', 'Scream'],
+            a: 1,
+          },
+          {
+            q: 'Where should you hide?',
+            choices: ['Under a table', 'Near a window', 'Elevator'],
+            a: 0,
+          },
+        ],
+      },
+      {
+        title: 'Typhoon Survival',
+        description: 'Preparing your home for heavy storms.',
+        logo: '🌀',
+        content: [
+          { text: 'Secure loose items outside your home.', imageUrl: '' },
+        ],
+        questions: [
+          {
+            q: 'When should you evacuate?',
+            choices: ['During the eye', 'When told by LGU', 'Never'],
+            a: 1,
+          },
+        ],
+      },
+      {
+        title: 'Basic First Aid',
+        description: 'Treating minor cuts and burns.',
+        logo: '🩹',
+        content: [{ text: 'Clean cuts with soap and water.', imageUrl: '' }],
+        questions: [
+          {
+            q: 'Best treatment for minor burns?',
+            choices: ['Butter', 'Ice', 'Cool Water'],
+            a: 2,
+          },
+        ],
+      },
+    ];
+
+    for (const mod of modulesData) {
+      const newMod = await ModuleModel.create({
+        title: mod.title,
+        description: mod.description,
+        logo: mod.logo,
+        content: mod.content,
+      });
+
+      await QuizModel.create({
+        moduleId: newMod._id,
+        questions: mod.questions.map((q, idx) => ({
+          questionText: q.q,
+          choices: q.choices.map((c, i) => ({ id: i, text: c })),
+          correctAnswer: q.a,
+        })),
+      });
+    }
+    console.log(`✅ Created ${modulesData.length} Modules with Quizzes`);
+
+    // 8. CREATE CONTENT REPORTS (Increased volume)
     console.log('🚩 Seeding Content Reports...');
+
     const allPosts = await PostModel.find();
-    const REASONS = [
+    const REPORT_REASONS = [
       'Misinformation',
       'Inappropriate content',
       'Impersonation',
       'Spam',
-      'Fake verification',
+      'Harassment',
+      'Fake verification image',
     ];
-    const reportStatuses = ['PENDING', 'RESOLVED', 'DISMISSED'];
+    // Weighted towards PENDING so the dashboard has work to do
+    const REPORT_STATUSES = ['PENDING', 'PENDING', 'RESOLVED', 'DISMISSED'];
 
-    const reportsData = Array.from({ length: 20 }).map(() => {
+    const reportsData = [];
+
+    // Create ~50 reports
+    for (let i = 0; i < 50; i++) {
       const reportedPost = getRandomItem(allPosts);
-      const reporter = getRandomItem(
-        createdCitizens.filter(
-          (u: any) => u._id.toString() !== reportedPost.userId,
-        ),
+      // Ensure reporter is different from author
+      const possibleReporters = createdCitizens.filter(
+        (u) => u._id.toString() !== reportedPost.userId.toString(),
       );
 
-      return {
-        postId: reportedPost._id,
-        reporterId: reporter._id,
-        lguId: reportedPost.lguId,
-        reason: getRandomItem(REASONS),
-        status: getRandomItem(reportStatuses),
-        createdAt: new Date(
-          Date.now() - getRandomInt(0, 7) * 24 * 60 * 60 * 1000,
-        ),
-      };
-    });
+      if (possibleReporters.length > 0) {
+        const reporter = getRandomItem(possibleReporters);
+        reportsData.push({
+          postId: reportedPost._id,
+          reporterId: reporter._id,
+          lguId: reportedPost.lguId, // Crucial for LGU Admin filtering
+          reason: getRandomItem(REPORT_REASONS),
+          status: getRandomItem(REPORT_STATUSES),
+          createdAt: new Date(
+            Date.now() - getRandomInt(0, 10) * 24 * 60 * 60 * 1000,
+          ),
+        });
+      }
+    }
 
     const createdReports = await ContentReportModel.insertMany(reportsData);
-    console.log(`✅ Created ${createdReports.length} content reports`);
+    console.log(`✅ Created ${createdReports.length} Content Reports`);
 
     process.exit(0);
   } catch (error) {

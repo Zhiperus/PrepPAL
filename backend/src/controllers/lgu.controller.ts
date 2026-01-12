@@ -3,7 +3,6 @@ import { Types } from 'mongoose';
 
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
-import PostModel from '../models/post.model.js';
 import UserRepository from '../repositories/user.repository.js';
 import LguService from '../services/lgu.service.js';
 
@@ -171,8 +170,6 @@ export default class LguController {
     next: NextFunction,
   ) => {
     try {
-      // 'req.user' comes from the authenticate middleware
-      // It must contain the 'lguId' for LGU admins
       const userId = req.userId;
       const user = await this.userService.findById(userId!);
 
@@ -196,7 +193,7 @@ export default class LguController {
 
   getLguResidentGoBags = async (req: Request, res: Response) => {
     try {
-      const { lguId, page = 1, limit = 10 } = req.query; // Default to page 1, 10 items
+      const { lguId, page = 1, limit = 10 } = req.query;
 
       const pageNum = parseInt(page as string);
       const limitNum = parseInt(limit as string);
@@ -211,7 +208,7 @@ export default class LguController {
 
       // 2. Main Aggregation Pipeline
       const result = await GoBagModel.aggregate([
-        // --- (SAME PIPELINE START: Lookup User, Unwind, Match LGU) ---
+        // A. Lookup User
         {
           $lookup: {
             from: 'users',
@@ -221,13 +218,26 @@ export default class LguController {
           },
         },
         { $unwind: '$userDetails' },
+
+        // B. Match LGU
         {
           $match: {
             'userDetails.lguId': new Types.ObjectId(lguId as string),
           },
         },
 
-        // --- (SAME PIPELINE MIDDLE: Item conversions & lookups) ---
+        // C. NEW: Lookup LGU to get Location Data
+        {
+          $lookup: {
+            from: 'lgus', // Fetches from the 'lgus' collection
+            localField: 'userDetails.lguId',
+            foreignField: '_id',
+            as: 'lguDetails',
+          },
+        },
+        { $unwind: '$lguDetails' },
+
+        // D. Item conversions
         {
           $addFields: {
             convertedItemIds: {
@@ -248,7 +258,7 @@ export default class LguController {
           },
         },
 
-        // --- (SAME PIPELINE END: Projection & Calculation) ---
+        // E. Projection
         {
           $project: {
             _id: 1,
@@ -281,7 +291,16 @@ export default class LguController {
               householdName: '$userDetails.householdName',
               email: '$userDetails.email',
               phoneNumber: '$userDetails.phoneNumber',
-              location: '$userDetails.location',
+
+              // --- UPDATED LOCATION MAPPING ---
+              // Pulling location from the LGU model instead of the User model
+              location: {
+                region: '$lguDetails.region',
+                province: '$lguDetails.province',
+                city: '$lguDetails.city',
+                barangay: '$lguDetails.barangay',
+              },
+
               householdInfo: '$userDetails.householdInfo',
               points: '$userDetails.points',
               profileImage: '$userDetails.profileImage',
@@ -300,13 +319,14 @@ export default class LguController {
             },
           },
         },
+
         { $sort: { lastUpdated: -1 } },
 
-        // --- NEW: FACET FOR PAGINATION ---
+        // F. Pagination Facet
         {
           $facet: {
-            metadata: [{ $count: 'total' }], // Count all matching documents
-            data: [{ $skip: skip }, { $limit: limitNum }], // Get just the slice we want
+            metadata: [{ $count: 'total' }],
+            data: [{ $skip: skip }, { $limit: limitNum }],
           },
         },
       ]);

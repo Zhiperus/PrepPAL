@@ -66,7 +66,7 @@ export default function EditModulePage() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-extrabold text-[#2a4263]">
-                Administrator: Module Editor
+                Module Editor
               </h1>
               <div className="badge badge-outline badge-success mt-2 gap-4 p-3">
                 <div
