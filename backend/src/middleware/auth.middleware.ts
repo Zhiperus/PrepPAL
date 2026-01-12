@@ -39,7 +39,6 @@ export const authorizeRoles = (
   ...allowedRoles: ('citizen' | 'lgu' | 'super_admin')[]
 ) => {
   return (req: Request, _res: Response, next: NextFunction) => {
-    console.log(req.role);
     if (!req.role) {
       return next(new UnauthorizedError('User role not identified'));
     }
