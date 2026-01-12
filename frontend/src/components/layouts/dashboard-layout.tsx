@@ -164,15 +164,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </ul>
 
             <div className="mt-auto mb-4 flex flex-col gap-4 font-medium text-gray-700">
-              <Link
-                to={paths.home.getHref()}
-                className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
-                onClick={closeDrawer}
-              >
-                <GoInfo className="h-6 w-6" />
-                <span>About</span>
-              </Link>
-
               <button
                 className="flex cursor-pointer items-center gap-4 rounded-lg p-2 text-red-500 hover:bg-red-50"
                 onClick={() => {
