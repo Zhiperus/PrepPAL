@@ -14,7 +14,7 @@ export const contentReportSchema = z.object({
   updatedAt: z.date().optional(),
 });
 
-export const GetReportsQuerySchema = z.object({
+export const GetContentReportsQuerySchema = z.object({
   sortBy: z.string().default("createdAt"),
   order: z.enum(["asc", "desc"]).default("desc"),
   limit: z.coerce.number().default(10),
@@ -25,10 +25,14 @@ export const GetReportsQuerySchema = z.object({
   lguId: z.string().optional(),
 });
 
-export const CompleteReportRequestSchema = z.object({
+export const CompleteContentReportRequestSchema = z.object({
   status: z.enum(["RESOLVED", "DISMISSED"]),
 });
 
 export type ContentReport = z.infer<typeof contentReportSchema>;
-export type GetReportsQuery = z.infer<typeof GetReportsQuerySchema>;
-export type CompleteReportRequest = z.infer<typeof CompleteReportRequestSchema>;
+export type GetContentReportsQuery = z.infer<
+  typeof GetContentReportsQuerySchema
+>;
+export type CompleteContentReportRequest = z.infer<
+  typeof CompleteContentReportRequestSchema
+>;

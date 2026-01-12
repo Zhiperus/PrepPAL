@@ -1,6 +1,6 @@
 import {
-  CompleteReportRequest,
-  GetReportsQuery,
+  CompleteContentReportRequest,
+  GetContentReportsQuery,
 } from '@repo/shared/dist/schemas/contentReport.schema';
 
 import { NotFoundError } from '../errors/index.js';
@@ -12,7 +12,7 @@ export default class ContentReportService {
   private reportRepo = new ContentReportRepository();
   private postService = new PostService();
 
-  async findAll(filters: GetReportsQuery) {
+  async findAll(filters: GetContentReportsQuery) {
     const [data, total] = await Promise.all([
       this.reportRepo.findAll(filters),
       this.reportRepo.count(filters),
@@ -29,17 +29,16 @@ export default class ContentReportService {
     };
   }
 
-  async completeReport(id: string, data: CompleteReportRequest) {
+  async completeReport(id: string, data: CompleteContentReportRequest) {
     const report = await this.reportRepo.findByIdAndUpdate(id, data);
 
     if (!report) throw new NotFoundError('Report not found');
-    console.log(data.status);
     // If RESOLVED, tell the PostService to take action
     if (data.status === 'RESOLVED') {
       try {
         await this.postService.deletePost(report.postId.toString());
       } catch (error) {
-        console.error(`Failed to hide post ${report.postId}:`, error);
+        console.error(`Failed to delete post ${report.postId}:`, error);
       }
     }
 

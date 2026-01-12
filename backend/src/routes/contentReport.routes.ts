@@ -10,14 +10,14 @@ contentReportRoutes.get(
   '/',
   authenticate,
   authorizeRoles('super_admin', 'lgu'),
-  controller.findAllReports.bind(controller),
+  controller.findAllContentReports.bind(controller),
 );
 
 contentReportRoutes.patch(
   '/:id/complete',
   authenticate,
   authorizeRoles('super_admin', 'lgu'),
-  controller.completeReport.bind(controller),
+  controller.completeContentReport.bind(controller),
 );
 
 export default contentReportRoutes;
