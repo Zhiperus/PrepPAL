@@ -82,7 +82,7 @@ export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
           type="number"
           min="0"
           className="input validator bg-primary-container border-container-secondary w-full"
-          {...register('householdInfo.femaleCount')}
+          {...(register('householdInfo.femaleCount'), { valueAsNumber: true })}
         />
       </fieldset>
 
@@ -94,7 +94,7 @@ export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
           type="number"
           min="0"
           className="input validator bg-primary-container border-container-secondary w-full"
-          {...register('householdInfo.pets')}
+          {...(register('householdInfo.pets'), { valueAsNumber: true })}
         />
       </fieldset>
 
