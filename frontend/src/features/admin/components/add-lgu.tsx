@@ -1,6 +1,6 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
-import { LuX, LuBuilding, LuMail, LuUserPlus } from 'react-icons/lu';
+import { LuX, LuBuilding, LuMail, LuUserPlus, LuLock } from 'react-icons/lu';
 
 import { useCreateLgu } from '../api/add-lgu';
 
@@ -13,6 +13,7 @@ interface LocationItem {
 interface LGUFormData {
   lguName: string;
   adminEmail: string;
+  password: string; // Required for the account creation
   location: {
     region: string;
     province: string;
@@ -43,7 +44,7 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
     setValue,
     watch,
     reset,
-    formState: { isValid },
+    formState: { isValid, errors },
   } = useForm<LGUFormData>({
     mode: 'onChange',
   });
@@ -164,6 +165,7 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
     createLguMutation.mutate({
       name: formData.lguName,
       adminEmail: formData.adminEmail,
+      password: formData.password,
       region: formData.location.region,
       province: formData.location.province,
       city: formData.location.city,
@@ -352,6 +354,42 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
                 />
               </div>
             </div>
+
+            {/* Password Field (ADDED) */}
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text font-bold text-gray-700">
+                  Password
+                </span>
+              </label>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                  <LuLock />
+                </div>
+                <input
+                  {...register('password', {
+                    required: true,
+                    minLength: {
+                      value: 8,
+                      message: 'Password must be at least 8 characters',
+                    },
+                  })}
+                  type="text"
+                  className={`input input-bordered w-full rounded-xl pl-10 focus:outline-none ${
+                    errors.password
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'focus:border-[#2a4263]'
+                  }`}
+                />
+              </div>
+              {errors.password && (
+                <label className="label">
+                  <span className="label-text-alt text-red-500">
+                    {errors.password.message || 'Password is required'}
+                  </span>
+                </label>
+              )}
+            </div>
           </form>
         </div>
 
@@ -386,4 +424,3 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
     </div>
   );
 }
-

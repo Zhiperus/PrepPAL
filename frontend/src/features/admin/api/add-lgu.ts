@@ -9,6 +9,7 @@ import type { MutationConfig } from '@/lib/react-query';
 export type AddLguDTO = {
   name: string;
   adminEmail: string;
+  password: string;
   region: string;
   province: string;
   city: string;
@@ -35,4 +36,3 @@ export const useCreateLgu = ({ config }: UseCreateLguOptions = {}) => {
     mutationFn: createLgu,
   });
 };
-
