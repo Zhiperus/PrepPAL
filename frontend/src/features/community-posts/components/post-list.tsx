@@ -14,7 +14,6 @@ interface PostListProps {
 
 export default function PostList({ onSelectPost }: PostListProps) {
   const [searchParams] = useSearchParams();
-
   const search = searchParams.get('search') || '';
   const sort = (searchParams.get('sort') as SortOption) || 'newest';
 
