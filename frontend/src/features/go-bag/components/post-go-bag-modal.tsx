@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LuX, LuSend, LuImage, LuUpload } from 'react-icons/lu';
+import { LuX, LuSend, LuImage } from 'react-icons/lu';
 
 import Toast from '@/components/ui/toast/toast';
 import { useCreatePost } from '@/features/community-posts/api/create-post';
@@ -85,12 +85,6 @@ export default function PostBagModal({
               </label>
 
               <div className="group relative aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                />
-
                 {bagImage ? (
                   <img
                     src={bagImage}
@@ -107,11 +101,6 @@ export default function PostBagModal({
                 )}
 
                 {/* Hover Effect */}
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                  <div className="flex items-center gap-2 font-medium text-white">
-                    <LuUpload className="h-4 w-4" /> Change Photo
-                  </div>
-                </div>
               </div>
             </div>
 
