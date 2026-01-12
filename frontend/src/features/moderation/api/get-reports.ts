@@ -60,7 +60,7 @@ export const getContentReports = ({
   page?: number;
   limit?: number;
 }): Promise<ContentReportResponse> => {
-  return api.get('/reports', {
+  return api.get('/content-reports', {
     params: { lguId, page, limit },
   });
 };
