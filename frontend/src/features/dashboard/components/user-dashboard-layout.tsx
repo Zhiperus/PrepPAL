@@ -7,6 +7,7 @@ import {
   LuChevronRight,
   LuTrophy,
   LuPlay,
+  LuInbox, 
 } from 'react-icons/lu';
 import { MdNavigateNext } from 'react-icons/md';
 import { Link, useNavigate } from 'react-router';
@@ -39,7 +40,10 @@ export function UserDashboard() {
   });
   const moduleDetails = moduleData?.data;
 
-  const { data: feedData } = useInfiniteFeed({ sort: 'newest', search: '' });
+  const { data: feedData, isLoading: isFeedLoading } = useInfiniteFeed({
+    sort: 'newest',
+    search: '',
+  });
 
   if (isUserLoading) {
     return (
@@ -106,7 +110,6 @@ export function UserDashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {/* GoBag, Courses, Community cards */}
             {[
               { label: 'Go-Bag', val: goBag, icon: LuPackage, color: 'blue' },
               {
@@ -217,7 +220,6 @@ export function UserDashboard() {
               onClick={() => navigate(`/app/modules/${recentModuleId}`)}
               className="group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl bg-[#2A4362] text-white shadow-xl transition-transform hover:scale-[1.01] sm:flex-row"
             >
-              {/* Background/Image Container */}
               <div className="relative h-40 overflow-hidden sm:h-auto sm:w-1/3 md:w-1/2">
                 <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#2A4362]/40 via-[#2A4362]/80 to-[#2A4362] sm:bg-gradient-to-r sm:to-transparent" />
                 <img
@@ -227,7 +229,6 @@ export function UserDashboard() {
                 />
               </div>
 
-              {/* Text Content */}
               <div className="relative z-20 flex flex-1 flex-col justify-center bg-[#2A4362] p-6 md:p-10">
                 <span className="mb-2 text-[10px] font-bold tracking-widest text-blue-300 uppercase sm:text-xs">
                   Recent Activity: {recentModuleData.bestScore}% Score
@@ -280,55 +281,81 @@ export function UserDashboard() {
             See how others are doing.
           </p>
           <div className="bg-bg-info bg-opacity-90 flex flex-col rounded-xl p-4 shadow-sm sm:p-6">
-            <div className="divide-y divide-gray-300">
-              {latestPosts.map((post) => (
-                <div
-                  key={post._id}
-                  className="flex flex-row items-start justify-between gap-4 py-5"
-                >
-                  <div className="flex flex-1 flex-col">
-                    <div className="mb-3 flex items-center gap-2 sm:gap-3">
-                      <div className="avatar">
-                        <div className="h-8 w-8 rounded-full ring ring-white sm:h-10 sm:w-10">
-                          <img
-                            src={post.author.userImage}
-                            alt={post.author.name}
-                          />
+            {isFeedLoading ? (
+              // Loading Skeleton
+              <div className="space-y-4">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="flex animate-pulse items-center gap-4 py-4"
+                  >
+                    <div className="h-20 w-full rounded bg-gray-200"></div>
+                  </div>
+                ))}
+              </div>
+            ) : latestPosts.length === 0 ? (
+              
+              <div className="flex w-full flex-col items-center justify-center py-10 text-gray-400">
+                <div className="mb-4 rounded-full bg-gray-100 p-4">
+                  <LuInbox className="h-10 w-10 opacity-50" />
+                </div>
+                <p className="text-lg font-medium">No posts found</p>
+                <p className="text-sm">Be the first to share in the community!</p>
+              </div>
+            ) : (
+              // List of Posts
+              <>
+                <div className="divide-y divide-gray-300">
+                  {latestPosts.map((post) => (
+                    <div
+                      key={post._id}
+                      className="flex flex-row items-start justify-between gap-4 py-5"
+                    >
+                      <div className="flex flex-1 flex-col">
+                        <div className="mb-3 flex items-center gap-2 sm:gap-3">
+                          <div className="avatar">
+                            <div className="h-8 w-8 rounded-full ring ring-white sm:h-10 sm:w-10">
+                              <img
+                                src={post.author.userImage}
+                                alt={post.author.name}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="line-clamp-1 text-xs font-bold text-[#2a4263] sm:text-sm">
+                              {post.author.name}
+                            </span>
+                          </div>
                         </div>
+                        <p className="mb-2 line-clamp-2 text-xs leading-relaxed font-medium text-[#2a4263] sm:text-sm">
+                          {post.caption}
+                        </p>
+                        <button
+                          onClick={() => setPostId(post._id)}
+                          className="mt-auto flex items-center text-xs font-bold text-gray-500 hover:text-[#2a4263] sm:text-sm"
+                        >
+                          Learn More{' '}
+                          <LuChevronRight className="ml-1 h-3 w-3 sm:h-4 sm:w-4" />
+                        </button>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="line-clamp-1 text-xs font-bold text-[#2a4263] sm:text-sm">
-                          {post.author.name}
-                        </span>
+                      <div className="h-20 w-20 shrink-0 sm:h-24 sm:w-24">
+                        <img
+                          src={post.imageUrl}
+                          alt="Post"
+                          className="h-full w-full rounded-lg object-cover"
+                        />
                       </div>
                     </div>
-                    <p className="mb-2 line-clamp-2 text-xs leading-relaxed font-medium text-[#2a4263] sm:text-sm">
-                      {post.caption}
-                    </p>
-                    <button
-                      onClick={() => setPostId(post._id)}
-                      className="mt-auto flex items-center text-xs font-bold text-gray-500 hover:text-[#2a4263] sm:text-sm"
-                    >
-                      Learn More{' '}
-                      <LuChevronRight className="ml-1 h-3 w-3 sm:h-4 sm:w-4" />
-                    </button>
-                  </div>
-                  <div className="h-20 w-20 shrink-0 sm:h-24 sm:w-24">
-                    <img
-                      src={post.imageUrl}
-                      alt="Post"
-                      className="h-full w-full rounded-lg object-cover"
-                    />
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
             <Link
-              to={paths.app['community-posts'].getHref()}
-              className="link link-hover mt-4 text-center text-sm font-semibold"
-            >
-              Show more...
-            </Link>
+                  to={paths.app['community-posts'].getHref()}
+                  className="link link-hover mt-4 text-center text-text-secondary text-sm font-semibold"
+                >
+                  Show more...
+                </Link>
           </div>
         </section>
       </div>

@@ -12,10 +12,8 @@ interface PostListProps {
   onSelectPost: (postId: string) => void;
 }
 
-export function PostList({ onSelectPost }: PostListProps) {
+export default function PostList({ onSelectPost }: PostListProps) {
   const [searchParams] = useSearchParams();
-
-  // 3. Read directly from URL Params
   const search = searchParams.get('search') || '';
   const sort = (searchParams.get('sort') as SortOption) || 'newest';
 
