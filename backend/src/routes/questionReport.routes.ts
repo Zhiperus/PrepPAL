@@ -9,14 +9,14 @@ const controller = new QuestionReportController();
 questionReportRoutes.get(
   '/',
   authenticate,
-  authorizeRoles('super_admin', 'lgu'),
+  authorizeRoles('super_admin'),
   controller.findAllQuestionReports.bind(controller),
 );
 
 questionReportRoutes.patch(
   '/:id/complete',
   authenticate,
-  authorizeRoles('super_admin', 'lgu'),
+  authorizeRoles('super_admin'),
   controller.completeQuestionReport.bind(controller),
 );
 

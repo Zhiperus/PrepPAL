@@ -33,8 +33,8 @@ const routes: Route[] = [
   { path: '/quiz', router: quizRoutes },
   { path: '/quiz-attempt', router: quizAttemptRoutes },
   { path: '/ratings', router: ratingRoutes },
-  { path: '/reports/content', router: contentReportRoutes },
-  { path: '/reports/question', router: questionReportRoutes },
+  { path: '/content-reports', router: contentReportRoutes },
+  { path: '/question-reports', router: questionReportRoutes },
 ];
 
 export default routes;
