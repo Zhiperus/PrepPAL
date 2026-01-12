@@ -62,7 +62,7 @@ export default function EditModulePage() {
     <div className="min-h-screen w-full bg-gray-50 pb-20">
       {/* Header & Search Bar Section */}
       <div className="bg-white shadow-sm">
-        <div className="mx-auto flex max-w-7xl px-4 py-6 sm:px-6 md:justify-between lg:px-8">
+        <div className="mx-auto flex max-w-7xl px-4 py-6 pt-12 sm:px-6 md:justify-between lg:px-8 lg:pt-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-extrabold text-[#2a4263]">
