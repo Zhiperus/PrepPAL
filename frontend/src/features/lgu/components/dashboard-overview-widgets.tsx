@@ -386,7 +386,7 @@ function ReadinessDistribution({ data }: { data?: ReadinessStat }) {
   ];
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border bg-white p-6 md:p-8">
+    <div className="flex h-full flex-col rounded-2xl bg-white p-6 md:p-8">
       <h3 className="text-lg font-bold text-slate-800">
         Citizen Readiness Distribution
       </h3>
@@ -475,8 +475,8 @@ export default function LguDashboardPage() {
             <h1 className="text-text-primary text-3xl font-bold tracking-tight">
               {lguDetails.name}
             </h1>
-            <div className="text-text-secondary mt-1 flex items-center gap-1.5 text-sm font-medium">
-              <MdLocationOn className="text-lg text-red-500" />
+            <div className="text-text-secondary mt-1 flex items-center gap-1.5 text-sm">
+              <MdLocationOn className="text-text-primary text-lg" />
               {lguDetails.location}
             </div>
           </div>

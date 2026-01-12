@@ -196,17 +196,22 @@ export default class LguController {
 
   getLguResidentGoBags = async (req: Request, res: Response) => {
     try {
-      const { lguId } = req.query;
+      const { lguId, page = 1, limit = 10 } = req.query; // Default to page 1, 10 items
+
+      const pageNum = parseInt(page as string);
+      const limitNum = parseInt(limit as string);
+      const skip = (pageNum - 1) * limitNum;
 
       if (!lguId) {
         return res.status(400).json({ error: 'LGU ID is required' });
       }
 
-      // 1. Get the total count of official Go Bag Items to act as the denominator
+      // 1. Get total item count for calculation
       const totalPossibleItems = await GoBagItemModel.countDocuments();
 
-      const goBags = await GoBagModel.aggregate([
-        // 2. Join with Users
+      // 2. Main Aggregation Pipeline
+      const result = await GoBagModel.aggregate([
+        // --- (SAME PIPELINE START: Lookup User, Unwind, Match LGU) ---
         {
           $lookup: {
             from: 'users',
@@ -216,15 +221,13 @@ export default class LguController {
           },
         },
         { $unwind: '$userDetails' },
-
-        // 3. Filter by LGU
         {
           $match: {
             'userDetails.lguId': new Types.ObjectId(lguId as string),
           },
         },
 
-        // 4. Convert Item Strings to ObjectIds
+        // --- (SAME PIPELINE MIDDLE: Item conversions & lookups) ---
         {
           $addFields: {
             convertedItemIds: {
@@ -236,8 +239,6 @@ export default class LguController {
             },
           },
         },
-
-        // 5. Lookup Item Details
         {
           $lookup: {
             from: 'gobagitems',
@@ -247,17 +248,15 @@ export default class LguController {
           },
         },
 
-        // 6. Projection & Calculation
+        // --- (SAME PIPELINE END: Projection & Calculation) ---
         {
           $project: {
             _id: 1,
             imageUrl: 1,
             lastUpdated: 1,
-
-            // --- NEW: Calculate Completeness % ---
             completeness: {
               $cond: {
-                if: { $eq: [totalPossibleItems, 0] }, // Prevent divide by zero
+                if: { $eq: [totalPossibleItems, 0] },
                 then: 0,
                 else: {
                   $round: [
@@ -272,12 +271,11 @@ export default class LguController {
                         100,
                       ],
                     },
-                    0, // Round to nearest integer
+                    0,
                   ],
                 },
               },
             },
-
             userId: {
               _id: '$userDetails._id',
               householdName: '$userDetails.householdName',
@@ -285,7 +283,7 @@ export default class LguController {
               phoneNumber: '$userDetails.phoneNumber',
               location: '$userDetails.location',
               householdInfo: '$userDetails.householdInfo',
-              points: '$userDetails.points', // We keep points for other metrics if needed
+              points: '$userDetails.points',
               profileImage: '$userDetails.profileImage',
             },
             items: {
@@ -302,12 +300,30 @@ export default class LguController {
             },
           },
         },
-
-        // 7. Sort
         { $sort: { lastUpdated: -1 } },
+
+        // --- NEW: FACET FOR PAGINATION ---
+        {
+          $facet: {
+            metadata: [{ $count: 'total' }], // Count all matching documents
+            data: [{ $skip: skip }, { $limit: limitNum }], // Get just the slice we want
+          },
+        },
       ]);
 
-      return res.status(200).json(goBags);
+      // 3. Process Result
+      const data = result[0].data;
+      const total = result[0].metadata[0]?.total || 0;
+
+      return res.status(200).json({
+        data,
+        meta: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      });
     } catch (error) {
       console.error('Error fetching LGU Go Bags:', error);
       return res.status(500).json({ error: 'Internal server error' });

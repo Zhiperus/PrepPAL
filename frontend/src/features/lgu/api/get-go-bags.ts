@@ -43,7 +43,7 @@ export const getResidentGoBags = ({
   lguId,
 }: {
   lguId: string;
-}): Promise<PopulatedGoBag[]> => {
+}): Promise<{ data: PopulatedGoBag[] }> => {
   return api.get('/lgu/go-bags', {
     params: { lguId },
   });

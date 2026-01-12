@@ -98,10 +98,13 @@ export default function ModerationPage() {
   return (
     <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-800 md:p-10">
       {/* Header */}
-      <header className="mb-8 flex items-center gap-4 pt-10 lg:pt-0">
+      <header className="mb-8 flex flex-col pt-12 lg:pt-2">
         <h1 className="text-text-primary text-3xl font-extrabold tracking-tight">
           Moderation
         </h1>
+        <p className="text-gray-500">
+          Review flagged submissions and manage community reports.
+        </p>
       </header>
 
       <div className="grid h-[80vh] grid-cols-1 gap-6 lg:grid-cols-12">
