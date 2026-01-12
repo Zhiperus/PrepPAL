@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 
 import { FeedHeader } from './feed-header';
 import PostCardModal from './post-card';
+import PostBagModal from '@/features/go-bag/components/post-go-bag-modal';
 import { PostList } from './post-list';
 
 import {
@@ -12,6 +13,8 @@ import {
 
 export default function CommunityFeedRoute() {
   const [postId, setPostId] = useState<string | null>(null);
+
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search') || '';
@@ -25,7 +28,7 @@ export default function CommunityFeedRoute() {
 
   return (
     <div className="bg-base-200 flex min-h-screen flex-col items-center pb-20">
-      <FeedHeader />
+      <FeedHeader onCreatePost={() => setIsPostModalOpen(true)} />
 
       <PostList onSelectPost={setPostId} />
 
@@ -34,6 +37,14 @@ export default function CommunityFeedRoute() {
         post={selectedPost}
         onClose={() => setPostId(null)}
       />
+
+      {isPostModalOpen && (
+        <PostBagModal
+          onClose={() => setIsPostModalOpen(false)}
+          completeness={0} 
+          bagImage={null} 
+        />
+      )}
     </div>
   );
 }

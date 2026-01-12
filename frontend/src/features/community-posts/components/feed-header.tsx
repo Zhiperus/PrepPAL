@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
-import { LuArrowUpDown, LuSearch } from 'react-icons/lu';
+import { LuArrowUpDown, LuPenLine, LuSearch, LuTrophy } from 'react-icons/lu';
 import { useSearchParams } from 'react-router';
 
 import { type SortOption } from '@/features/community-posts/api/get-posts';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useUser } from '@/lib/auth';
 
-export function FeedHeader() {
+interface FeedHeaderProps {
+  onCreatePost: () => void;
+}
+
+export function FeedHeader({ onCreatePost }: FeedHeaderProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialSearch = searchParams.get('search') || '';
@@ -47,6 +52,20 @@ export function FeedHeader() {
               See what others have prepared and rate their go bags.
             </p>
           </div>
+          {/* New Post Button */}
+            <button
+              className="flex items-center gap-3 rounded-xl bg-[#2a4263] px-5 py-3 text-white shadow-md transition-transform hover:scale-[1.02] hover:bg-[#1e3a5a] active:scale-95"
+              onClick={onCreatePost}
+            >
+              <div className="rounded-full bg-white/20 p-2">
+                <LuPenLine className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex flex-col items-start leading-none">
+                <span className="text-lg font-bold">New Post</span>
+                <span className="text-[10px] font-medium tracking-wider uppercase opacity-80">
+                </span>
+              </div>
+            </button>
         </div>
         <div className="mt-6 flex gap-3">
           <div className="relative max-w-md flex-1">
@@ -65,13 +84,10 @@ export function FeedHeader() {
             <div
               tabIndex={0}
               role="button"
-              className="btn h-[46px] gap-2 rounded-lg border-none bg-[#2a4263] text-white shadow-sm hover:bg-[#1e3a5a]"
+              className="btn h-[46px] gap-2 rounded-lg border-none text-white shadow-sm"
               title="Sort Feed"
             >
-              <LuArrowUpDown className="h-5 w-5" />
-              <span className="hidden font-medium sm:inline">
-                {currentSort.charAt(0).toUpperCase() + currentSort.slice(1)}
-              </span>
+              <LuArrowUpDown className="h-5 w-5 text-text-secondary" />
             </div>
 
             <ul
