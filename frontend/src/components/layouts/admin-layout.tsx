@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { GoHome, GoOrganization, GoDatabase, GoSignOut } from 'react-icons/go'; // Icons for Admin tasks
+import { GoOrganization, GoDatabase, GoSignOut } from 'react-icons/go';
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { useNavigate } from 'react-router';
 
@@ -104,18 +104,6 @@ export function AdminDashboardLayout({
             <div className="mb-8 h-px w-full bg-gray-200"></div>
 
             <ul className="flex flex-col gap-8 font-medium text-gray-700">
-              <li>
-                <Link
-                  to={paths.admin.root.getHref()}
-                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
-                  onClick={closeDrawer}
-                >
-                  <GoHome className="h-6 w-6" />
-                  <span>Dashboard</span>
-                </Link>
-              </li>
-
-              {/* --- NEW ADMIN ROUTES --- */}
               <li>
                 <Link
                   to={paths.admin['tenant-manager'].getHref()}
