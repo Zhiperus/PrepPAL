@@ -10,7 +10,7 @@ import {
   LuInbox,
 } from 'react-icons/lu';
 import { MdNavigateNext } from 'react-icons/md';
-import { Link, useNavigate } from 'react-router';
+import { Link, useNavigate, Navigate } from 'react-router';
 
 import { paths } from '@/config/paths';
 import { useInfiniteFeed } from '@/features/community-posts/api/get-posts';
@@ -67,6 +67,17 @@ export function UserDashboard() {
     );
   }
 
+  // --- Role Check Guard ---
+  if (user.role !== 'citizen') {
+    if (user.role === 'lgu') {
+      return <Navigate to={paths.lgu.root.getHref()} replace />;
+    }
+    if (user.role === 'super_admin') {
+      return <Navigate to={paths.admin['tenant-manager'].getHref()} replace />;
+    }
+    return <Navigate to={paths.app['community-posts'].getHref()} replace />;
+  }
+
   const { goBag, modules, community } = user.points;
   const goBagPercent = getPercent(goBag, MAX_GOBAG_POINTS);
   const modPercent = getPercent(modules, MAX_MODULE_POINTS);
@@ -105,6 +116,7 @@ export function UserDashboard() {
             </h2>
             <div className="badge badge-outline w-full gap-2 self-center p-4 font-bold text-[#2a4263] sm:w-fit lg:self-start">
               <LuTrophy className="h-4 w-4" />
+              {/* FIXED: Added toFixed(0) */}
               Total: {(goBag + modules + community).toFixed(0)} pts
             </div>
           </div>
@@ -139,7 +151,9 @@ export function UserDashboard() {
                     {item.label}
                   </p>
                   <p className="text-xl font-black text-[#2a4263]">
-                    {item.val} <span className="text-xs font-normal">pts</span>
+                    {/* FIXED: Added toFixed(0) */}
+                    {item.val.toFixed(0)}{' '}
+                    <span className="text-xs font-normal">pts</span>
                   </p>
                 </div>
               </div>
@@ -162,7 +176,8 @@ export function UserDashboard() {
                 className="radial-progress font-bold text-[#2a4263]"
                 style={
                   {
-                    '--value': totalPercent,
+                    // FIXED: Ensure value is whole number for style
+                    '--value': totalPercent.toFixed(0),
                     '--size': '6.5rem',
                     '--thickness': '0.8rem',
                   } as any
@@ -171,7 +186,8 @@ export function UserDashboard() {
               >
                 <div className="flex flex-col items-center gap-1">
                   <FaThumbsUp className="h-6 w-6" />
-                  <span className="text-xl">{totalPercent}%</span>
+                  {/* FIXED: Added toFixed(0) */}
+                  <span className="text-xl">{totalPercent.toFixed(0)}%</span>
                 </div>
               </div>
               <span className="text-sm font-medium text-gray-500">
@@ -190,11 +206,15 @@ export function UserDashboard() {
                       {bar.label}
                     </span>
                     <span className="text-sm font-extrabold text-[#2a4263]">
-                      {bar.val}%
+                      {/* FIXED: Added toFixed(0) */}
+                      {bar.val.toFixed(0)}%
                     </span>
                   </div>
                   <progress
                     className="progress h-3 w-full border border-gray-200 bg-gray-100"
+                    // FIXED: Ensure value passed to progress is number (toFixed returns string)
+                    // You can keep bar.val here as raw number for the bar width logic,
+                    // but display formatted text above.
                     value={bar.val}
                     max="100"
                   />
@@ -231,7 +251,9 @@ export function UserDashboard() {
 
               <div className="relative z-20 flex flex-1 flex-col justify-center bg-[#2A4362] p-6 md:p-10">
                 <span className="mb-2 text-[10px] font-bold tracking-widest text-blue-300 uppercase sm:text-xs">
-                  Recent Activity: {recentModuleData.bestScore}% Score
+                  {/* FIXED: Added toFixed(0) */}
+                  Recent Activity: {recentModuleData.bestScore.toFixed(0)}%
+                  Score
                 </span>
                 <h3 className="mb-2 text-2xl leading-tight font-bold sm:text-3xl">
                   {isModuleLoading ? 'Loading module...' : moduleDetails?.title}
@@ -272,7 +294,7 @@ export function UserDashboard() {
           )}
         </section>
 
-        {/* Community Posts */}
+        {/* Community Posts Section remains same */}
         <section>
           <h2 className="text-text-primary text-xl font-semibold sm:text-2xl">
             Community Posts
@@ -282,7 +304,6 @@ export function UserDashboard() {
           </p>
           <div className="bg-bg-info bg-opacity-90 flex flex-col rounded-xl p-4 shadow-sm sm:p-6">
             {isFeedLoading ? (
-              // Loading Skeleton
               <div className="space-y-4">
                 {[1, 2].map((i) => (
                   <div
@@ -304,7 +325,6 @@ export function UserDashboard() {
                 </p>
               </div>
             ) : (
-              // List of Posts
               <>
                 <div className="divide-y divide-gray-300">
                   {latestPosts.map((post) => (
@@ -368,4 +388,3 @@ export function UserDashboard() {
     </div>
   );
 }
-

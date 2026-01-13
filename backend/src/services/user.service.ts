@@ -15,6 +15,21 @@ import {
 export default class UserService {
   private userRepo = new UserRepository();
 
+  async getUserRank(userId: string) {
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const rankData = await this.userRepo.getUserRank(userId);
+
+    // Default to rank 0 or null if something goes wrong, though unlikely if user exists
+    return {
+      rank: rankData ? rankData.rank : 0,
+      totalScore: rankData ? rankData.totalScore : 0,
+    };
+  }
+
   async completeOnboarding(userId: string, data: OnboardingRequest) {
     const user = await this.userRepo.findById(userId);
     if (!user) {

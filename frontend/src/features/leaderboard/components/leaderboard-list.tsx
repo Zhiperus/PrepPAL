@@ -96,7 +96,11 @@ export function LeaderboardList({
 
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-gray-500">
-                    {user.householdName.charAt(0)}
+                    <div className="avatar">
+                      <div className="rounded-full">
+                        <img src={user.profileImage || ''} />
+                      </div>
+                    </div>
                   </div>
                   <span className="text-lg font-bold text-[#2a4263]">
                     {user.householdName}
@@ -106,8 +110,8 @@ export function LeaderboardList({
 
               <span className="text-lg font-bold text-gray-700">
                 {activeMetric === 'allTime'
-                  ? user.totalPoints
-                  : user.points.goBag}
+                  ? user.totalPoints.toFixed(0)
+                  : user.points.goBag.toFixed(0)}
               </span>
             </div>
           ))

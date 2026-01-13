@@ -12,6 +12,25 @@ import { parseFileRequest } from '../utils/image.util.js';
 export default class UserController {
   private userService = new UserService();
 
+  /**
+   * Retrieves the current user's global rank based on total points.
+   * Path: GET /api/users/rank
+   */
+  getUserRank = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.userId!;
+
+      const result = await this.userService.getUserRank(userId);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (err) {
+      handleInternalError(err, next);
+    }
+  };
+
   complete = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = OnboardingRequestSchema.parse(req.body);

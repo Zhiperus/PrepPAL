@@ -1,6 +1,8 @@
 import type { User } from '@repo/shared/dist/schemas/user.schema';
 import { useNavigate } from 'react-router';
 
+import { useUserRank } from '../api/get-user-rank';
+
 import { paths } from '@/config/paths';
 
 type ProfileHeaderProps = {
@@ -9,6 +11,9 @@ type ProfileHeaderProps = {
 
 export default function ProfileHeader({ user }: ProfileHeaderProps) {
   const navigate = useNavigate();
+  const { data: rankData } = useUserRank();
+
+  const rank = rankData?.data?.rank;
 
   return (
     <div className="flex flex-col items-center px-6 pt-6 pb-2">
@@ -27,7 +32,7 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
 
         <div className="relative z-10 -mt-4 flex flex-col items-center">
           <div className="bg-btn-primary min-w-[60px] rounded-full px-4 py-0.5 text-center text-[11px] font-bold text-white shadow-md">
-            #{user.rank ?? ''}
+            #{rank ?? ''}
           </div>
           <span className="text-text-secondary mt-0.5 text-[12px] font-bold tracking-wide">
             Rank

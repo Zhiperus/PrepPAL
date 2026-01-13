@@ -120,12 +120,75 @@ export default function UpdateGoBagModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
+        {/* FORM CONTAINER */}
         <form
           onSubmit={handleSubmit(onFormSubmit)}
           className="flex flex-1 flex-col overflow-hidden"
         >
-          <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50 px-6 py-6">
-            {/* 1. Categories Accordion */}
+          {/* SCROLLABLE CONTENT */}
+          <div className="flex-1 space-y-6 overflow-y-auto bg-gray-50 px-6 py-6">
+            {/* 1. IMAGE UPLOAD SECTION */}
+            <div
+              className={`rounded-xl border-2 border-dashed p-5 transition-all duration-300 ${
+                !watchedImage
+                  ? 'border-orange-300 bg-orange-50/40' // Obvious warning state
+                  : 'border-gray-300 bg-white' // Normal state
+              }`}
+            >
+              <label className="label mb-3 p-0">
+                <span className="label-text flex items-center gap-2 font-bold text-[#2A4263]">
+                  <LuUpload className="h-4 w-4" />
+                  Update Evidence Photo
+                  {!watchedImage && (
+                    <span className="ml-1 text-red-500">*</span>
+                  )}
+                </span>
+              </label>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setValue('image', file, { shouldDirty: true });
+                      if (file) setPreviewUrl(URL.createObjectURL(file));
+                    }}
+                    className={`file-input file-input-bordered file-input-sm w-full max-w-xs bg-white text-xs ${
+                      !watchedImage
+                        ? 'file-input-warning'
+                        : 'file-input-primary'
+                    }`}
+                  />
+                  <div
+                    className={`mt-2 text-xs font-medium ${!watchedImage ? 'text-orange-600' : 'text-gray-400'}`}
+                  >
+                    {!watchedImage
+                      ? 'You must upload a new photo to verify these changes.'
+                      : 'Photo attached successfully.'}
+                  </div>
+                </div>
+
+                {(previewUrl || data?.imageUrl) && (
+                  <div className="avatar">
+                    <div
+                      className={`h-16 w-16 overflow-hidden rounded-lg bg-gray-100 ring ring-offset-2 transition-all ${
+                        !watchedImage ? 'ring-orange-200' : 'ring-gray-200'
+                      }`}
+                    >
+                      <img
+                        src={previewUrl || data?.imageUrl || ''}
+                        alt="Preview"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 2. CATEGORIES ACCORDION */}
             <div className="flex flex-col gap-3">
               {Object.entries(groupedItems).map(([category, items], idx) => {
                 const checkedCount = items.filter((i) =>
@@ -197,67 +260,6 @@ export default function UpdateGoBagModal({ onClose }: { onClose: () => void }) {
                   </div>
                 );
               })}
-            </div>
-
-            {/* 2. Image Upload Section - MODIFIED FOR VISIBILITY */}
-            <div
-              className={`rounded-xl border-2 border-dashed p-5 transition-all duration-300 ${
-                !watchedImage
-                  ? 'border-orange-300 bg-orange-50/40' // Obvious warning state
-                  : 'border-gray-300 bg-white' // Normal state
-              }`}
-            >
-              <label className="label mb-3 p-0">
-                <span className="label-text flex items-center gap-2 font-bold text-[#2A4263]">
-                  <LuUpload className="h-4 w-4" />
-                  Update Evidence Photo
-                  {!watchedImage && (
-                    <span className="ml-1 text-red-500">*</span>
-                  )}
-                </span>
-              </label>
-
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      setValue('image', file, { shouldDirty: true });
-                      if (file) setPreviewUrl(URL.createObjectURL(file));
-                    }}
-                    className={`file-input file-input-bordered file-input-sm w-full max-w-xs bg-white text-xs ${
-                      !watchedImage
-                        ? 'file-input-warning'
-                        : 'file-input-primary'
-                    }`}
-                  />
-                  <div
-                    className={`mt-2 text-xs font-medium ${!watchedImage ? 'text-orange-600' : 'text-gray-400'}`}
-                  >
-                    {!watchedImage
-                      ? 'You must upload a new photo to verify these changes.'
-                      : 'Photo attached successfully.'}
-                  </div>
-                </div>
-
-                {(previewUrl || data?.imageUrl) && (
-                  <div className="avatar">
-                    <div
-                      className={`h-16 w-16 overflow-hidden rounded-lg bg-gray-100 ring ring-offset-2 transition-all ${
-                        !watchedImage ? 'ring-orange-200' : 'ring-gray-200'
-                      }`}
-                    >
-                      <img
-                        src={previewUrl || data?.imageUrl || ''}
-                        alt="Preview"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 

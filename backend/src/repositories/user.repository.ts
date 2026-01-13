@@ -4,12 +4,62 @@ import {
   UpdateModuleProgressInput,
   UpdateProfileInfoRequest,
 } from '@repo/shared/dist/schemas/user.schema';
+import { Types } from 'mongoose';
 
 import UserModel, { IUser } from '../models/user.model.js';
 
 export default class UserRepository {
   async findById(userId: string) {
     return UserModel.findById(userId);
+  }
+
+  async getUserRank(userId: string) {
+    // 1. Fetch the user first to get their location
+    const user = await this.findById(userId);
+    if (!user || !user.location) return null;
+
+    const pipeline: any[] = [
+      // 2. SCOPE: Filter users to ONLY those in the same Barangay/City
+      {
+        $match: {
+          'location.city': user.location.city,
+          'location.barangay': user.location.barangay,
+          // Optional: Ensure we only rank citizens, not admins/LGUs
+          role: 'citizen',
+        },
+      },
+      // 3. Calculate Total Points
+      {
+        $addFields: {
+          totalScore: {
+            $add: [
+              { $ifNull: ['$points.goBag', 0] },
+              { $ifNull: ['$points.modules', 0] },
+              { $ifNull: ['$points.community', 0] },
+            ],
+          },
+        },
+      },
+      // 4. Sort by highest score
+      { $sort: { totalScore: -1 } },
+      // 5. Assign Rank
+      {
+        $setWindowFields: {
+          sortBy: { totalScore: -1 },
+          output: {
+            rank: {
+              $rank: {},
+            },
+          },
+        },
+      },
+      // 6. Find the specific user again to extract their new rank
+      { $match: { _id: new Types.ObjectId(userId) } },
+      // 7. Return result
+      { $project: { rank: 1, totalScore: 1 } },
+    ];
+    const result = await UserModel.aggregate(pipeline);
+    return result[0] || null; // Return the first result or null if not found
   }
 
   async updateUserGoBagPoints(userId: string, pointsToAdd: number) {

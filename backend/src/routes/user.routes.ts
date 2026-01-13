@@ -6,6 +6,8 @@ import { authenticate } from '../middleware/auth.middleware.js';
 const userRoutes: Router = Router();
 const controller = new UserController();
 
+userRoutes.get('/rank', authenticate, controller.getUserRank.bind(controller));
+
 userRoutes.put(
   '/onboarding',
   authenticate,
