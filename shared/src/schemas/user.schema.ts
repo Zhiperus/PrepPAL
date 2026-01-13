@@ -12,12 +12,12 @@ const LocationSchema = z.object({
 });
 
 const HouseholdSchema = z.object({
-  memberCount: z
+  memberCount: z.coerce
     .number()
     .int()
     .min(1, { message: "At least one member is required." }),
-  femaleCount: z.number().int().min(0),
-  pets: z.number().int().min(0),
+  femaleCount: z.coerce.number().int().min(0),
+  pets: z.coerce.number().int().min(0),
 });
 
 export const completedModuleSchema = z.object({
@@ -103,7 +103,26 @@ export const UpdateProfileInfoRequestSchema = z
     householdName: z.string().min(1, "Household Name is required"),
     householdInfo: HouseholdSchema.partial(),
   })
-  .partial();
+  .partial()
+  .refine(
+  (data) => {
+    const members = data.householdInfo?.memberCount;
+    const females = data.householdInfo?.femaleCount;
+
+    if (
+      members === undefined || members === null || isNaN(members) ||
+      females === undefined || females === null || isNaN(females)
+    ) {
+      return true;
+    }
+   
+    return females <= members;
+  },
+  {
+    message: "Female members count cannot exceed the total number of members.",
+    path: ["householdInfo", "femaleCount"],
+  }
+);
 
 export const GetLeaderboardQuerySchema = z.object({
   sortBy: z
