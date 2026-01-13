@@ -89,7 +89,21 @@ export const OnboardingRequestSchema = z.object({
     .regex(/^09\d{9}$/, "Must be a valid format (e.g., 09123456789)"),
 
   emailConsent: z.boolean().optional(),
-});
+})
+.refine(
+  (data) => {
+    const members = data.householdInfo.memberCount;
+    const females = data.householdInfo.femaleCount;
+    
+    if (isNaN(members) || isNaN(females)) return true; 
+    
+    return females <= members;
+  },
+  {
+    message: "Female members count cannot exceed the total number of members.",
+    path: ["householdInfo", "femaleCount"],
+  }
+);
 
 export const UpdateProfileInfoRequestSchema = z
   .object({
