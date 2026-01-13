@@ -20,15 +20,13 @@ export default class QuestionReportController {
       const validatedQuery = GetQuestionReportsQuerySchema.parse(req.query);
 
       // 2. Determine the correct lguId scope
-      // Super admins can see everything or filter by a specific LGU from query
-      // Regular users are locked to their own req.lguId
       const targetLguId =
         req.role === 'super_admin' ? validatedQuery.lguId : req.lguId;
 
       // 3. Construct the final filters object
       const filters: GetQuestionReportsQuery = {
         ...validatedQuery,
-        lguId: targetLguId ?? undefined, // Ensure null becomes undefined
+        lguId: targetLguId ?? undefined,
       };
 
       const result = await this.questionReportService.findAll(filters);
