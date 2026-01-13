@@ -2,10 +2,10 @@ import type { Post } from '@repo/shared/dist/schemas/post.schema';
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IPost
-  extends Omit<Post, '_id' | 'userId' | 'lguId' | 'createdAt'>,
+  extends Omit<Post, '_id' | 'userId' | 'createdAt'>,
     Document {
   userId: mongoose.Types.ObjectId;
-  lguId: mongoose.Types.ObjectId;
+  barangayCode: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -13,7 +13,7 @@ export interface IPost
 const postSchema = new Schema<IPost>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    lguId: { type: Schema.Types.ObjectId, ref: 'Lgu', required: true },
+    barangayCode: { type: String, required: true },
     imageUrl: { type: String, required: true },
     imageId: { type: String, default: null },
     caption: { type: String, default: null },

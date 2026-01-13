@@ -7,6 +7,8 @@ import { FiFilter, FiSearch } from 'react-icons/fi';
 import { useCompleteReport } from '../api/complete-report';
 import { useContentReports } from '../api/get-reports';
 
+import { useUser } from '@/lib/auth';
+
 // --- Helper Components ---
 
 function Avatar({
@@ -46,11 +48,13 @@ function Avatar({
 // --- Main Page ---
 
 export default function ModerationPage() {
-  const lguId = 'current_lgu_id'; // Replace with actual context/store value
+  const user = useUser();
   const queryClient = useQueryClient();
 
   // 1. Fetch Reports
-  const { data: reportsData, isLoading } = useContentReports({ lguId });
+  const { data: reportsData, isLoading } = useContentReports({
+    barangayCode: user.data?.location?.barangayCode || '',
+  });
   const reports = reportsData?.data;
 
   // 2. Setup Single Mutation
@@ -169,7 +173,11 @@ export default function ModerationPage() {
                 {/* Reporter */}
                 <div className="col-span-2 flex items-center gap-2">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-600">
-                    {report.reporterId.householdName.charAt(0)}
+                    <Avatar
+                      src={report.reporterId.profileImage}
+                      name={report.reporterId?.householdName || 'Unknown'}
+                      size="sm"
+                    />
                   </div>
                   <span className="truncate text-xs">
                     {report.reporterId.householdName}

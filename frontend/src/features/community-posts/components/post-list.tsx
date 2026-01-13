@@ -1,3 +1,4 @@
+import type { FeedPost } from '@repo/shared/dist/schemas/post.schema';
 import { LuInbox } from 'react-icons/lu';
 import { useSearchParams } from 'react-router';
 
@@ -6,13 +7,15 @@ import {
   useInfiniteFeed,
   type SortOption,
 } from '@/features/community-posts/api/get-posts';
+import { useUser } from '@/lib/auth';
 import { timeAgo } from '@/utils/dateUtil';
 
 interface PostListProps {
-  onSelectPost: (postId: string) => void;
+  onSelectPost: (post: FeedPost) => void;
 }
 
 export default function PostList({ onSelectPost }: PostListProps) {
+  const { data: user } = useUser();
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search') || '';
   const sort = (searchParams.get('sort') as SortOption) || 'newest';
@@ -21,6 +24,8 @@ export default function PostList({ onSelectPost }: PostListProps) {
     useInfiniteFeed({
       sort,
       search,
+      barangayCode: user?.location?.barangayCode,
+      cityCode: user?.location?.cityCode,
     });
 
   if (isLoading) {
@@ -112,7 +117,7 @@ export default function PostList({ onSelectPost }: PostListProps) {
 
                 <div className="card-actions justify-center">
                   <button
-                    onClick={() => onSelectPost(post._id)}
+                    onClick={() => onSelectPost(post)}
                     className="btn btn-soft bg-btn-primary hover:bg-btn-primary-hover mt-4 w-64 gap-2 rounded text-white hover:shadow-md"
                   >
                     Rate Bag

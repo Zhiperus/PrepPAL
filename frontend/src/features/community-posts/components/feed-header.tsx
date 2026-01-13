@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
+import { FaLocationDot } from 'react-icons/fa6';
 import { LuArrowUpDown, LuPenLine, LuSearch } from 'react-icons/lu';
 import { useSearchParams } from 'react-router';
 
 import { type SortOption } from '@/features/community-posts/api/get-posts';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useUser } from '@/lib/auth';
 
 interface FeedHeaderProps {
   onCreatePost: () => void;
 }
 
 export default function FeedHeader({ onCreatePost }: FeedHeaderProps) {
+  const { data: user } = useUser();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialSearch = searchParams.get('search') || '';
@@ -50,6 +53,12 @@ export default function FeedHeader({ onCreatePost }: FeedHeaderProps) {
             <p className="mt-1 text-sm text-gray-500">
               See what others have prepared and rate their go bags.
             </p>
+            <div className="flex flex-row items-center gap-2 pt-3 text-sm font-medium text-gray-600">
+              <FaLocationDot className="text-text-primary h-4 w-4 shrink-0" />
+              <span className="text-text-secondary line-clamp-1">
+                Brgy. {user?.location?.barangay}, {user?.location?.city}
+              </span>
+            </div>
           </div>
           {/* New Post Button */}
           <button

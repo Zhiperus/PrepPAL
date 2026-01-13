@@ -33,7 +33,7 @@ adminRoutes.post(
 );
 
 adminRoutes.patch(
-  '/lgus/:lguId',
+  '/lgus/:barangayCode',
   authenticate,
   authorizeRoles('super_admin'),
   controller.updateLgu.bind(controller),

@@ -35,7 +35,6 @@ export default class UserService {
     if (!user) {
       throw new NotFoundError('User not found');
     }
-    console.log(data.location);
 
     const updatedUser = await this.userRepo.updateOnboardingDetails(userId, {
       location: data.location,
@@ -74,8 +73,6 @@ export default class UserService {
     // Explicitly construct the update object
     const updatePayload: any = {};
 
-    // if (data.email) updatePayload.email = data.email;
-    // if (data.phoneNumber) updatePayload.phoneNumber = data.phoneNumber;
     if (data.householdName) updatePayload.householdName = data.householdName;
 
     // To update nested fields without overwriting others, use dot notation:
@@ -128,8 +125,8 @@ export default class UserService {
     return this.userRepo.findLguAccounts(query, page, limit);
   }
 
-  async getCitizenCountByLgu(lguId: string) {
-    const citizenCount = await this.userRepo.getCitizenCountByLgu(lguId);
+  async getCitizenCountByLgu(barangayCode: string) {
+    const citizenCount = await this.userRepo.getCitizenCountByLgu(barangayCode);
     return citizenCount;
   }
 
@@ -139,5 +136,17 @@ export default class UserService {
 
   async createLguAccount(data: CreateLguAccountRequest) {
     return this.userRepo.createLguAccount(data);
+  }
+
+  async findLguAdminByCode(barangayCode: string) {
+    return this.userRepo.findByEmail({
+      // We look for the user who manages this code
+      barangayCode: barangayCode,
+      role: 'lgu',
+    });
+  }
+
+  async updateUser(userId: string, data: any) {
+    return this.userRepo.updateProfileInfo(userId, data);
   }
 }

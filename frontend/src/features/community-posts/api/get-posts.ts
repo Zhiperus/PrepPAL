@@ -20,10 +20,14 @@ export const getFeed = ({
   page = 1,
   sort = 'newest',
   search = '',
+  barangayCode,
+  cityCode,
 }: {
   page?: number;
   sort?: SortOption;
   search?: string;
+  barangayCode?: string;
+  cityCode?: string;
 }): Promise<{ data: FeedPost[]; meta: Meta }> => {
   const { sortBy, order } = SORT_MAPPING[sort];
 
@@ -34,6 +38,8 @@ export const getFeed = ({
       sortBy,
       order,
       search,
+      barangayCode,
+      cityCode,
     },
   });
 };
@@ -41,11 +47,19 @@ export const getFeed = ({
 export const getInfiniteFeedQueryOptions = (
   sort: SortOption = 'newest',
   search: string = '',
+  barangayCode: string,
+  cityCode: string,
 ) => {
   return infiniteQueryOptions({
-    queryKey: ['feed', { sort, search }],
+    queryKey: ['feed', { sort, search, barangayCode, cityCode }],
     queryFn: ({ pageParam = 1 }) => {
-      return getFeed({ page: pageParam as number, sort, search });
+      return getFeed({
+        page: pageParam as number,
+        sort,
+        search,
+        barangayCode,
+        cityCode,
+      });
     },
     getNextPageParam: (lastPage) => {
       if (lastPage?.meta?.page === lastPage?.meta?.totalPages) return undefined;
@@ -58,16 +72,20 @@ export const getInfiniteFeedQueryOptions = (
 type UseFeedOptions = {
   sort?: SortOption;
   search?: string;
+  barangayCode?: string;
+  cityCode?: string;
   queryConfig?: QueryConfig<typeof getInfiniteFeedQueryOptions>;
 };
 
 export const useInfiniteFeed = ({
   sort = 'newest',
   search = '',
+  barangayCode = '',
+  cityCode = '',
   queryConfig,
 }: UseFeedOptions = {}) => {
   return useInfiniteQuery({
-    ...getInfiniteFeedQueryOptions(sort, search),
+    ...getInfiniteFeedQueryOptions(sort, search, barangayCode, cityCode),
     ...queryConfig,
   });
 };

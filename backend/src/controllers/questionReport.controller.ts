@@ -16,17 +16,10 @@ export default class QuestionReportController {
     next: NextFunction,
   ) => {
     try {
-      // 1. Validate the query (sortBy, order, limit, page)
       const validatedQuery = GetQuestionReportsQuerySchema.parse(req.query);
 
-      // 2. Determine the correct lguId scope
-      const targetLguId =
-        req.role === 'super_admin' ? validatedQuery.lguId : req.lguId;
-
-      // 3. Construct the final filters object
       const filters: GetQuestionReportsQuery = {
         ...validatedQuery,
-        lguId: targetLguId ?? undefined,
       };
 
       const result = await this.questionReportService.findAll(filters);

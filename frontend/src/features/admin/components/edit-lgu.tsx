@@ -281,7 +281,7 @@ export function EditLGUModal({ isOpen, onClose, tenant }: EditLGUModalProps) {
 
   const onSubmit = (formData: LGUFormData) => {
     updateLguMutation.mutate({
-      lguId: formData.id,
+      barangayCode: formData.id,
       data: { ...formData },
     });
   };

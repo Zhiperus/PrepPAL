@@ -21,19 +21,19 @@ export type GoBagAnalyticsResponse = {
 };
 
 export const getGoBagAnalytics = ({
-  lguId,
+  barangayCode,
 }: {
-  lguId: string;
+  barangayCode: string;
 }): Promise<GoBagAnalyticsResponse> => {
   return api.get('/lgu/go-bag-analytics', {
-    params: { lguId },
+    params: { barangayCode },
   });
 };
 
-export const useGoBagAnalytics = (lguId: string) => {
+export const useGoBagAnalytics = (barangayCode: string) => {
   return useQuery({
-    queryKey: ['lgu-analytics', lguId],
-    queryFn: () => getGoBagAnalytics({ lguId }),
-    enabled: !!lguId,
+    queryKey: ['lgu-analytics', barangayCode],
+    queryFn: () => getGoBagAnalytics({ barangayCode }),
+    enabled: !!barangayCode,
   });
 };

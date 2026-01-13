@@ -19,16 +19,19 @@ export default class ContentReportController {
       // 1. Validate the query (sortBy, order, limit, page)
       const validatedQuery = GetContentReportsQuerySchema.parse(req.query);
 
-      // 2. Determine the correct lguId scope
+      // 2. Determine the correct location scope
       // Super admins can see everything or filter by a specific LGU from query
-      // Regular users are locked to their own req.lguId
-      const targetLguId =
-        req.role === 'super_admin' ? validatedQuery.lguId : req.lguId;
+      // Regular users are locked to their own req.barangayCode
+      const targetCode =
+        req.role === 'super_admin'
+          ? validatedQuery.barangayCode
+          : req.barangayCode;
 
       // 3. Construct the final filters object
       const filters: GetContentReportsQuery = {
         ...validatedQuery,
-        lguId: targetLguId ?? undefined, // Ensure null becomes undefined
+        // Ensure null becomes undefined to avoid database query issues
+        barangayCode: targetCode ?? undefined,
       };
 
       const result = await this.reportService.findAll(filters);

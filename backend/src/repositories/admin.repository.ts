@@ -1,5 +1,3 @@
-import { Types } from 'mongoose';
-
 import ContentReportModel from '../models/contentReport.model.js';
 import UserModel from '../models/user.model.js';
 
@@ -72,11 +70,23 @@ export default class AdminRepository {
     return { accounts, total };
   }
 
-  async getCitizenCounts(lguIds: Types.ObjectId[]) {
+  async getCitizenCounts(barangayCodes: string[]) {
     const counts = await UserModel.aggregate([
-      { $match: { lguId: { $in: lguIds }, role: 'citizen' } },
-      { $group: { _id: '$lguId', count: { $sum: 1 } } },
+      {
+        $match: {
+          barangayCode: { $in: barangayCodes },
+          role: 'citizen',
+        },
+      },
+      {
+        $group: {
+          _id: '$barangayCode',
+          count: { $sum: 1 },
+        },
+      },
     ]);
-    return new Map(counts.map((c) => [c._id.toString(), c.count]));
+
+    // Map returns [code, count]
+    return new Map(counts.map((c) => [c._id, c.count]));
   }
 }

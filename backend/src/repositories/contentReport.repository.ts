@@ -2,7 +2,6 @@ import {
   CompleteContentReportRequest,
   GetContentReportsQuery,
 } from '@repo/shared/dist/schemas/contentReport.schema';
-import mongoose from 'mongoose';
 
 import ContentReportModel from '../models/contentReport.model.js';
 
@@ -15,7 +14,7 @@ export default class ContentReportRepository {
     // Ensure numbers for pagination math
     const page = Math.max(1, Number(filters.page) || 1);
     const limit = Math.max(1, Number(filters.limit) || 10);
-    const { sortBy, order, lguId, status } = filters;
+    const { sortBy, order, barangayCode, status } = filters;
 
     const pipeline: any[] = [];
 
@@ -24,7 +23,16 @@ export default class ContentReportRepository {
       pipeline.push({ $match: { status } });
     }
 
-    // 2. Join with Posts
+    // 2. Filter by Barangay Code
+    // We do this BEFORE the lookup for better performance
+    // (since we added barangayCode to the Report Schema)
+    if (barangayCode) {
+      pipeline.push({
+        $match: { barangayCode: barangayCode },
+      });
+    }
+
+    // 3. Join with Posts (To show context)
     pipeline.push({
       $lookup: {
         from: 'posts',
@@ -36,14 +44,7 @@ export default class ContentReportRepository {
 
     pipeline.push({ $unwind: '$postDetails' });
 
-    // 3. Filter by lguId (Logic preserved as requested)
-    if (lguId) {
-      pipeline.push({
-        $match: { 'postDetails.lguId': new mongoose.Types.ObjectId(lguId) },
-      });
-    }
-
-    // 4. ADDED: Facet for Data + Count
+    // 4. Facet for Data + Count
     // This runs two parallel pipelines: one for pagination, one for counting total
     pipeline.push({
       $facet: {
@@ -65,12 +66,15 @@ export default class ContentReportRepository {
 
     // 5. Populate the data array
     await ContentReportModel.populate(data, [
-      { path: 'reporterId', select: 'householdName email profileImage lguId' },
+      {
+        path: 'reporterId',
+        select: 'householdName email profileImage barangayCode',
+      },
       {
         path: 'postId',
         populate: {
-          path: 'userId', // Assuming the Post model refers to the author as 'userId' or 'authorId'
-          select: 'householdName email profileImage lguId',
+          path: 'userId', // The author of the post
+          select: 'householdName email profileImage barangayCode',
         },
       },
     ]);
@@ -86,38 +90,23 @@ export default class ContentReportRepository {
       },
     };
   }
+
   async count(filters: GetContentReportsQuery) {
-    const { lguId, status } = filters;
+    const { barangayCode, status } = filters;
 
-    // Define the base match logic
-    const statusFilter = status && status !== 'ALL' ? { status } : {};
+    // Build the query object
+    const query: any = {};
 
-    if (!lguId) {
-      return ContentReportModel.countDocuments(statusFilter);
-    }
-
-    const countPipeline: any[] = [];
-
-    // Add status match if needed
     if (status && status !== 'ALL') {
-      countPipeline.push({ $match: { status } });
+      query.status = status;
     }
 
-    countPipeline.push(
-      {
-        $lookup: {
-          from: 'posts',
-          localField: 'postId',
-          foreignField: '_id',
-          as: 'post',
-        },
-      },
-      { $unwind: '$post' },
-      { $match: { 'post.lguId': new mongoose.Types.ObjectId(lguId) } },
-      { $count: 'total' },
-    );
+    if (barangayCode) {
+      query.barangayCode = barangayCode;
+    }
 
-    const result = await ContentReportModel.aggregate(countPipeline);
-    return result[0]?.total || 0;
+    // Since we now have barangayCode on the model itself,
+    // we don't need an expensive aggregate lookup just to count.
+    return ContentReportModel.countDocuments(query);
   }
 }

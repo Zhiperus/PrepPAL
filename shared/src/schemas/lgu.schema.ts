@@ -6,6 +6,8 @@ export const lguSchema = z.object({
   region: z.string().min(1, "Region is required"),
   province: z.string().min(1, "Province is required"),
   city: z.string().min(1, "City/Municipality is required"),
+  cityCode: z.string().min(1, "City code is required"),
+  barangayCode: z.string().min(1, "Barangay code is required"),
   createdAt: z.date().optional(),
 });
 
@@ -22,6 +24,8 @@ export const CreateLguSchema = z.object({
   province: z.string().min(1, "Province is required"),
   city: z.string().min(1, "City/Municipality is required"),
   barangay: z.string().min(1, "Barangay is required"),
+  cityCode: z.string().min(1, "City code is required"),
+  barangayCode: z.string().min(1, "Barangay code is required"),
 });
 
 export type Lgu = z.infer<typeof lguSchema>;

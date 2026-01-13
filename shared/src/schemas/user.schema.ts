@@ -9,6 +9,8 @@ const LocationSchema = z.object({
   province: z.string().min(1, { message: "Province is required." }),
   city: z.string().min(1, { message: "City is required." }),
   barangay: z.string().min(1, { message: "Barangay is required." }),
+  cityCode: z.string().min(1, { message: "City code is required." }),
+  barangayCode: z.string().min(1, { message: "Barangay code is required." }),
 });
 
 const HouseholdSchema = z.object({
@@ -40,7 +42,6 @@ export const UserSchema = z.object({
   phoneNumber: z.string().nonempty({ message: "Phone number is required" }),
   onboardingCompleted: z.boolean().default(false),
   role: z.enum(["citizen", "lgu", "super_admin"]).default("citizen"),
-  lguId: z.string().optional(),
   notification: z.object({
     email: z.boolean().default(true),
     sms: z.boolean().default(false),
@@ -176,11 +177,11 @@ export const GetLgusQuerySchema = z.object({
 });
 
 export const CreateLguAccountSchema = z.object({
+  location: LocationSchema,
   email: z.email(),
   password: z.string().min(8),
   householdName: z.string().min(1),
   role: z.literal("lgu"),
-  lguId: z.string(),
   isEmailVerified: z.boolean(),
   onboardingCompleted: z.boolean(),
 });

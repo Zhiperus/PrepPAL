@@ -40,19 +40,19 @@ export interface PopulatedGoBag {
 }
 
 export const getResidentGoBags = ({
-  lguId,
+  barangayCode,
 }: {
-  lguId: string;
+  barangayCode: string;
 }): Promise<{ data: PopulatedGoBag[] }> => {
   return api.get('/lgu/go-bags', {
-    params: { lguId },
+    params: { barangayCode },
   });
 };
 
-export const useResidentGoBags = (lguId: string) => {
+export const useResidentGoBags = (barangayCode: string) => {
   return useQuery({
-    queryKey: ['lgu-resident-go-bags', lguId],
-    queryFn: () => getResidentGoBags({ lguId }),
-    enabled: !!lguId,
+    queryKey: ['lgu-resident-go-bags', barangayCode],
+    queryFn: () => getResidentGoBags({ barangayCode }),
+    enabled: !!barangayCode,
   });
 };

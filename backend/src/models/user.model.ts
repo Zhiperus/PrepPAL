@@ -38,7 +38,17 @@ const BaseUserSchema = new Schema<IUser>(
     profileImageId: { type: String, default: null },
 
     // Both need to know which LGU they belong to/manage
-    lguId: { type: Schema.Types.ObjectId, ref: 'Lgu', default: null },
+    location: {
+      // CODES: The Source of Truth (Required for linking)
+      cityCode: { type: String, index: true },
+      barangayCode: { type: String, index: true }, // Index for fast feed/leaderboard lookups
+
+      // NAMES: The Snapshot (Required for Display)
+      region: String,
+      province: String,
+      city: String,
+      barangay: String,
+    },
 
     // Auth & System Flags
     onboardingCompleted: { type: Boolean, default: false },
@@ -94,12 +104,6 @@ const UserModel = mongoose.model<IUser>('User', BaseUserSchema);
 
 const CitizenSchema = new Schema({
   phoneNumber: { type: String, default: null },
-  location: {
-    region: String,
-    province: String,
-    city: String,
-    barangay: String,
-  },
   // Defaults strictly for Citizens
   householdInfo: {
     memberCount: { type: Number, default: 0 },

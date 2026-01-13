@@ -4,7 +4,7 @@ export const contentReportSchema = z.object({
   id: z.string(),
   postId: z.string(),
   reporterId: z.string(),
-  lguId: z.string(),
+  barangayCode: z.string(),
   reason: z
     .string()
     .min(10, "Please provide a more detailed reason (min 10 characters)")
@@ -22,7 +22,7 @@ export const GetContentReportsQuerySchema = z.object({
   status: z
     .enum(["PENDING", "RESOLVED", "DISMISSED", "ALL"])
     .default("PENDING"),
-  lguId: z.string().optional(),
+  barangayCode: z.string().optional(),
 });
 
 export const CompleteContentReportRequestSchema = z.object({

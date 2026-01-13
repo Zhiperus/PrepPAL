@@ -35,7 +35,7 @@ export default class PostController {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const { sortBy, order, search } = req.query;
+      const { sortBy, order, search, cityCode, barangayCode } = req.query;
 
       // 1. Fetch Posts
       const { posts, total } = await this.postService.getAllPosts({
@@ -44,6 +44,8 @@ export default class PostController {
         search: search as string,
         sortBy: sortBy as string,
         order: order as 'asc' | 'desc',
+        cityCode: cityCode as string,
+        barangayCode: barangayCode as string,
       });
 
       // 2. Extract Unique User IDs from the current page of posts

@@ -62,8 +62,8 @@ export default class PostService {
       );
     }
 
-    if (!user.lguId) {
-      throw new BadRequestError('No LGU to monitor the posts yet');
+    if (!user?.location?.barangayCode) {
+      throw new BadRequestError('User is not assigned to a Barangay yet');
     }
 
     // 2. Create the post with the snapshot of the go bag image
@@ -72,10 +72,9 @@ export default class PostService {
       caption,
       imageUrl: goBag.imageUrl,
       imageId: goBag.imageId,
-      lguId: user.lguId,
+      barangayCode: user.location.barangayCode,
     });
   }
-
   /**
    * Handles the community verification logic.
    * Calculates majority votes and awards points.

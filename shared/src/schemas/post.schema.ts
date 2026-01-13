@@ -9,7 +9,7 @@ const SnapshotItemSchema = z.object({
 export const PostSchema = z.object({
   _id: z.string(),
   userId: z.string(),
-  lguId: z.string(),
+  barangayCode: z.string(),
   imageUrl: z.url(),
   imageId: z.string().optional(),
   caption: z.string().optional(),
@@ -38,8 +38,8 @@ export const GetPostsQuerySchema = z.object({
   search: z.string().optional(),
   limit: z.coerce.number().default(10),
   page: z.coerce.number().default(1),
-  city: z.string(),
-  barangay: z.string(),
+  cityCode: z.string(),
+  barangayCode: z.string(),
 });
 
 export const CreatePostSchema = z.object({
@@ -47,7 +47,7 @@ export const CreatePostSchema = z.object({
   imageUrl: z.string(),
   imageId: z.string(),
   caption: z.string(),
-  lguId: z.string(),
+  barangayCode: z.string(),
 });
 
 export type CreatePostRequest = z.infer<typeof CreatePostSchema>;

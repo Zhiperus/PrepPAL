@@ -6,7 +6,6 @@ import { GO_BAG_ITEMS } from '../lib/seedData.js';
 import ContentReportModel from '../models/contentReport.model.js';
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
-import LguModel from '../models/lgu.model.js';
 import ModuleModel from '../models/module.model.js';
 import PostModel from '../models/post.model.js';
 import QuestionReportModel from '../models/questionReport.model.js';
@@ -32,48 +31,63 @@ const getRandomSubset = <T>(arr: T[], size: number): T[] => {
 
 // --- DATA CONSTANTS ---
 
+// These objects match the User Schema's 'location' structure exactly
 const PH_LOCATIONS = [
   {
     region: 'NCR',
     province: 'Metro Manila',
     city: 'Quezon City',
+    cityCode: '137404',
     barangay: 'Batasan Hills',
+    barangayCode: '137404012',
   },
   {
     region: 'NCR',
     province: 'Metro Manila',
     city: 'Quezon City',
+    cityCode: '137404',
     barangay: 'Diliman',
+    barangayCode: '137404118',
   },
   {
     region: 'NCR',
     province: 'Metro Manila',
     city: 'Manila',
+    cityCode: '133900',
     barangay: 'Tondo',
+    barangayCode: '133901000',
   },
   {
     region: 'NCR',
     province: 'Metro Manila',
     city: 'Makati',
+    cityCode: '137600',
     barangay: 'Poblacion',
+    barangayCode: '137602012',
   },
   {
     region: 'NCR',
     province: 'Metro Manila',
     city: 'Taguig',
+    cityCode: '137607',
     barangay: 'Fort Bonifacio',
+    barangayCode: '137607005',
   },
   {
     region: 'IV-A',
     province: 'Laguna',
     city: 'Santa Rosa',
+    cityCode: '043428',
     barangay: 'Balibago',
+    barangayCode: '043428002',
   },
   {
     region: 'VII',
     province: 'Cebu',
     city: 'Cebu City',
+    cityCode: '072217',
     barangay: 'Lahug',
+    barangayCode: '072217042',
   },
 ];
 
@@ -120,7 +134,6 @@ const seed = async () => {
     await Promise.all([
       UserModel.deleteMany({}),
       PostModel.deleteMany({}),
-      LguModel.deleteMany({}),
       GoBagItemModel.deleteMany({}),
       GoBagModel.deleteMany({}),
       ModuleModel.deleteMany({}),
@@ -135,59 +148,36 @@ const seed = async () => {
     const createdItems = await GoBagItemModel.insertMany(GO_BAG_ITEMS);
     console.log(`✅ Created ${createdItems.length} catalog items`);
 
-    // 3. CREATE LGUs (Per Barangay)
-    // The Location data lives HERE now
-    const lguData = PH_LOCATIONS.map((loc) => ({
-      name: `Brgy. ${loc.barangay}`,
-      region: loc.region,
-      province: loc.province,
-      city: loc.city,
-      barangay: loc.barangay,
-    }));
-
-    const createdLgus = await LguModel.insertMany(lguData);
-    console.log(`✅ Created ${createdLgus.length} Barangay LGUs`);
-
-    const getLguId = (barangayName: string) => {
-      const match = createdLgus.find((l) => l.name.includes(barangayName));
-      return match?._id || null;
-    };
-
     const hashedPassword = await bcrypt.hash('password', 10);
 
-    // 4. CREATE USERS
+    // 3. CREATE USERS
 
-    // 4a. LGU ADMINS (CLEAN - No Location, No Points)
-    const lguAdmins = createdLgus.map((lgu: any) => {
-      const rawSlug = lgu.name;
+    // 3a. LGU ADMINS (Generated directly from PH_LOCATIONS)
+    const lguAdmins = PH_LOCATIONS.map((loc) => {
+      const rawSlug = `Brgy. ${loc.barangay}`;
       const emailSlug = rawSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
 
       return {
         email: `admin.${emailSlug}@prep.gov.ph`,
         password: hashedPassword,
         role: 'lgu',
-        lguId: lgu._id,
-        householdName: `${lgu.name} Admin`,
-        // CLEAN OBJECT: No location, no points, no householdInfo
+        // [Corrected] No root barangayCode. It's inside location.
+        location: loc, // 'loc' already contains { cityCode, barangayCode ... }
+        householdName: `${rawSlug} Admin`,
         isEmailVerified: true,
         onboardingCompleted: true,
       };
     });
 
-    // 4b. CITIZENS (Have Location & Points defaults)
+    // 3b. CITIZENS
     const mainUsers = [
       {
         email: 'iorie@example.com',
         password: hashedPassword,
         householdName: 'Chua Household',
         role: 'citizen',
-        lguId: getLguId('Batasan Hills'),
-        location: {
-          region: 'NCR',
-          province: 'Metro Manila',
-          city: 'Taguig',
-          barangay: 'Fort Bonifacio',
-        },
+        // [Corrected] No root barangayCode
+        location: PH_LOCATIONS.find((l) => l.barangay === 'Batasan Hills'),
         points: { goBag: 50, community: 10, modules: 5 },
         householdInfo: { memberCount: 4, femaleCount: 2, pets: 1 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Iorie',
@@ -199,13 +189,8 @@ const seed = async () => {
         password: hashedPassword,
         householdName: 'The Dev Cave',
         role: 'citizen',
-        lguId: getLguId('Fort Bonifacio'),
-        location: {
-          region: 'NCR',
-          province: 'Metro Manila',
-          city: 'Taguig',
-          barangay: 'Fort Bonifacio',
-        },
+        // [Corrected] No root barangayCode
+        location: PH_LOCATIONS.find((l) => l.barangay === 'Fort Bonifacio'),
         points: { goBag: 80, community: 150, modules: 20 },
         householdInfo: { memberCount: 1, femaleCount: 0, pets: 0 },
         profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kyle',
@@ -218,16 +203,15 @@ const seed = async () => {
       email: 'super@prep.gov.ph',
       password: hashedPassword,
       role: 'super_admin',
-      lguId: null,
+      location: null, // Super Admins don't have a specific location
       householdName: 'National HQ',
       isEmailVerified: true,
       onboardingCompleted: true,
     };
 
-    // 4c. RANDOM CITIZENS
+    // 3c. RANDOM CITIZENS
     const randomUsersData = Array.from({ length: 60 }).map((_, i) => {
       const location = getRandomItem(PH_LOCATIONS);
-      const userLguId = getLguId(location.barangay);
 
       return {
         email: `resident${i + 1}@example.com`,
@@ -235,8 +219,8 @@ const seed = async () => {
         householdName: `Resident ${i + 1}`,
         phoneNumber: `0917${getRandomInt(1000000, 9999999)}`,
         role: 'citizen',
-        lguId: userLguId,
-        location: location, // Location is required for Citizens
+        // [Corrected] No root barangayCode. Passed entire location object
+        location: location,
         onboardingCompleted: true,
         householdInfo: {
           memberCount: getRandomInt(1, 6),
@@ -253,7 +237,6 @@ const seed = async () => {
     });
 
     // Create All Users
-    // Mongoose Discriminators will handle the schema differences based on 'role'
     const createdUsers = await UserModel.create([
       superAdmin,
       ...lguAdmins,
@@ -266,7 +249,7 @@ const seed = async () => {
       `✅ Created ${createdUsers.length} Users (${lguAdmins.length} Admins, ${createdCitizens.length} Citizens)`,
     );
 
-    // 5. CREATE GO BAGS
+    // 4. CREATE GO BAGS
     const goBagDocs = createdCitizens.map((user) => {
       const packedCount = getRandomInt(3, createdItems.length);
       const packedItems = getRandomSubset(createdItems, packedCount);
@@ -284,9 +267,13 @@ const seed = async () => {
     await GoBagModel.insertMany(goBagDocs);
     console.log(`✅ Created ${goBagDocs.length} Go Bags`);
 
-    // 6. CREATE POSTS (Increased volume for analytics)
+    // 5. CREATE POSTS (Increased volume for analytics)
     const postsData = [];
-    const eligibleAuthors = createdCitizens.filter((u) => u.lguId);
+
+    // [Corrected] Filter using the nested location.barangayCode
+    const eligibleAuthors = createdCitizens.filter(
+      (u) => u.location && u.location.barangayCode,
+    );
 
     if (eligibleAuthors.length > 0) {
       for (let i = 0; i < 200; i++) {
@@ -306,7 +293,8 @@ const seed = async () => {
 
         postsData.push({
           userId: author._id,
-          lguId: author.lguId,
+          // [Corrected] Access the nested barangayCode from the author
+          barangayCode: author.location!.barangayCode,
           imageUrl: getRandomItem(IMAGES),
           caption: getRandomItem(CAPTIONS),
           bagSnapshot: snapshotItems,
@@ -321,7 +309,7 @@ const seed = async () => {
       console.log(`✅ Created ${postsData.length} Community Posts`);
     }
 
-    // 7. SEED MODULES & QUIZZES
+    // 6. SEED MODULES & QUIZZES
     console.log('📚 Seeding Educational Modules...');
 
     const modulesData = [
@@ -397,7 +385,7 @@ const seed = async () => {
     }
     console.log(`✅ Created ${modulesData.length} Modules with Quizzes`);
 
-    // 8. CREATE CONTENT REPORTS (Increased volume)
+    // 7. CREATE CONTENT REPORTS
     console.log('🚩 Seeding Content Reports...');
 
     const allPosts = await PostModel.find();
@@ -409,15 +397,12 @@ const seed = async () => {
       'Harassment',
       'Fake verification image',
     ];
-    // Weighted towards PENDING so the dashboard has work to do
     const REPORT_STATUSES = ['PENDING', 'PENDING', 'RESOLVED', 'DISMISSED'];
 
     const reportsData = [];
 
-    // Create ~50 reports
     for (let i = 0; i < 50; i++) {
       const reportedPost = getRandomItem(allPosts);
-      // Ensure reporter is different from author
       const possibleReporters = createdCitizens.filter(
         (u) => u._id.toString() !== reportedPost.userId.toString(),
       );
@@ -427,7 +412,8 @@ const seed = async () => {
         reportsData.push({
           postId: reportedPost._id,
           reporterId: reporter._id,
-          lguId: reportedPost.lguId, // Crucial for LGU Admin filtering
+          // [Note] We access barangayCode directly from the Post, which is correct
+          barangayCode: reportedPost.barangayCode,
           reason: getRandomItem(REPORT_REASONS),
           status: getRandomItem(REPORT_STATUSES),
           createdAt: new Date(
@@ -440,7 +426,7 @@ const seed = async () => {
     const createdReports = await ContentReportModel.insertMany(reportsData);
     console.log(`✅ Created ${createdReports.length} Content Reports`);
 
-    // 9. SEED QUESTION REPORTS
+    // 8. SEED QUESTION REPORTS
     console.log('❓ Seeding Question Reports...');
 
     const allQuizzes = await QuizModel.find();
@@ -454,30 +440,25 @@ const seed = async () => {
 
     const questionReportsData = [];
 
-    // Create ~30 question reports
     for (let i = 0; i < 30; i++) {
       const targetQuiz = getRandomItem(allQuizzes);
-
-      // Pick a random question from the quiz's questions array
       const targetQuestion = getRandomItem(targetQuiz.questions);
-
       const reporter = getRandomItem(createdCitizens);
 
       questionReportsData.push({
         quizId: targetQuiz._id,
-        questionId: targetQuestion._id, // References the subdocument ID
+        questionId: targetQuestion._id,
         reporterId: reporter._id,
         reason: getRandomItem(QUESTION_REPORT_REASONS),
-        status: getRandomItem(['PENDING', 'PENDING', 'RESOLVED']), // Weighted to Pending
+        status: getRandomItem(['PENDING', 'PENDING', 'RESOLVED']),
         createdAt: new Date(
           Date.now() - getRandomInt(0, 15) * 24 * 60 * 60 * 1000,
         ),
       });
     }
 
-    const createdQuestionReports = await QuestionReportModel.insertMany(
-      questionReportsData,
-    );
+    const createdQuestionReports =
+      await QuestionReportModel.insertMany(questionReportsData);
     console.log(`✅ Created ${createdQuestionReports.length} Question Reports`);
 
     process.exit(0);

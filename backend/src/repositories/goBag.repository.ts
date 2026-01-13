@@ -1,5 +1,3 @@
-import { Types } from 'mongoose';
-
 import GoBagModel, { IGoBag } from '../models/goBag.model.js';
 import GoBagItemModel, { IGoBagItem } from '../models/goBagItem.model.js';
 
@@ -77,9 +75,10 @@ export default class GoBagRepository {
   }
 
   /**
-   * Retrieves high-level Go Bag readiness statistics for a specific LGU.
+   * Retrieves high-level Go Bag readiness statistics for a specific Barangay.
+   * UPDATED: Uses barangayCode instead of LGU ObjectId
    */
-  async getLguStats(lguId: Types.ObjectId, totalPossibleItems: number) {
+  async getLguStats(barangayCode: string, totalPossibleItems: number) {
     return GoBagModel.aggregate([
       {
         $lookup: {
@@ -90,7 +89,8 @@ export default class GoBagRepository {
         },
       },
       { $unwind: '$userDetails' },
-      { $match: { 'userDetails.lguId': lguId } },
+      // 👇 MATCH by nested barangayCode string
+      { $match: { 'userDetails.location.barangayCode': barangayCode } },
       {
         $addFields: {
           convertedItemIds: {
@@ -127,9 +127,10 @@ export default class GoBagRepository {
   }
 
   /**
-   * Generates a frequency breakdown of specific items owned by residents of an LGU.
+   * Generates a frequency breakdown of specific items owned by residents.
+   * UPDATED: Uses barangayCode instead of LGU ObjectId
    */
-  async getItemBreakdown(lguId: Types.ObjectId, activeBagsCount: number) {
+  async getItemBreakdown(barangayCode: string, activeBagsCount: number) {
     return GoBagModel.aggregate([
       {
         $lookup: {
@@ -140,7 +141,8 @@ export default class GoBagRepository {
         },
       },
       { $unwind: '$userDetails' },
-      { $match: { 'userDetails.lguId': lguId } },
+      // 👇 MATCH by nested barangayCode string
+      { $match: { 'userDetails.location.barangayCode': barangayCode } },
       {
         $project: {
           convertedItems: {
@@ -182,12 +184,11 @@ export default class GoBagRepository {
   }
 
   /**
-   * Fetches a paginated list of Go Bags for residents within a specific LGU.
-   * Hydrates the response with detailed user info, authoritative LGU location
-   * data, and full item details while calculating real-time completeness.
+   * Fetches a paginated list of Go Bags for residents within a specific Barangay.
+   * UPDATED: Uses barangayCode AND pulls location names directly from User (no LGU lookup needed).
    */
   async getResidentGoBags(
-    lguId: string,
+    barangayCode: string,
     skip: number,
     limit: number,
     totalPossibleItems: number,
@@ -204,18 +205,9 @@ export default class GoBagRepository {
       { $unwind: '$userDetails' },
       {
         $match: {
-          'userDetails.lguId': new Types.ObjectId(lguId),
+          'userDetails.location.barangayCode': barangayCode,
         },
       },
-      {
-        $lookup: {
-          from: 'lgus',
-          localField: 'userDetails.lguId',
-          foreignField: '_id',
-          as: 'lguDetails',
-        },
-      },
-      { $unwind: '$lguDetails' },
       {
         $addFields: {
           convertedItemIds: {
@@ -267,11 +259,14 @@ export default class GoBagRepository {
             householdName: '$userDetails.householdName',
             email: '$userDetails.email',
             phoneNumber: '$userDetails.phoneNumber',
+            householdInfo: {
+              memberCount: '$userDetails.householdInfo.memberCount',
+            },
             location: {
-              region: '$lguDetails.region',
-              province: '$lguDetails.province',
-              city: '$lguDetails.city',
-              barangay: '$lguDetails.barangay',
+              region: '$userDetails.location.region',
+              province: '$userDetails.location.province',
+              city: '$userDetails.location.city',
+              barangay: '$userDetails.location.barangay',
             },
             profileImage: '$userDetails.profileImage',
           },

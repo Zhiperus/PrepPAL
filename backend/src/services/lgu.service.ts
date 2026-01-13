@@ -1,10 +1,6 @@
-import { CreateLguRequest } from '@repo/shared/dist/schemas/lgu.schema';
-import { Types } from 'mongoose';
-
 import GoBagRepository from '../repositories/goBag.repository.js';
 import GoBagItemRepository from '../repositories/goBagItem.repository.js';
 import LguRepository from '../repositories/lgu.repository.js';
-import UserRepository from '../repositories/user.repository.js';
 
 export interface DashboardMetricsResponse {
   lguDetails: {
@@ -26,24 +22,31 @@ export interface DashboardMetricsResponse {
 
 export default class LguService {
   private lguRepo = new LguRepository();
-  private userRepo = new UserRepository();
   private goBagItemRepo = new GoBagItemRepository();
   private goBagRepo = new GoBagRepository();
 
-  async getDashboardMetrics(lguId: string): Promise<DashboardMetricsResponse> {
-    const lguDetails = await this.lguRepo.getLguDetails(lguId);
-    if (!lguDetails) throw new Error('LGU not found');
+  async getDashboardMetrics(
+    cityCode: string,
+    barangayCode: string,
+  ): Promise<DashboardMetricsResponse> {
+    // 1. Try to find the LGU Admin to get the "Official Name"
+    const lguAdmin = await this.lguRepo.getLguAdminProfile(barangayCode);
 
+    // 2. Run Stats
     const [citizenStats, reportStats] = await Promise.all([
-      this.lguRepo.getCitizenMetrics(lguId),
-      this.lguRepo.getReportMetrics(lguId),
+      this.lguRepo.getCitizenMetrics(barangayCode),
+      this.lguRepo.getReportMetrics(barangayCode),
     ]);
 
+    // 3. Resolve Display Info
+    // If admin exists, use their profile data. If not, use generic placeholders.
+    const name = lguAdmin?.householdName || `Barangay ${barangayCode}`;
+    const location = lguAdmin?.location
+      ? `${lguAdmin.location.city}, ${lguAdmin.location.province}`
+      : `City Code ${cityCode}`;
+
     return {
-      lguDetails: {
-        name: lguDetails.name,
-        location: `${lguDetails.city}, ${lguDetails.province}`,
-      },
+      lguDetails: { name, location },
       overall: {
         averageScore: Math.round(citizenStats.avgScore || 0),
         totalCitizens: citizenStats.totalCitizens,
@@ -58,16 +61,14 @@ export default class LguService {
     };
   }
 
-  async getLguAnalytics(lguId: string) {
-    const objectIdLgu = new Types.ObjectId(lguId);
+  async getLguAnalytics(barangayCode: string) {
     const totalPossibleItems = await this.goBagItemRepo.countAll();
-
     const goBagStats = await this.goBagRepo.getLguStats(
-      objectIdLgu,
+      barangayCode,
       totalPossibleItems,
     );
     const itemBreakdown = await this.goBagRepo.getItemBreakdown(
-      objectIdLgu,
+      barangayCode,
       goBagStats.length,
     );
 
@@ -92,12 +93,12 @@ export default class LguService {
     };
   }
 
-  async getResidentGoBags(lguId: string, page: number, limit: number) {
+  async getResidentGoBags(barangayCode: string, page: number, limit: number) {
     const skip = (page - 1) * limit;
     const totalPossibleItems = await this.goBagItemRepo.countAll();
 
     const result = await this.goBagRepo.getResidentGoBags(
-      lguId,
+      barangayCode,
       skip,
       limit,
       totalPossibleItems,
@@ -107,21 +108,5 @@ export default class LguService {
       data: result[0].data,
       total: result[0].metadata[0]?.total || 0,
     };
-  }
-
-  async getLguCompleteInfo(lguId: string) {
-    return this.lguRepo.getLguCompleteInfo(lguId);
-  }
-
-  async findByName(query: any) {
-    return this.lguRepo.findByName(query);
-  }
-
-  async createLgu(data: CreateLguRequest) {
-    return this.lguRepo.createLgu(data);
-  }
-
-  async updateLguData(lguId: string, data: any) {
-    return this.lguRepo.updateLguData(lguId, data);
   }
 }

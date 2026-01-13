@@ -141,8 +141,11 @@ export default function LguGoBagDashboard() {
   const { data: user } = useUser();
 
   // 1. Fetch Data
-  const { data: goBagsData, isLoading } = useResidentGoBags(user?.lguId || '');
+  const { data: goBagsData, isLoading } = useResidentGoBags(
+    user?.location?.barangayCode || '',
+  );
   const goBags = goBagsData?.data;
+  console.log(goBags);
 
   // 2. Local State for UI
   const [searchTerm, setSearchTerm] = useState('');

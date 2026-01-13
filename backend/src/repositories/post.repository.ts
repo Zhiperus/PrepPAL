@@ -7,7 +7,6 @@ import mongoose, { FilterQuery } from 'mongoose';
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
 import PostModel, { IPost } from '../models/post.model.js';
-import RatingModel, { IRating } from '../models/rating.model.js';
 import UserModel from '../models/user.model.js';
 
 export default class PostRepository {
@@ -22,8 +21,8 @@ export default class PostRepository {
       search,
       page = 1,
       limit = 10,
-      city,
-      barangay,
+      cityCode,
+      barangayCode,
     } = options;
 
     const sortOrder = order === 'asc' ? 1 : -1;
@@ -32,12 +31,12 @@ export default class PostRepository {
     // 1. Build the Search Query
     const query: FilterQuery<any> = {};
 
-    if (barangay && city) {
+    if (barangayCode && cityCode) {
       // Find users in this specific Barangay AND City
       // (Using both prevents mixing up "Brgy San Jose" from different cities)
       const usersInBarangay = await UserModel.find({
-        'location.city': city,
-        'location.barangay': barangay,
+        'location.cityCode': cityCode,
+        'location.barangayCode': barangayCode,
       }).select('_id');
 
       const localUserIds = usersInBarangay.map((u) => u._id);
@@ -46,9 +45,9 @@ export default class PostRepository {
       query.userId = { $in: localUserIds };
     }
     // Fallback: If only city is provided (optional, if you want mixed modes)
-    else if (city) {
+    else if (cityCode) {
       const usersInCity = await UserModel.find({
-        'location.city': city,
+        'location.cityCode': cityCode,
       }).select('_id');
       query.userId = { $in: usersInCity.map((u) => u._id) };
     }
@@ -90,11 +89,28 @@ export default class PostRepository {
     search,
     sortBy = 'createdAt',
     order = 'desc',
-  }: any) {
+    barangayCode,
+    cityCode,
+  }: GetPostsQuery) {
     const skip = (page - 1) * limit;
     const sortDirection = order === 'desc' ? -1 : 1;
 
+    // 1. STAGE: Initial Match (Optimization)
+    // Filter by barangayCode BEFORE grouping. This uses the index on Post and is much faster.
+    const initialMatch: any = {};
+    if (barangayCode) {
+      initialMatch.barangayCode = barangayCode;
+    }
+
+    // 2. STAGE: Post-Lookup Match
+    // These filters require User data or full text search, so they happen later.
     const matchStage: any = {};
+
+    // Filter by City Code (Found on the joined 'userId' object)
+    if (cityCode) {
+      matchStage['userId.location.cityCode'] = cityCode;
+    }
+
     if (search) {
       matchStage.$or = [
         { caption: { $regex: search, $options: 'i' } },
@@ -103,6 +119,9 @@ export default class PostRepository {
     }
 
     const pipeline: any[] = [
+      // A. Apply Barangay Filter First
+      { $match: initialMatch },
+
       { $sort: { createdAt: -1 } },
 
       {
@@ -125,6 +144,7 @@ export default class PostRepository {
 
       { $unwind: '$userId' },
 
+      // B. Apply City Filter and Search (after user is joined)
       { $match: matchStage },
 
       { $sort: { [sortBy]: sortDirection } },
@@ -144,7 +164,6 @@ export default class PostRepository {
       total: result.totalCount[0]?.count || 0,
     };
   }
-
   async findAllUserPosts(userId: string, options: GetPostsQuery) {
     const {
       page = 1,
@@ -202,7 +221,7 @@ export default class PostRepository {
    * If user has no GoBag, creates post with empty bagSnapshot.
    */
   async create(data: CreatePostRequest) {
-    const { userId, imageUrl, imageId, lguId } = data;
+    const { userId, imageUrl, imageId, barangayCode } = data;
 
     // 1. Get the user's current GoBag
     const goBag = await GoBagModel.findOne({
@@ -235,7 +254,7 @@ export default class PostRepository {
       bagSnapshot,
       verifiedItemCount: 0,
       verificationCount: 0,
-      lguId,
+      barangayCode,
     });
 
     return post.save();

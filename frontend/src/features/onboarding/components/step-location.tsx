@@ -13,7 +13,6 @@ interface StepLocationProps {
 
 export function StepLocation({ onNext }: StepLocationProps) {
   const {
-    register,
     setValue,
     watch,
     trigger,
@@ -50,6 +49,7 @@ export function StepLocation({ onNext }: StepLocationProps) {
     fetchRegions();
   }, []);
 
+  // Hydrate Provinces if Region is already selected (e.g., navigating back)
   useEffect(() => {
     if (selectedRegion && regionList.length > 0 && provinceList.length === 0) {
       const regionCode = regionList.find(
@@ -62,7 +62,7 @@ export function StepLocation({ onNext }: StepLocationProps) {
         .then((res) => res.json())
         .then((data: LocationItem[]) => {
           if (data.length === 0) {
-            // NCR Case
+            // NCR Case: Region has no provinces, fetch cities directly
             fetch(
               `https://psgc.gitlab.io/api/regions/${regionCode}/cities-municipalities/`,
             )
@@ -82,6 +82,7 @@ export function StepLocation({ onNext }: StepLocationProps) {
     }
   }, [selectedRegion, regionList, provinceList.length]);
 
+  // Hydrate Cities if Province is selected
   useEffect(() => {
     if (selectedProvince && provinceList.length > 0 && cityList.length === 0) {
       const provinceCode = provinceList.find(
@@ -103,6 +104,7 @@ export function StepLocation({ onNext }: StepLocationProps) {
     }
   }, [selectedProvince, provinceList, cityList.length]);
 
+  // Hydrate Barangays if City is selected
   useEffect(() => {
     if (selectedCity && cityList.length > 0 && barangayList.length === 0) {
       const cityCode = cityList.find((c) => c.name === selectedCity)?.code;
@@ -122,14 +124,21 @@ export function StepLocation({ onNext }: StepLocationProps) {
     }
   }, [selectedCity, cityList, barangayList.length]);
 
+  // --- 2. HANDLERS ---
+
   const onRegionChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     const code = e.target.value;
     const regionObj = regionList.find((r) => r.code === code);
 
+    // Set Region Name
     setValue('location.region', regionObj?.name || '');
+
+    // Reset all children
     setValue('location.province', '');
     setValue('location.city', '');
+    setValue('location.cityCode', '');
     setValue('location.barangay', '');
+    setValue('location.barangayCode', '');
 
     setProvinceList([]);
     setCityList([]);
@@ -167,8 +176,13 @@ export function StepLocation({ onNext }: StepLocationProps) {
     const provObj = provinceList.find((p) => p.code === code);
 
     setValue('location.province', provObj?.name || '');
+
+    // Reset children
     setValue('location.city', '');
+    setValue('location.cityCode', '');
     setValue('location.barangay', '');
+    setValue('location.barangayCode', '');
+
     setCityList([]);
     setBarangayList([]);
 
@@ -191,7 +205,12 @@ export function StepLocation({ onNext }: StepLocationProps) {
     const cityObj = cityList.find((c) => c.code === code);
 
     setValue('location.city', cityObj?.name || '');
+    setValue('location.cityCode', code); // <-- SAVE CITY CODE
+
+    // Reset child
     setValue('location.barangay', '');
+    setValue('location.barangayCode', '');
+
     setBarangayList([]);
 
     if (!code) return;
@@ -202,10 +221,20 @@ export function StepLocation({ onNext }: StepLocationProps) {
         `https://psgc.gitlab.io/api/cities-municipalities/${code}/barangays/`,
       );
       const data: LocationItem[] = await response.json();
-      setBarangayList(data.sort((a, b) => a.name.localeCompare(b.name)));
+      setBarangayList(
+        data.sort((a: any, b: any) => a.name.localeCompare(b.name)),
+      );
     } finally {
       setLoadingLocation(false);
     }
+  };
+
+  const onBarangayChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const code = e.target.value;
+    const brgyObj = barangayList.find((b) => b.code === code);
+
+    setValue('location.barangay', brgyObj?.name || '');
+    setValue('location.barangayCode', code); // <-- SAVE BRGY CODE
   };
 
   const handleNext = async () => {
@@ -312,15 +341,18 @@ export function StepLocation({ onNext }: StepLocationProps) {
         </legend>
         <select
           className="select select-bordered w-full border-[#2a4263] bg-white"
-          {...register('location.barangay')}
-          defaultValue=""
+          onChange={onBarangayChange}
+          // Reverse Lookup: Find Code based on Saved Name
+          value={
+            barangayList.find((b) => b.name === selectedBarangay)?.code || ''
+          }
           disabled={barangayList.length === 0}
         >
           <option value="" disabled>
             {loadingLocation ? 'Loading...' : 'Select Barangay'}
           </option>
           {barangayList.map((brgy) => (
-            <option key={brgy.code} value={brgy.name}>
+            <option key={brgy.code} value={brgy.code}>
               {brgy.name}
             </option>
           ))}

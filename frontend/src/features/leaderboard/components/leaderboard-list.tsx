@@ -1,4 +1,5 @@
 import type { LeaderboardEntry } from '@repo/shared/dist/schemas/leaderboard.schema';
+import { FaLocationDot } from 'react-icons/fa6';
 import { LuSearch } from 'react-icons/lu';
 
 interface LeaderboardListProps {
@@ -30,8 +31,10 @@ export function LeaderboardList({
         <h1 className="text-text-primary mb-2 text-4xl font-extrabold">
           Leaderboard
         </h1>
-        <span className="block text-sm font-medium text-gray-500">
-          {location}
+
+        <span className="flex gap-3 justify-self-center text-sm font-medium text-gray-500">
+          <FaLocationDot className="text-text-primary h-4 w-4 shrink-0" />
+          {'Brgy. ' + location}
         </span>
 
         {/* Search Bar */}

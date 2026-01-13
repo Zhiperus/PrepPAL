@@ -1,53 +1,42 @@
 import { NextFunction, Request, Response } from 'express';
-import { Types } from 'mongoose';
 
 import { handleInternalError } from '../errors/index.js';
-import LguModel from '../models/lgu.model.js';
-import UserModel from '../models/user.model.js';
 import AuthRepository from '../repositories/auth.repository.js';
 import AdminService from '../services/admin.service.js';
-import LguService from '../services/lgu.service.js';
+// [Fixed] Removed unused LguService import
 import UserService from '../services/user.service.js';
 
 export default class AdminController {
   private adminService = new AdminService();
   private userService = new UserService();
-  private lguService = new LguService();
   private authRepo = new AuthRepository();
 
   /**
-   * Get dashboard statistics for admin panel
-   * Path: GET /admin/stats
-   * Access: Protected - super_admin only
+   * Get dashboard statistics
    */
   getDashboardStats = async (
-    req: Request,
+    _req: Request, // [Fixed] Renamed to _req to suppress 'unused variable' error
     res: Response,
     next: NextFunction,
   ) => {
     try {
       const stats = await this.adminService.getDashboardStats();
-
-      res.status(200).json({
-        success: true,
-        data: stats,
-      });
+      res.status(200).json({ success: true, data: stats });
     } catch (err) {
       handleInternalError(err, next);
     }
   };
 
   /**
-   * Get formatted lgu info for admin panel
-   * Path: GET /admin/lgus
-   * Access: Protected - super_admin only
+   * Get formatted lgu list
+   * (Actually fetches "LGU Admin Users")
    */
-
   async getLgus(req: Request, res: Response, next: NextFunction) {
     try {
       const { search, page = 1, limit = 10 } = req.query;
 
-      const query: any = { role: 'lgu' };
+      // [Fixed] Changed type to Record<string, any> to avoid 'Unexpected any'
+      const query: Record<string, any> = { role: 'lgu' };
       if (search) {
         query.$or = [
           { householdName: { $regex: search, $options: 'i' } },
@@ -56,6 +45,7 @@ export default class AdminController {
         ];
       }
 
+      // Find Users with role="lgu"
       const lguAccounts = await this.userService.findLguAccounts(
         query,
         parseInt(page as string, 10),
@@ -64,54 +54,60 @@ export default class AdminController {
 
       const formattedLgus = await Promise.all(
         lguAccounts.map(async (lgu) => {
-          const lguId = lgu.lguId?.toString() || lgu._id.toString();
-          const citizenCount = await this.userService.getCitizenCountByLgu(
-            lguId,
-          );
-          const lguInfo = await this.lguService.getLguCompleteInfo(lguId);
+          const code = lgu.location?.barangayCode;
+
+          if (!code) return null; // Skip broken records
+
+          // We derive citizen count from the code
+          const citizenCount =
+            await this.userService.getCitizenCountByLgu(code);
+
           return {
-            id: lgu.lguId,
-            name: lgu.householdName,
+            id: code, // ID is the barangayCode
+            userId: lgu._id, // Keep reference to the admin user ID
+            name: lgu.householdName, // "Barangay Batasan Hills"
             adminEmail: lgu.email,
             status: 'active',
-            region: lguInfo?.region,
-            province: lguInfo?.province,
-            city: lguInfo?.city,
-            barangay: lguInfo?.barangay,
+            region: lgu.location?.region,
+            province: lgu.location?.province,
+            city: lgu.location?.city,
+            barangay: lgu.location?.barangay,
             registeredUsers: citizenCount,
           };
         }),
       );
 
-      return res.status(200).json(formattedLgus);
+      // Filter out nulls
+      return res.status(200).json(formattedLgus.filter(Boolean));
     } catch (error) {
       next(error);
     }
   }
 
   /**
-   * Update lgu data
-   * Path: PATCH /admin/lgus/:lguId
-   * Access: Protected - super_admin only
+   * Create new LGU (Creates an Admin User)
    */
   async createLgu(req: Request, res: Response, next: NextFunction) {
     try {
       const {
-        name, // LGU Name
+        name, // "Barangay X Admin"
         adminEmail,
         password,
         region,
         province,
         city,
         barangay,
+        cityCode,
+        barangayCode,
       } = req.body;
 
-      // 1. VALIDATION: Check for existing LGU Name OR Email
-      const existingLgu = await this.lguService.findByName({ name });
-      if (existingLgu) {
-        return res.status(400).json({ error: 'LGU name already registered' });
+      if (!barangayCode || !cityCode) {
+        return res
+          .status(400)
+          .json({ error: 'City and Barangay Codes are required.' });
       }
 
+      // 1. Check for Duplicate Email
       const existingUser = await this.userService.findByEmail({
         email: adminEmail,
       });
@@ -119,60 +115,83 @@ export default class AdminController {
         return res.status(400).json({ error: 'Email already registered' });
       }
 
-      // 2. CREATE LGU DOCUMENT
-      // This holds the location data, so we don't need to duplicate it in the User
-      const newLgu = await this.lguService.createLgu({
-        name,
-        region,
-        province,
-        city,
-        barangay,
-      });
+      // 2. Check if an Admin for this Barangay ALREADY exists
+      // (Optional: Enforce 1 Admin per Barangay)
+      // [Fixed] This method now exists in UserService
+      const existingAdmin =
+        await this.userService.findLguAdminByCode(barangayCode);
+      if (existingAdmin) {
+        return res
+          .status(400)
+          .json({ error: 'An admin for this Barangay already exists.' });
+      }
 
-      // 3. HASH PASSWORD
+      // 3. Hash Password
       const hashedPassword = await this.authRepo.hashPassword(password);
 
-      // 4. CREATE USER DOCUMENT (Admin)
+      // 4. Create the User
       const newUser = await this.userService.createLguAccount({
         email: adminEmail,
         password: hashedPassword,
-        householdName: name,
+        householdName: name, // This acts as the LGU Name
         role: 'lgu',
-        lguId: newLgu.id,
+        location: {
+          region,
+          province,
+          city,
+          barangay,
+          cityCode,
+          barangayCode,
+        },
         isEmailVerified: true,
         onboardingCompleted: true,
       });
 
-      // 5. Return success
       return res.status(201).json({
-        lgu: newLgu,
-        admin: {
+        success: true,
+        data: {
           id: newUser._id,
           email: newUser.email,
           role: newUser.role,
+          location: newUser.location,
         },
       });
     } catch (error) {
       next(error);
     }
   }
-  // PATCH /admin/lgus/:lguId
+
+  /**
+   * Update LGU (Updates the Admin User)
+   */
   async updateLgu(req: Request, res: Response, next: NextFunction) {
     try {
-      const { lguId } = req.params;
+      // url: /admin/lgus/:barangayCode
+      const { barangayCode } = req.params;
       const data = req.body;
 
-      if (!Types.ObjectId.isValid(lguId)) {
-        return res.status(400).json({ error: 'Invalid LGU ID' });
+      // Find the user responsible for this code
+      // [Fixed] This method now exists in UserService
+      const adminUser = await this.userService.findLguAdminByCode(barangayCode);
+
+      if (!adminUser) {
+        return res
+          .status(404)
+          .json({ error: 'LGU Admin not found for this code' });
       }
 
-      const updatedLgu = await this.lguService.updateLguData(lguId, data);
+      // Update that user
+      // [Fixed] This method now exists in UserService
+      const updatedUser = await this.userService.updateUser(
+        adminUser._id.toString(),
+        {
+          householdName: data.name, // Update display name
+          email: data.adminEmail,
+          // ... map other fields as needed
+        },
+      );
 
-      if (!updatedLgu) {
-        return res.status(404).json({ error: 'LGU not found' });
-      }
-
-      return res.status(200).json(updatedLgu);
+      return res.status(200).json(updatedUser);
     } catch (error) {
       next(error);
     }

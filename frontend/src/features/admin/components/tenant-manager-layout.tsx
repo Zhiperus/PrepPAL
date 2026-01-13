@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { IoMdMore } from 'react-icons/io';
-// 1. Fixed: LuLoader2 corrected to LuLoader
 import { LuSearch, LuPlus, LuMapPin, LuMail, LuLoader } from 'react-icons/lu';
 
-// 2. Fixed: Import order (edit before get)
 import { useUpdateLgu } from '../api/edit-lgu';
 import { useLgus } from '../api/get-lgus';
 
 import { AddLGUModal } from './add-lgu';
 import { EditLGUModal } from './edit-lgu';
 
-// Define the LGU type locally or import it if available
 interface LguTenant {
-  id: string;
+  id: string; // Note: This ID corresponds to the barangayCode from the backend
   name: string;
   region: string;
   province: string;
@@ -24,14 +21,15 @@ interface LguTenant {
 
 export function TenantManagerLayout() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [lguId, setLguId] = useState<string | null>(null);
+
+  const [selectedBarangayCode, setSelectedBarangayCode] = useState<
+    string | null
+  >(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const { data, isLoading, isError } = useLgus();
   const { mutate: updateLgu } = useUpdateLgu();
 
-  // 3. Fixed: Accessing data from Axios response and adding types
-  // Assuming useLgus returns the AxiosResponse, we need data.data or handle it via the hook
   const lgus = Array.isArray(data) ? data : data?.data || [];
 
   const filteredTenants = lgus.filter(
@@ -40,21 +38,25 @@ export function TenantManagerLayout() {
       tenant.city.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const selectedTenant = lgus.find((t: LguTenant) => t.id === lguId);
+  // [Fixed] Find tenant by checking if tenant.id matches the selected code
+  const selectedTenant = lgus.find(
+    (t: LguTenant) => t.id === selectedBarangayCode,
+  );
 
-  const handleDeactivate = (id: string) => {
+  const handleDeactivate = (barangayCode: string) => {
     if (confirm('Are you sure you want to deactivate this account?')) {
       updateLgu({
-        lguId: id,
+        // passing the barangayCode here.
+        barangayCode: barangayCode,
         data: { status: 'inactive' },
       });
     }
   };
 
-  const handleActivate = (id: string) => {
+  const handleActivate = (barangayCode: string) => {
     if (confirm('Are you sure you want to activate this account?')) {
       updateLgu({
-        lguId: id,
+        barangayCode: barangayCode,
         data: { status: 'active' },
       });
     }
@@ -158,6 +160,10 @@ export function TenantManagerLayout() {
                               <LuMapPin size={12} />
                               {tenant.city}, {tenant.province}
                             </div>
+                            {/* Optional: Show Code for Debugging */}
+                            <div className="text-[10px] text-gray-300">
+                              Code: {tenant.id}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-gray-600">
@@ -194,7 +200,11 @@ export function TenantManagerLayout() {
                               className="dropdown-content menu rounded-box z-50 my-1 w-52 border border-gray-100 bg-white p-2 shadow-lg"
                             >
                               <li>
-                                <button onClick={() => setLguId(tenant.id)}>
+                                <button
+                                  onClick={() =>
+                                    setSelectedBarangayCode(tenant.id)
+                                  }
+                                >
                                   Edit Account
                                 </button>
                               </li>
@@ -230,9 +240,9 @@ export function TenantManagerLayout() {
       </div>
 
       <EditLGUModal
-        isOpen={!!lguId}
+        isOpen={!!selectedBarangayCode}
         tenant={selectedTenant}
-        onClose={() => setLguId(null)}
+        onClose={() => setSelectedBarangayCode(null)}
       />
       <AddLGUModal
         isOpen={isAddModalOpen}

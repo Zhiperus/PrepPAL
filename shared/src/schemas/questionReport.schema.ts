@@ -22,7 +22,6 @@ export const GetQuestionReportsQuerySchema = z.object({
   status: z
     .enum(["PENDING", "RESOLVED", "DISMISSED", "ALL"])
     .default("PENDING"),
-  lguId: z.string().optional(),
 });
 
 export const CompleteQuestionReportRequestSchema = z.object({

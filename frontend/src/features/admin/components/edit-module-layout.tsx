@@ -23,11 +23,14 @@ export default function EditModulePage() {
   };
 
   const handleCloseModal = () => {
-    setSearchParams((prev) => {
-      const params = new URLSearchParams(prev);
-      params.delete('edit');
-      return params;
-    }, { replace: true });
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.delete('edit');
+        return params;
+      },
+      { replace: true },
+    );
     setSelectedModule(null);
   };
 
@@ -41,28 +44,31 @@ export default function EditModulePage() {
 
   // Sync Search to URL while PRESERVING other params
   useEffect(() => {
-    setSearchParams((prev) => {
-      // 1. Create a copy of existing params (preserves 'edit')
-      const params = new URLSearchParams(prev);
+    setSearchParams(
+      (prev) => {
+        // 1. Create a copy of existing params (preserves 'edit')
+        const params = new URLSearchParams(prev);
 
-      // 2. Update Search
-      if (debouncedSearch) {
-        params.set('search', debouncedSearch);
-      } else {
-        params.delete('search');
-      }
+        // 2. Update Search
+        if (debouncedSearch) {
+          params.set('search', debouncedSearch);
+        } else {
+          params.delete('search');
+        }
 
-      // 3. Update Page
-      if (debouncedSearch !== queryParam) {
-        params.set('page', '1');
-      } else if (pageParam > 1) {
-        params.set('page', pageParam.toString());
-      } else {
-        params.delete('page');
-      }
+        // 3. Update Page
+        if (debouncedSearch !== queryParam) {
+          params.set('page', '1');
+        } else if (pageParam > 1) {
+          params.set('page', pageParam.toString());
+        } else {
+          params.delete('page');
+        }
 
-      return params;
-    }, { replace: true });
+        return params;
+      },
+      { replace: true },
+    );
   }, [debouncedSearch, pageParam, setSearchParams, queryParam]);
 
   const {
@@ -77,14 +83,13 @@ export default function EditModulePage() {
     },
   });
 
-
   const modules = modulesData?.data || [];
   const meta = modulesData?.meta;
 
   // Effect to auto-open modal if 'edit' param exists
   useEffect(() => {
     if (editId && modules.length > 0) {
-      const moduleToEdit = modules.find(m => m._id === editId);
+      const moduleToEdit = modules.find((m) => m._id === editId);
       if (moduleToEdit) {
         setSelectedModule(moduleToEdit);
         modalRef.current?.showModal();
@@ -103,13 +108,10 @@ export default function EditModulePage() {
               <h1 className="text-3xl font-extrabold text-[#2a4263]">
                 Module Editor
               </h1>
-              <div className="badge badge-outline badge-success mt-2 gap-4 p-3">
-                <div
-                  aria-label="success"
-                  className="status status-success"
-                ></div>
-                <span>No unpublished changes.</span>
-              </div>
+              <p className="mt-1 text-sm text-gray-500">
+                Create, update, and manage educational content and quiz
+                assessments.
+              </p>
             </div>
           </div>
 
@@ -196,7 +198,11 @@ export default function EditModulePage() {
           </div>
         )}
       </div>
-      <EditModuleModal ref={modalRef} module={selectedModule} onClose={handleCloseModal} />
+      <EditModuleModal
+        ref={modalRef}
+        module={selectedModule}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }

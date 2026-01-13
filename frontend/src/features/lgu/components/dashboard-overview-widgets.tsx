@@ -442,9 +442,9 @@ export default function LguDashboardPage() {
     isError: isMetricsError,
   } = useLguDashboardMetrics();
 
-  const lguId = user?.lguId || '';
+  const barangayCode = user?.location?.barangayCode || '';
 
-  const { data: analyticsData } = useGoBagAnalytics(lguId);
+  const { data: analyticsData } = useGoBagAnalytics(barangayCode);
 
   // Loading State
   if (isMetricsLoading) {

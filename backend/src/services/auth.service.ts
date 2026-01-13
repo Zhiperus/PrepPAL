@@ -18,6 +18,18 @@ export default class AuthService {
   private AuthRepo = new AuthRepository();
   private GoBagRepo = new GoBagRepository();
 
+  async generateFreshToken(userId: string) {
+    const user = await this.AuthRepo.findById(userId);
+    if (!user) throw new NotFoundError('User not found');
+
+    return this.AuthRepo.generateToken({
+      userId: String(user._id),
+      role: user.role,
+      cityCode: user?.location?.cityCode,
+      barangayCode: user?.location?.barangayCode,
+    });
+  }
+
   async getUserById(userId: string) {
     const user = await this.AuthRepo.findById(userId);
     if (!user) throw new NotFoundError('User not found');
@@ -46,7 +58,6 @@ export default class AuthService {
       email,
       password: hashedPassword,
       role: userData.role || 'citizen',
-      lguId: userData.lguId || null,
     });
 
     await this.GoBagRepo.findBagByUserId(String(newUser._id));
@@ -54,7 +65,6 @@ export default class AuthService {
     const token = this.AuthRepo.generateToken({
       userId: String(newUser._id),
       role: newUser.role,
-      lguId: newUser.lguId ? String(newUser.lguId) : null,
     });
 
     this.sendVerificationEmail(String(newUser._id));
@@ -87,7 +97,8 @@ export default class AuthService {
     const token = this.AuthRepo.generateToken({
       userId: String(user._id),
       role: user.role,
-      lguId: user.lguId ? String(user.lguId) : null,
+      cityCode: user.location?.cityCode,
+      barangayCode: user.location?.barangayCode,
     });
 
     return {

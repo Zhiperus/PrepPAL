@@ -199,8 +199,7 @@ export const EditModuleModal = forwardRef<
   if (!module) return <dialog ref={ref} className="modal"></dialog>;
 
   return (
-    <dialog ref={ref} className="modal" 
-      ={onClose}>
+    <dialog ref={ref} className="modal" onClose={onClose}>
       <div className="modal-box w-11/12 max-w-4xl bg-white">
         <div className="flex items-center justify-between border-b pb-4">
           <h3 className="text-xl font-bold">
@@ -208,7 +207,6 @@ export const EditModuleModal = forwardRef<
           </h3>
           <p className="text-sm text-gray-400">ID: {module._id}</p>
         </div>
-
         <div className="space-y-2 py-6">
           {isLoading ? (
             <div className="flex justify-center py-10">
@@ -497,7 +495,7 @@ export const EditModuleModal = forwardRef<
       <form method="dialog" className="modal-backdrop">
         <button>close</button>
       </form>
-    </dialog >
+    </dialog>
   );
 });
 

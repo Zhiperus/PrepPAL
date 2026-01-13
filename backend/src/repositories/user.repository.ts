@@ -185,6 +185,7 @@ export default class UserRepository {
         {
           $push: {
             completedModules: {
+              completedAt: new Date(),
               moduleId,
               bestScore: newScore,
               pointsAwarded: pointsToAward,
@@ -204,12 +205,13 @@ export default class UserRepository {
       .sort({ createdAt: -1 });
   }
 
-  async getCitizenCountByLgu(lguId: string) {
+  async getCitizenCountByLgu(barangayCode: string) {
     return UserModel.countDocuments({
-      $or: [{ lguId: lguId }],
+      'location.barangayCode': barangayCode,
       role: 'citizen',
     });
   }
+
   async findByEmail(query: any) {
     return UserModel.findOne(query);
   }

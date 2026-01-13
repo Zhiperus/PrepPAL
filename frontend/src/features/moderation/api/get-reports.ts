@@ -6,7 +6,7 @@ import type { QueryConfig } from '@/lib/react-query';
 // 1. Updated Type Definitions to match Post Model & Backend Populate
 export type ContentReport = {
   _id: string;
-  lguId: string;
+  barangayCode: string;
   reason: string;
   status: 'PENDING' | 'RESOLVED' | 'DISMISSED';
   createdAt: string;
@@ -18,7 +18,7 @@ export type ContentReport = {
     householdName: string;
     email: string;
     profileImage?: string;
-    lguId: string;
+    barangayCode: string;
   };
 
   // Populated Post
@@ -34,7 +34,7 @@ export type ContentReport = {
       householdName: string;
       email: string;
       profileImage?: string;
-      lguId: string;
+      location: { barangayCode: string };
     };
   } | null;
 };
@@ -52,21 +52,21 @@ export type ContentReportResponse = {
 
 // 3. Fetch Function
 export const getContentReports = ({
-  lguId,
+  barangayCode,
   page = 1,
   limit = 10,
 }: {
-  lguId: string;
+  barangayCode: string;
   page?: number;
   limit?: number;
 }): Promise<ContentReportResponse> => {
   return api.get('/content-reports', {
-    params: { lguId, page, limit },
+    params: { barangayCode, page, limit },
   });
 };
 
 type UseContentReportsOptions = {
-  lguId: string;
+  barangayCode: string;
   page?: number;
   limit?: number;
   queryConfig?: QueryConfig<typeof getContentReports>;
@@ -74,15 +74,15 @@ type UseContentReportsOptions = {
 
 // 4. Hook
 export const useContentReports = ({
-  lguId,
+  barangayCode,
   page,
   limit,
   queryConfig,
 }: UseContentReportsOptions) => {
   return useQuery({
     ...queryConfig,
-    queryKey: ['content-reports', lguId, page, limit],
-    queryFn: () => getContentReports({ lguId, page, limit }),
-    enabled: !!lguId,
+    queryKey: ['content-reports', barangayCode, page, limit],
+    queryFn: () => getContentReports({ barangayCode, page, limit }),
+    enabled: !!barangayCode,
   });
 };

@@ -6,7 +6,8 @@ import UserModel, { IUser } from '../models/user.model.js';
 interface TokenPayload {
   userId: string;
   role: 'citizen' | 'lgu' | 'super_admin';
-  lguId?: string | null;
+  cityCode?: string;
+  barangayCode?: string;
 }
 const JWT_SECRET = process.env.JWT_SECRET || 'DEFAULT-SECRET';
 const BCRYPT_SALT_ROUNDS: number = process.env.BCRYPT_SALT_ROUNDS
@@ -43,7 +44,6 @@ export default class AuthRepository {
     email: string;
     password: string;
     role: string;
-    lguId: string | null;
   }): Promise<IUser> {
     const user = new UserModel(data);
     return user.save();
