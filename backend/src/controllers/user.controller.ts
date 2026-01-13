@@ -6,7 +6,6 @@ import {
 import { NextFunction, Request, Response } from 'express';
 
 import { handleInternalError } from '../errors/index.js';
-import UserRepository from '../repositories/user.repository.js';
 import UserService from '../services/user.service.js';
 import { parseFileRequest } from '../utils/image.util.js';
 
@@ -37,11 +36,8 @@ export default class UserController {
   updateAvatar = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.userId!;
-
-      // 1. FILE PARSING: Extract the image file from the multipart/form-data request
       const file = await parseFileRequest(req, res);
 
-      // 2. SERVICE CALL: Service handles Cloudinary upload and DB URL update
       const result = await this.userService.updateAvatar(userId, file);
       res.status(200).json({
         success: true,

@@ -1,4 +1,5 @@
 import {
+  CreateLguAccountRequest,
   GetLeaderboardQuery,
   UpdateModuleProgressInput,
   UpdateProfileInfoRequest,
@@ -144,5 +145,26 @@ export default class UserRepository {
       );
     }
     return result;
+  }
+
+  async findLguAccounts(query: any, page: number = 1, limit: number = 10) {
+    return UserModel.find(query)
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit))
+      .sort({ createdAt: -1 });
+  }
+
+  async getCitizenCountByLgu(lguId: string) {
+    return UserModel.countDocuments({
+      $or: [{ lguId: lguId }],
+      role: 'citizen',
+    });
+  }
+  async findByEmail(query: any) {
+    return UserModel.findOne(query);
+  }
+
+  async createLguAccount(data: CreateLguAccountRequest) {
+    return UserModel.create(data);
   }
 }

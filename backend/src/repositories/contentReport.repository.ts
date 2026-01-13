@@ -1,17 +1,17 @@
 import {
-  CompleteReportRequest,
-  GetReportsQuery,
+  CompleteContentReportRequest,
+  GetContentReportsQuery,
 } from '@repo/shared/dist/schemas/contentReport.schema';
 import mongoose from 'mongoose';
 
 import ContentReportModel from '../models/contentReport.model.js';
 
 export default class ContentReportRepository {
-  async findByIdAndUpdate(id: string, data: CompleteReportRequest) {
+  async findByIdAndUpdate(id: string, data: CompleteContentReportRequest) {
     return ContentReportModel.findByIdAndUpdate(id, data, { new: true });
   }
 
-  async findAll(filters: GetReportsQuery) {
+  async findAll(filters: GetContentReportsQuery) {
     // Ensure numbers for pagination math
     const page = Math.max(1, Number(filters.page) || 1);
     const limit = Math.max(1, Number(filters.limit) || 10);
@@ -86,7 +86,7 @@ export default class ContentReportRepository {
       },
     };
   }
-  async count(filters: GetReportsQuery) {
+  async count(filters: GetContentReportsQuery) {
     const { lguId, status } = filters;
 
     // Define the base match logic

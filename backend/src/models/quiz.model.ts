@@ -7,19 +7,16 @@ export interface IQuiz extends Omit<Quiz, '_id' | 'moduleId'>, Document {
   updatedAt: Date;
 }
 
-const questionSchema = new Schema(
-  {
-    questionText: { type: String, required: true },
-    choices: [
-      {
-        id: { type: Number, required: true },
-        text: { type: String, required: true },
-      },
-    ],
-    correctAnswer: { type: Number, required: true },
-  },
-  { _id: false },
-);
+const questionSchema = new Schema({
+  questionText: { type: String, required: true },
+  choices: [
+    {
+      id: { type: Number, required: true },
+      text: { type: String, required: true },
+    },
+  ],
+  correctAnswer: { type: Number, required: true },
+});
 
 const quizSchema = new Schema<IQuiz>(
   {

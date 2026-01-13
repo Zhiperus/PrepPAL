@@ -159,6 +159,25 @@ export const updateModuleProgressSchema = z.object({
   pointsToAward: z.number().min(0),
 });
 
+export const GetLgusQuerySchema = z.object({
+  sortBy: z.string().default("createdAt"),
+  order: z.enum(["asc", "desc"]).default("desc"),
+  page: z.coerce.number().default(1),
+  limit: z.coerce.number().default(10),
+  search: z.string().optional(),
+  role: z.string().default("lgu"),
+});
+
+export const CreateLguAccountSchema = z.object({
+  email: z.email(),
+  password: z.string().min(8),
+  householdName: z.string().min(1),
+  role: z.literal("lgu"),
+  lguId: z.string(),
+  isEmailVerified: z.boolean(),
+  onboardingCompleted: z.boolean(),
+});
+
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
@@ -176,5 +195,8 @@ export type CompletedModule = z.infer<typeof completedModuleSchema>;
 export type UpdateModuleProgressInput = z.infer<
   typeof updateModuleProgressSchema
 >;
+
+export type GetLgusQuery = z.infer<typeof GetLgusQuerySchema>;
+export type CreateLguAccountRequest = z.infer<typeof CreateLguAccountSchema>;
 
 export type User = z.infer<typeof PublicUserSchema>;

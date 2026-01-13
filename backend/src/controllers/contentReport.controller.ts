@@ -1,7 +1,7 @@
 import {
-  CompleteReportRequestSchema,
-  GetReportsQuery,
-  GetReportsQuerySchema,
+  CompleteContentReportRequestSchema,
+  GetContentReportsQuerySchema,
+  GetContentReportsQuery,
 } from '@repo/shared/dist/schemas/contentReport.schema';
 import { NextFunction, Request, Response } from 'express';
 
@@ -10,10 +10,14 @@ import ContentReportService from '../services/contentReport.service.js';
 export default class ContentReportController {
   private reportService = new ContentReportService();
 
-  findAllReports = async (req: Request, res: Response, next: NextFunction) => {
+  findAllContentReports = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       // 1. Validate the query (sortBy, order, limit, page)
-      const validatedQuery = GetReportsQuerySchema.parse(req.query);
+      const validatedQuery = GetContentReportsQuerySchema.parse(req.query);
 
       // 2. Determine the correct lguId scope
       // Super admins can see everything or filter by a specific LGU from query
@@ -22,7 +26,7 @@ export default class ContentReportController {
         req.role === 'super_admin' ? validatedQuery.lguId : req.lguId;
 
       // 3. Construct the final filters object
-      const filters: GetReportsQuery = {
+      const filters: GetContentReportsQuery = {
         ...validatedQuery,
         lguId: targetLguId ?? undefined, // Ensure null becomes undefined
       };
@@ -38,11 +42,15 @@ export default class ContentReportController {
     }
   };
 
-  completeReport = async (req: Request, res: Response, next: NextFunction) => {
+  completeContentReport = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const { id } = req.params;
 
-      const validatedData = CompleteReportRequestSchema.parse(req.body);
+      const validatedData = CompleteContentReportRequestSchema.parse(req.body);
 
       const result = await this.reportService.completeReport(id, validatedData);
       res.status(200).json({

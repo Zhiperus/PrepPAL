@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-export const contentReportSchema = z.object({
+export const questionReportSchema = z.object({
   id: z.string(),
-  postId: z.string(),
+  quizId: z.string(),
+  questionId: z.string(),
   reporterId: z.string(),
-  lguId: z.string(),
   reason: z
     .string()
     .min(10, "Please provide a more detailed reason (min 10 characters)")
@@ -14,7 +14,7 @@ export const contentReportSchema = z.object({
   updatedAt: z.date().optional(),
 });
 
-export const GetContentReportsQuerySchema = z.object({
+export const GetQuestionReportsQuerySchema = z.object({
   sortBy: z.string().default("createdAt"),
   order: z.enum(["asc", "desc"]).default("desc"),
   limit: z.coerce.number().default(10),
@@ -25,14 +25,14 @@ export const GetContentReportsQuerySchema = z.object({
   lguId: z.string().optional(),
 });
 
-export const CompleteContentReportRequestSchema = z.object({
+export const CompleteQuestionReportRequestSchema = z.object({
   status: z.enum(["RESOLVED", "DISMISSED"]),
 });
 
-export type ContentReport = z.infer<typeof contentReportSchema>;
-export type GetContentReportsQuery = z.infer<
-  typeof GetContentReportsQuerySchema
+export type QuestionReport = z.infer<typeof questionReportSchema>;
+export type GetQuestionReportsQuery = z.infer<
+  typeof GetQuestionReportsQuerySchema
 >;
-export type CompleteContentReportRequest = z.infer<
-  typeof CompleteContentReportRequestSchema
+export type CompleteQuestionReportRequest = z.infer<
+  typeof CompleteQuestionReportRequestSchema
 >;
