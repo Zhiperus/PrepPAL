@@ -51,4 +51,3 @@ export const useLgus = ({ params, queryConfig }: UseLgusOptions = {}) => {
     queryFn: () => getLgus(params),
   });
 };
-

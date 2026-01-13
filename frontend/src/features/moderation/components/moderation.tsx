@@ -3,7 +3,6 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 import { FiFilter, FiSearch } from 'react-icons/fi';
 
-// Import the new unified hook and the query hook
 import { useCompleteReport } from '../api/complete-report';
 import { useContentReports } from '../api/get-reports';
 
@@ -45,15 +44,35 @@ function Avatar({
   );
 }
 
+// --- Props Definition ---
+
+interface ModerationPageProps {
+  /**
+   * Optional: Overrides the logged-in user's barangay code.
+   * - If provided, filters by this code.
+   * - If omitted for Super Admin, shows ALL reports.
+   * - If omitted for LGU Admin, defaults to their own code.
+   */
+  barangayCode?: string | null;
+}
+
 // --- Main Page ---
 
-export default function ModerationPage() {
+export default function ModerationPage({
+  barangayCode: propBarangayCode,
+}: ModerationPageProps) {
   const user = useUser();
   const queryClient = useQueryClient();
 
-  // 1. Fetch Reports
+  // Determine the target code to filter by
+  const targetCode =
+    propBarangayCode !== undefined
+      ? propBarangayCode
+      : user.data?.location?.barangayCode;
+
+  // 1. Fetch Reports (Pass undefined if no code exists to fetch ALL)
   const { data: reportsData, isLoading } = useContentReports({
-    barangayCode: user.data?.location?.barangayCode || '',
+    barangayCode: targetCode || undefined,
   });
   const reports = reportsData?.data;
 
@@ -104,7 +123,7 @@ export default function ModerationPage() {
       {/* Header */}
       <header className="mb-8 flex flex-col pt-12 lg:pt-2">
         <h1 className="text-text-primary text-3xl font-extrabold tracking-tight">
-          Moderation
+          Moderation {targetCode ? '(Local)' : '(Global)'}
         </h1>
         <p className="text-gray-500">
           Review flagged submissions and manage community reports.

@@ -180,7 +180,14 @@ export const createAppRouter = (queryClient: QueryClient) =>
         {
           path: paths.admin['question-moderation'].path,
           lazy: () =>
-            import('./routes/admin/question-moderation').then(convert(queryClient)),
+            import('./routes/admin/question-moderation').then(
+              convert(queryClient),
+            ),
+        },
+        {
+          path: paths.admin['content-moderation'].path,
+          lazy: () =>
+            import('./routes/admin/moderation').then(convert(queryClient)),
         },
       ],
     },

@@ -56,17 +56,20 @@ export const getContentReports = ({
   page = 1,
   limit = 10,
 }: {
-  barangayCode: string;
+  // [Fixed] Allow undefined for Super Admins
+  barangayCode?: string;
   page?: number;
   limit?: number;
 }): Promise<ContentReportResponse> => {
   return api.get('/content-reports', {
+    // Axios automatically skips keys with undefined values
     params: { barangayCode, page, limit },
   });
 };
 
 type UseContentReportsOptions = {
-  barangayCode: string;
+  // [Fixed] Allow undefined
+  barangayCode?: string;
   page?: number;
   limit?: number;
   queryConfig?: QueryConfig<typeof getContentReports>;
@@ -81,8 +84,9 @@ export const useContentReports = ({
 }: UseContentReportsOptions) => {
   return useQuery({
     ...queryConfig,
+    // [Fixed] Includes undefined in the key so caching works separately for global vs local
     queryKey: ['content-reports', barangayCode, page, limit],
     queryFn: () => getContentReports({ barangayCode, page, limit }),
-    enabled: !!barangayCode,
+    // [Fixed] Removed 'enabled: !!barangayCode' so it runs even without a code (for Super Admin)
   });
 };

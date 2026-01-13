@@ -1,5 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { GoOrganization, GoDatabase, GoSignOut, GoQuestion } from 'react-icons/go';
+import {
+  GoOrganization,
+  GoDatabase,
+  GoSignOut,
+  GoQuestion,
+  GoDiscussionClosed,
+} from 'react-icons/go';
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { useNavigate } from 'react-router';
 
@@ -134,6 +140,17 @@ export function AdminDashboardLayout({
                 >
                   <GoQuestion className="h-6 w-6" />
                   <span>Question Moderation</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to={paths.admin['content-moderation'].getHref()}
+                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                  onClick={closeDrawer}
+                >
+                  <GoDiscussionClosed className="h-6 w-6" />
+                  <span>Content Moderation</span>
                 </Link>
               </li>
             </ul>
