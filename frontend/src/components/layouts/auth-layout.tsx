@@ -32,39 +32,38 @@ export default function AuthLayout({ children }: LayoutProps) {
 
   return (
     <>
-      <div className="bg-bg-page flex min-h-screen items-center justify-center p-4 font-sans">
+      <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4 font-sans">
         {/* MAIN CARD */}
-        <div className="bg-bg-primary flex min-h-[616px] w-full max-w-4xl overflow-hidden rounded-3xl shadow-[10px_10px_20px_rgba(0,0,0,0.15)]">
-          {/* LEFT SIDE */}
-          <div className="flex w-full flex-col justify-start p-8 pt-14 md:w-1/2 md:p-12 md:pt-14">
+        <div className="flex min-h-[600px] w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-xl">
+          {/* LEFT SIDE (Form) */}
+          <div className="flex w-full flex-col justify-between p-8 pt-12 md:w-1/2 md:p-12 md:pt-14">
             <div className="mx-auto w-full max-w-sm">
-              {/* Register / Login */}
-
-              <div className="mb-8 flex items-center justify-center text-3xl">
+              {/* Register / Login Toggles */}
+              <div className="mb-8 flex items-center justify-center text-2xl tracking-wide">
                 {/* Login Link */}
                 <div>
                   <Link
                     to="/auth/login"
-                    className={`transition-colors focus:outline-none ${
+                    className={`transition-colors duration-200 focus:outline-none ${
                       isLogin
-                        ? 'text-text-primary font-bold'
-                        : 'text-text-secondary hover:text-text-primary font-normal'
+                        ? 'border-b-2 border-[#2a4263] pb-1 font-bold text-[#2a4263]'
+                        : 'pb-1 font-medium text-gray-400 hover:text-gray-600'
                     }`}
                   >
                     Login
                   </Link>
                 </div>
 
-                <span className="text-text-secondary mx-3 font-bold">/</span>
+                <span className="mx-4 font-light text-gray-300">|</span>
 
                 {/* Register Link */}
                 <div>
                   <Link
                     to="/auth/register"
-                    className={`transition-colors focus:outline-none ${
+                    className={`transition-colors duration-200 focus:outline-none ${
                       isRegister
-                        ? 'text-text-primary font-bold'
-                        : 'text-text-secondary hover:text-text-primary font-normal'
+                        ? 'border-b-2 border-[#2a4263] pb-1 font-bold text-[#2a4263]'
+                        : 'pb-1 font-medium text-gray-400 hover:text-gray-600'
                     }`}
                   >
                     Register
@@ -74,24 +73,55 @@ export default function AuthLayout({ children }: LayoutProps) {
 
               <div className="space-y-6">{children}</div>
             </div>
-          </div>
 
-          {/* RIGHT SIDE */}
-          <div className="relative hidden w-1/2 flex-col items-center justify-start bg-slate-500 p-12 pt-12 md:flex">
-            <div className="flex flex-col items-center">
-              <img src={logo} alt="PrepPAL Logo" className="mb-4 h-35 w-auto" />
-              <h1 className="text-text-primary text-4xl font-bold tracking-wide">
-                PrepPAL
-              </h1>
-            </div>
-
-            {/* Back Link */}
-            <div className="absolute bottom-8 left-0 w-full text-center">
+            {/* MOBILE ONLY: Back Link */}
+            <div className="mt-8 flex justify-center md:hidden">
               <Link
                 to="/"
-                className="text-text-secondary hover:text-text-primary flex items-center justify-center gap-2 text-sm transition-colors hover:underline"
+                className="group inline-flex items-center gap-2 text-sm font-medium text-gray-400 transition-colors hover:text-[#2a4263]"
               >
-                <FaLongArrowAltLeft /> Go back to About section
+                <FaLongArrowAltLeft className="transition-transform group-hover:-translate-x-1" />
+                Back to website
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT SIDE (Branding - Hidden on Mobile) */}
+          <div className="relative hidden w-1/2 flex-col items-center justify-center bg-[#2a4263] text-white md:flex">
+            <div
+              className="absolute inset-0 opacity-10"
+              style={{
+                backgroundImage:
+                  'radial-gradient(#ffffff 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+              }}
+            ></div>
+
+            <div className="z-10 flex flex-col items-center p-12 text-center">
+              <div className="mb-6 rounded-full border border-white/10 bg-white/10 p-6 backdrop-blur-sm">
+                <img src={logo} alt="PrepPAL Logo" className="h-28 w-auto" />
+              </div>
+
+              <h1 className="mb-2 text-4xl font-bold tracking-tight text-white">
+                PrepPAL
+              </h1>
+
+              <div className="mb-4 h-1 w-12 rounded-full bg-blue-300/50"></div>
+
+              <p className="max-w-xs text-base leading-relaxed font-medium text-blue-100/90">
+                Disaster preparedness and community safety management for
+                everyone.
+              </p>
+            </div>
+
+            {/* DESKTOP ONLY: Back Link */}
+            <div className="absolute bottom-8 left-0 z-10 w-full text-center">
+              <Link
+                to="/"
+                className="group inline-flex items-center gap-2 text-xs font-semibold tracking-wider text-blue-200 uppercase transition-colors hover:text-white"
+              >
+                <FaLongArrowAltLeft className="transition-transform group-hover:-translate-x-1" />
+                Back to website
               </Link>
             </div>
           </div>
