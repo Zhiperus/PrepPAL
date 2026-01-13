@@ -45,7 +45,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
   return (
     <div className="w-full">
-      {/* ✅ API Error Alert */}
+      {/* API Error Alert Display */}
       {apiError && (
         <div className="border-text-error/20 bg-bg-error-container/50 text-text-error animate-in fade-in slide-in-from-top-1 mb-4 flex items-center gap-3 rounded-md border p-3 text-sm font-medium">
           <LuCircleAlert className="h-5 w-5 shrink-0" />
@@ -54,7 +54,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Email */}
+        {/* Email Field */}
         <div>
           <label className="text-text-primary block text-sm font-bold">
             Email
@@ -76,7 +76,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           )}
         </div>
 
-        {/* Password */}
+        {/* Password Field */}
         <div>
           <label className="text-text-primary block text-sm font-bold">
             Password
@@ -86,7 +86,8 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
             <input
               type={isPasswordVisible ? 'text' : 'password'}
               {...register('password')}
-              className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm ${
+              // FIX: [&::-webkit-credentials-auto-fill-button]:invisible hides the native browser key icon
+              className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm [&::-webkit-credentials-auto-fill-button]:invisible ${
                 errors.password
                   ? 'input-error bg-bg-error-container/10'
                   : 'border-text-primary focus:border-text-link-hover'
@@ -110,7 +111,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           )}
         </div>
 
-        {/* Confirm Password */}
+        {/* Confirm Password Field */}
         <div>
           <label className="text-text-primary block text-sm font-bold">
             Confirm Password
@@ -118,7 +119,8 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           <input
             type="password"
             {...register('confirmPassword')}
-            className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm ${
+            // FIX: Applied same fix here for consistency
+            className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm [&::-webkit-credentials-auto-fill-button]:invisible ${
               errors.confirmPassword
                 ? 'input-error bg-bg-error-container/10'
                 : 'border-text-primary focus:border-text-link-hover'
@@ -133,7 +135,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           )}
         </div>
 
-        {/* Register Button */}
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}
@@ -150,7 +152,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         </button>
       </form>
 
-      {/* Separator */}
+      {/* Social Login Section */}
       <div className="text-text-secondary border-border-container my-6 flex items-center text-xl font-medium before:me-4 before:flex-1 before:border-t after:ms-4 after:flex-1 after:border-t">
         or
       </div>

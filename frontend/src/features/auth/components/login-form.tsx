@@ -34,12 +34,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   });
 
   const onSubmit: SubmitHandler<LoginRequest> = async (data) => {
-    setApiError(null); // Clear previous errors
+    setApiError(null);
     try {
       await login.mutateAsync(data);
     } catch (error: any) {
       console.error(error);
-      // Fallback to a generic message if the error object structure is unknown
       setApiError(
         error?.response?.data?.message ||
           error?.message ||
@@ -50,6 +49,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <div className="w-full">
+      {/* API Error Alert Display */}
       {apiError && (
         <div className="border-text-error/20 bg-bg-error-container/50 text-text-error animate-in fade-in slide-in-from-top-1 mb-4 flex items-center gap-3 rounded-md border p-3 text-sm font-medium">
           <LuCircleAlert className="h-5 w-5 shrink-0" />
@@ -58,6 +58,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {/* Email Field */}
         <div>
           <label className="text-text-primary block text-sm font-bold">
             Email
@@ -79,6 +80,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           )}
         </div>
 
+        {/* Password Field */}
         <div>
           <label className="text-text-primary block text-sm font-bold">
             Password
@@ -88,7 +90,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             <input
               type={isPasswordVisible ? 'text' : 'password'}
               {...register('password')}
-              className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm ${
+              // FIX: Added [&::-webkit-credentials-auto-fill-button]:invisible to hide the native key icon
+              className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm [&::-webkit-credentials-auto-fill-button]:invisible ${
                 errors.password
                   ? 'input-error bg-bg-error-container/10'
                   : 'border-text-primary focus:border-text-link-hover'
@@ -123,6 +126,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           </div>
         </div>
 
+        {/* Login Button */}
         <button
           type="submit"
           disabled={isSubmitting}
@@ -139,6 +143,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         </button>
       </form>
 
+      {/* Social Login Section */}
       <div className="text-text-secondary border-border-container my-6 flex items-center text-xl font-medium before:me-4 before:flex-1 before:border-t after:ms-4 after:flex-1 after:border-t">
         or
       </div>
