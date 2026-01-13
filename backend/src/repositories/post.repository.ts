@@ -1,3 +1,7 @@
+import {
+  CreatePostRequest,
+  GetPostsQuery,
+} from '@repo/shared/dist/schemas/post.schema';
 import mongoose, { FilterQuery } from 'mongoose';
 
 import GoBagModel from '../models/goBag.model.js';
@@ -6,29 +10,12 @@ import PostModel, { IPost } from '../models/post.model.js';
 import RatingModel, { IRating } from '../models/rating.model.js';
 import UserModel from '../models/user.model.js';
 
-// Options for sorting posts
-export type GetPostsOptions = {
-  sortBy?: string;
-  order?: 'asc' | 'desc';
-  search?: string;
-  page?: number;
-  limit?: number;
-};
-// Data required to create a new post
-export interface CreatePostData {
-  userId: string;
-  imageUrl: string;
-  imageId: string;
-  caption: string;
-  lguId: string;
-}
-
 export default class PostRepository {
   /**
    * Retrieves all posts with optional sorting.
    * Populates user info and sorts by specified field (default: createdAt desc).
    */
-  async findAll(options: GetPostsOptions = {}) {
+  async findAll(options: GetPostsQuery) {
     const {
       sortBy = 'createdAt',
       order = 'desc',
@@ -135,7 +122,7 @@ export default class PostRepository {
     };
   }
 
-  async findAllUserPosts(userId: string, options: GetPostsOptions = {}) {
+  async findAllUserPosts(userId: string, options: GetPostsQuery) {
     const {
       page = 1,
       limit = 10,
@@ -191,7 +178,7 @@ export default class PostRepository {
    * Creates a new post with a snapshot of the user's current GoBag items.
    * If user has no GoBag, creates post with empty bagSnapshot.
    */
-  async create(data: CreatePostData) {
+  async create(data: CreatePostRequest) {
     const { userId, imageUrl, imageId, lguId } = data;
 
     // 1. Get the user's current GoBag

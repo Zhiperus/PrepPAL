@@ -5,12 +5,11 @@ import {
 
 import { NotFoundError } from '../errors/index.js';
 import ContentReportRepository from '../repositories/contentReport.repository.js';
-
-import PostService from './post.service.js';
+import PostRepository from '../repositories/post.repository.js';
 
 export default class ContentReportService {
   private reportRepo = new ContentReportRepository();
-  private postService = new PostService();
+  private postRepo = new PostRepository();
 
   async findAll(filters: GetContentReportsQuery) {
     const [data, total] = await Promise.all([
@@ -33,10 +32,10 @@ export default class ContentReportService {
     const report = await this.reportRepo.findByIdAndUpdate(id, data);
 
     if (!report) throw new NotFoundError('Report not found');
-    // If RESOLVED, tell the PostService to take action
+    // If RESOLVED, delete the post
     if (data.status === 'RESOLVED') {
       try {
-        await this.postService.deletePost(report.postId.toString());
+        await this.postRepo.findByIdAndDelete(report.postId.toString());
       } catch (error) {
         console.error(`Failed to delete post ${report.postId}:`, error);
       }

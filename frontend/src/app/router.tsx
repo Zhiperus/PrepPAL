@@ -10,6 +10,8 @@ import NotFoundRoute from './routes/not-found';
 
 import { paths } from '@/config/paths';
 import { ProtectedRoute } from '@/lib/auth';
+import { AuthorizationGuard } from '@/lib/authorization';
+import { ROLES } from '@/lib/authorization';
 
 /**
  * Helper to inject queryClient into lazy-loaded loaders and actions
@@ -60,7 +62,9 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.app.root.path,
       element: (
         <ProtectedRoute>
-          <AppRoot />
+          <AuthorizationGuard allowedRoles={[ROLES.CITIZEN]}>
+            <AppRoot />
+          </AuthorizationGuard>
         </ProtectedRoute>
       ),
       children: [
@@ -121,7 +125,10 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.lgu.root.path,
       element: (
         <ProtectedRoute>
-          <LguRoot />
+          {/* 4. ADD GUARD FOR LGU */}
+          <AuthorizationGuard allowedRoles={[ROLES.LGU]}>
+            <LguRoot />
+          </AuthorizationGuard>
         </ProtectedRoute>
       ),
       children: [
@@ -153,7 +160,10 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.admin.root.path,
       element: (
         <ProtectedRoute>
-          <AdminRoot />
+          {/* 5. ADD GUARD FOR SUPER ADMIN */}
+          <AuthorizationGuard allowedRoles={[ROLES.SUPER_ADMIN]}>
+            <AdminRoot />
+          </AuthorizationGuard>
         </ProtectedRoute>
       ),
       children: [

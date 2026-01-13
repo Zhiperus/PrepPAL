@@ -109,7 +109,8 @@ export default function ResetPasswordForm() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter new password"
-                  className={`input block w-full rounded-md border py-2 pr-10 transition-all outline-none sm:text-sm ${
+                  // FIX: Added invisible class
+                  className={`input block w-full rounded-md border py-2 pr-10 transition-all outline-none sm:text-sm [&::-webkit-credentials-auto-fill-button]:invisible ${
                     errors.password
                       ? 'input-error bg-bg-error-container/10'
                       : 'border-text-primary focus:border-text-link-hover'
@@ -155,7 +156,8 @@ export default function ResetPasswordForm() {
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm new password"
-                  className={`input block w-full rounded-md border py-2 pr-10 transition-all outline-none sm:text-sm ${
+                  // FIX: Added invisible class
+                  className={`input block w-full rounded-md border py-2 pr-10 transition-all outline-none sm:text-sm [&::-webkit-credentials-auto-fill-button]:invisible ${
                     errors.confirmPassword
                       ? 'input-error bg-bg-error-container/10'
                       : 'border-text-primary focus:border-text-link-hover'

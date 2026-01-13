@@ -45,7 +45,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
   return (
     <div className="w-full">
-      {/* ✅ API Error Alert */}
+      {/* API Error Alert */}
       {apiError && (
         <div className="border-text-error/20 bg-bg-error-container/50 text-text-error animate-in fade-in slide-in-from-top-1 mb-4 flex items-center gap-3 rounded-md border p-3 text-sm font-medium">
           <LuCircleAlert className="h-5 w-5 shrink-0" />
@@ -86,7 +86,8 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
             <input
               type={isPasswordVisible ? 'text' : 'password'}
               {...register('password')}
-              className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm ${
+              // FIX: Added invisible class
+              className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm [&::-webkit-credentials-auto-fill-button]:invisible ${
                 errors.password
                   ? 'input-error bg-bg-error-container/10'
                   : 'border-text-primary focus:border-text-link-hover'
@@ -118,7 +119,8 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           <input
             type="password"
             {...register('confirmPassword')}
-            className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm ${
+            // FIX: Added invisible class
+            className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm [&::-webkit-credentials-auto-fill-button]:invisible ${
               errors.confirmPassword
                 ? 'input-error bg-bg-error-container/10'
                 : 'border-text-primary focus:border-text-link-hover'

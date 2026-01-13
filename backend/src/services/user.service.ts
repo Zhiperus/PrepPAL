@@ -1,4 +1,5 @@
 import {
+  CreateLguAccountRequest,
   GetLeaderboardQuery,
   OnboardingRequest,
   UpdateProfileInfoRequest,
@@ -101,5 +102,26 @@ export default class UserService {
       barangay: filterBarangay,
     });
     return users;
+  }
+
+  async findById(id: string) {
+    return this.userRepo.findById(id);
+  }
+
+  async findLguAccounts(query: any, page: number = 1, limit: number = 10) {
+    return this.userRepo.findLguAccounts(query, page, limit);
+  }
+
+  async getCitizenCountByLgu(lguId: string) {
+    const citizenCount = await this.userRepo.getCitizenCountByLgu(lguId);
+    return citizenCount;
+  }
+
+  async findByEmail(query: any) {
+    return this.userRepo.findByEmail(query);
+  }
+
+  async createLguAccount(data: CreateLguAccountRequest) {
+    return this.userRepo.createLguAccount(data);
   }
 }
