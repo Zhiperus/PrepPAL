@@ -7,7 +7,7 @@ import {
   LuChevronRight,
   LuTrophy,
   LuPlay,
-  LuInbox, 
+  LuInbox,
 } from 'react-icons/lu';
 import { MdNavigateNext } from 'react-icons/md';
 import { Link, useNavigate } from 'react-router';
@@ -294,13 +294,14 @@ export function UserDashboard() {
                 ))}
               </div>
             ) : latestPosts.length === 0 ? (
-              
               <div className="flex w-full flex-col items-center justify-center py-10 text-gray-400">
                 <div className="mb-4 rounded-full bg-gray-100 p-4">
                   <LuInbox className="h-10 w-10 opacity-50" />
                 </div>
                 <p className="text-lg font-medium">No posts found</p>
-                <p className="text-sm">Be the first to share in the community!</p>
+                <p className="text-sm">
+                  Be the first to share in the community!
+                </p>
               </div>
             ) : (
               // List of Posts
@@ -351,11 +352,11 @@ export function UserDashboard() {
               </>
             )}
             <Link
-                  to={paths.app['community-posts'].getHref()}
-                  className="link link-hover mt-4 text-center text-text-secondary text-sm font-semibold"
-                >
-                  Show more...
-                </Link>
+              to={paths.app['community-posts'].getHref()}
+              className="link link-hover text-text-secondary mt-4 text-center text-sm font-semibold"
+            >
+              Show more...
+            </Link>
           </div>
         </section>
       </div>
@@ -367,3 +368,4 @@ export function UserDashboard() {
     </div>
   );
 }
+

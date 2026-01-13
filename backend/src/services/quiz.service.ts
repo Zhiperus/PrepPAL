@@ -12,7 +12,7 @@ export default class QuizService {
   /* --- Admin Methods --- */
 
   async createQuiz(data: any) {
-    // Check if a quiz already exists for this module? 
+    // Check if a quiz already exists for this module?
     // MongoDB unique index on moduleId will handle duplicates (throw error)
     return this.quizRepo.create(data);
   }

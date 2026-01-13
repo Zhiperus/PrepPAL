@@ -48,9 +48,12 @@ export default function HouseholdForm({ user }: { user: User }) {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting, isDirty },
-  } = useForm<UpdateProfileInfoRequest>({
+    watch,
+    trigger,
+    formState: { errors, isSubmitting, isDirty, isValid },
+  } = useForm({
     resolver: zodResolver(UpdateProfileInfoRequestSchema),
+    mode: 'onChange',
     defaultValues: {
       householdName: user.householdName || '',
       householdInfo: {
@@ -75,6 +78,7 @@ export default function HouseholdForm({ user }: { user: User }) {
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex h-full flex-col space-y-4"
+        noValidate
       >
         {Object.keys(errors).length > 0 && (
           <div className="flex items-center gap-3 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600">
@@ -109,8 +113,17 @@ export default function HouseholdForm({ user }: { user: User }) {
           </label>
           <input
             type="number"
-            {...register('householdInfo.memberCount', { valueAsNumber: true })}
-            className="w-full rounded-lg border border-[#9CA3AF] px-4 py-2.5 text-base font-medium text-gray-700 focus:ring-2 focus:ring-[#2A4263] focus:outline-none"
+            {...register('householdInfo.memberCount', { 
+              valueAsNumber: true,  
+              onChange: () => {
+                trigger('householdInfo.femaleCount');
+              }
+            })}
+            className={`w-full rounded-lg border px-4 py-2.5 text-base font-medium text-gray-700 placeholder-gray-400 focus:ring-2 focus:outline-none ${
+              errors.householdInfo?.memberCount
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-[#9CA3AF] focus:border-transparent focus:ring-[#2A4263]'
+            }`}
           />
           {errors.householdInfo?.memberCount && (
             <p className="text-sm text-red-500">
@@ -125,9 +138,19 @@ export default function HouseholdForm({ user }: { user: User }) {
           </label>
           <input
             type="number"
+            max={watch('householdInfo.memberCount') as number || 1}
             {...register('householdInfo.femaleCount', { valueAsNumber: true })}
-            className="w-full rounded-lg border border-[#9CA3AF] px-4 py-2.5 text-base font-medium text-gray-700 focus:ring-2 focus:ring-[#2A4263] focus:outline-none"
+            className={`w-full rounded-lg border px-4 py-2.5 text-base font-medium text-gray-700 placeholder-gray-400 focus:ring-2 focus:outline-none ${
+              errors.householdInfo?.femaleCount
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-[#9CA3AF] focus:border-transparent focus:ring-[#2A4263]'
+            }`}
           />
+          {errors.householdInfo?.femaleCount && (
+            <p className="text-sm text-red-500">
+              {errors.householdInfo.femaleCount.message}
+            </p>
+          )}
         </div>
 
         <div className="space-y-1">
@@ -151,7 +174,7 @@ export default function HouseholdForm({ user }: { user: User }) {
           </button>
           <button
             type="submit"
-            disabled={isSubmitting || !isDirty}
+            disabled={isSubmitting || !isDirty || !isValid}
             className="flex-1 rounded-lg bg-[#2A4263] py-3 text-xl font-bold text-white shadow-sm transition-colors hover:bg-[#3E8DAB] disabled:opacity-50"
           >
             {isSubmitting ? 'Saving...' : 'Update Household'}

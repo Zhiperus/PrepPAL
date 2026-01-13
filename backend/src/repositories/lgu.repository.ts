@@ -1,3 +1,4 @@
+import { CreateLguRequest } from '@repo/shared/dist/schemas/lgu.schema';
 import { PipelineStage, Types } from 'mongoose';
 
 import ContentReportModel from '../models/contentReport.model.js';
@@ -22,6 +23,10 @@ export interface ReportMetrics {
 export default class LguRepository {
   async getLguDetails(lguId: string) {
     return LguModel.findById(lguId).select('name city province').lean();
+  }
+
+  async getLguCompleteInfo(lguId: string) {
+    return LguModel.findById(lguId).lean();
   }
 
   async getReportMetrics(lguId: string): Promise<ReportMetrics> {
@@ -101,5 +106,17 @@ export default class LguRepository {
         activeThisWeek: 0,
       }
     );
+  }
+
+  async findByName(query: any) {
+    return LguModel.findOne(query);
+  }
+
+  async createLgu(data: CreateLguRequest) {
+    return LguModel.create(data);
+  }
+
+  async updateLguData(lguId: string, data: any) {
+    return LguModel.findByIdAndUpdate(lguId, data, { new: true });
   }
 }

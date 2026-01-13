@@ -12,7 +12,7 @@ export default class GoBagItemRepository {
   }
 
   async deleteAll() {
-    GoBagItemModel.deleteMany({});
+    await GoBagItemModel.deleteMany({});
   }
 
   async findById(id: string) {
@@ -21,5 +21,9 @@ export default class GoBagItemRepository {
 
   async findAll() {
     return GoBagItemModel.find();
+  }
+
+  async getTotalItems() {
+    return GoBagItemModel.countDocuments();
   }
 }

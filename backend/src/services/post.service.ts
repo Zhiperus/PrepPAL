@@ -1,12 +1,12 @@
+import { GetPostsQuery } from '@repo/shared/dist/schemas/post.schema';
+
 import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
 } from '../errors/index.js';
 import GoBagRepository from '../repositories/goBag.repository.js';
-import PostRepository, {
-  GetPostsOptions,
-} from '../repositories/post.repository.js';
+import PostRepository from '../repositories/post.repository.js';
 import RatingRepository from '../repositories/rating.repository.js';
 import UserRepository from '../repositories/user.repository.js';
 
@@ -25,7 +25,7 @@ export default class PostService {
    * Gets all posts with optional sorting options.
    */
 
-  async getAllPosts(options: GetPostsOptions = {}) {
+  async getAllPosts(options: GetPostsQuery) {
     return this.postRepo.findAllLatestUnique(options);
   }
 

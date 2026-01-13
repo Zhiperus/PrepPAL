@@ -39,7 +39,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       await login.mutateAsync(data);
     } catch (error: any) {
       console.error(error);
-      // Fallback to a generic message if the error object structure is unknown
       setApiError(
         error?.response?.data?.message ||
           error?.message ||
@@ -88,7 +87,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             <input
               type={isPasswordVisible ? 'text' : 'password'}
               {...register('password')}
-              className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm ${
+              // FIX: Added invisible class
+              className={`input mt-1 block w-full rounded-md border p-2 sm:text-sm [&::-webkit-credentials-auto-fill-button]:invisible ${
                 errors.password
                   ? 'input-error bg-bg-error-container/10'
                   : 'border-text-primary focus:border-text-link-hover'

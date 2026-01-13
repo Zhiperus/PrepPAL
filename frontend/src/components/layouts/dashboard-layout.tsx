@@ -1,12 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  GoHome,
-  GoBook,
-  GoPencil,
-  GoGraph,
-  GoInfo,
-  GoSignOut,
-} from 'react-icons/go';
+import { GoHome, GoBook, GoPencil, GoGraph, GoSignOut } from 'react-icons/go';
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { useNavigate } from 'react-router';
 
@@ -33,16 +26,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
     if (isError || !user) {
       navigate(paths.auth.login.getHref());
-      return;
-    }
-
-    if (user.role === 'lgu') {
-      navigate(paths.lgu.root.getHref());
-      return;
-    }
-
-    if (user.role === 'super_admin') {
-      navigate(paths.admin.root.getHref());
       return;
     }
 
