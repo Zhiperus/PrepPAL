@@ -14,11 +14,21 @@ export default function EditModulePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const modalRef = useRef<HTMLDialogElement>(null);
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+  const editId = searchParams.get('edit'); // Look for ?edit=ID
 
   // Open Modal
   const handleEditClick = (module: Module) => {
     setSelectedModule(module);
     modalRef.current?.showModal();
+  };
+
+  const handleCloseModal = () => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.delete('edit');
+      return params;
+    }, { replace: true });
+    setSelectedModule(null);
   };
 
   // URL State
@@ -29,16 +39,30 @@ export default function EditModulePage() {
   const [searchTerm, setSearchTerm] = useState(queryParam);
   const debouncedSearch = useDebounce(searchTerm, 500);
 
-  // Sync Search to URL
+  // Sync Search to URL while PRESERVING other params
   useEffect(() => {
-    const params: Record<string, string> = {};
-    if (debouncedSearch) params.search = debouncedSearch;
-    if (debouncedSearch !== queryParam) {
-      params.page = '1';
-    } else if (pageParam > 1) {
-      params.page = pageParam.toString();
-    }
-    setSearchParams(params, { replace: true });
+    setSearchParams((prev) => {
+      // 1. Create a copy of existing params (preserves 'edit')
+      const params = new URLSearchParams(prev);
+
+      // 2. Update Search
+      if (debouncedSearch) {
+        params.set('search', debouncedSearch);
+      } else {
+        params.delete('search');
+      }
+
+      // 3. Update Page
+      if (debouncedSearch !== queryParam) {
+        params.set('page', '1');
+      } else if (pageParam > 1) {
+        params.set('page', pageParam.toString());
+      } else {
+        params.delete('page');
+      }
+
+      return params;
+    }, { replace: true });
   }, [debouncedSearch, pageParam, setSearchParams, queryParam]);
 
   const {
@@ -53,9 +77,20 @@ export default function EditModulePage() {
     },
   });
 
+
   const modules = modulesData?.data || [];
   const meta = modulesData?.meta;
 
+  // Effect to auto-open modal if 'edit' param exists
+  useEffect(() => {
+    if (editId && modules.length > 0) {
+      const moduleToEdit = modules.find(m => m._id === editId);
+      if (moduleToEdit) {
+        setSelectedModule(moduleToEdit);
+        modalRef.current?.showModal();
+      }
+    }
+  }, [editId, modules]);
   const showSkeletons = isModulesLoading && !isPlaceholderData;
 
   return (
@@ -161,7 +196,7 @@ export default function EditModulePage() {
           </div>
         )}
       </div>
-      <EditModuleModal ref={modalRef} module={selectedModule} />
+      <EditModuleModal ref={modalRef} module={selectedModule} onClose={handleCloseModal} />
     </div>
   );
 }
