@@ -6,6 +6,9 @@ interface StepHouseholdProps {
   isSubmitting: boolean;
 }
 
+const STORAGE_KEY = 'onboarding_progress';
+const STEP_KEY = 'onboarding_step';
+
 export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
   const {
     register,
@@ -65,9 +68,9 @@ export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
           min="1"
           defaultValue={1}
           className={`input validator bg-primary-container border-container-secondary w-full ${errors.householdInfo?.memberCount ? 'input-error' : ''}`}
-          {...register('householdInfo.memberCount', { 
+          {...register('householdInfo.memberCount', {
             valueAsNumber: true,
-            onChange: () => trigger('householdInfo.femaleCount')
+            onChange: () => trigger('householdInfo.femaleCount'),
           })}
         />
         {errors.householdInfo?.memberCount && (

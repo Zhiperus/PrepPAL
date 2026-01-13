@@ -35,6 +35,7 @@ export default class UserService {
     if (!user) {
       throw new NotFoundError('User not found');
     }
+    console.log(data.location);
 
     const updatedUser = await this.userRepo.updateOnboardingDetails(userId, {
       location: data.location,

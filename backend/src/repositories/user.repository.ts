@@ -6,7 +6,7 @@ import {
 } from '@repo/shared/dist/schemas/user.schema';
 import { Types } from 'mongoose';
 
-import UserModel, { IUser } from '../models/user.model.js';
+import UserModel, { CitizenModel, IUser } from '../models/user.model.js';
 
 export default class UserRepository {
   async findById(userId: string) {
@@ -73,7 +73,7 @@ export default class UserRepository {
   }
 
   async updateOnboardingDetails(userId: string, data: Partial<IUser>) {
-    return UserModel.findByIdAndUpdate(
+    return CitizenModel.findByIdAndUpdate(
       userId,
       {
         $set: {

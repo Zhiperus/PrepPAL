@@ -80,30 +80,32 @@ export const LoginRequestSchema = z.object({
   password: z.string(),
 });
 
-export const OnboardingRequestSchema = z.object({
-  location: LocationSchema,
-  householdInfo: HouseholdSchema,
-  householdName: z.string().min(1, "Household Name is required"),
-  phoneNumber: z
-    .string()
-    .regex(/^09\d{9}$/, "Must be a valid format (e.g., 09123456789)"),
+export const OnboardingRequestSchema = z
+  .object({
+    location: LocationSchema,
+    householdInfo: HouseholdSchema,
+    householdName: z.string().min(1, "Household Name is required"),
+    phoneNumber: z
+      .string()
+      .regex(/^09\d{9}$/, "Must be a valid format (e.g., 09123456789)"),
 
-  emailConsent: z.boolean().optional(),
-})
-.refine(
-  (data) => {
-    const members = data.householdInfo.memberCount;
-    const females = data.householdInfo.femaleCount;
-    
-    if (isNaN(members) || isNaN(females)) return true; 
-    
-    return females <= members;
-  },
-  {
-    message: "Female members count cannot exceed the total number of members.",
-    path: ["householdInfo", "femaleCount"],
-  }
-);
+    emailConsent: z.boolean().optional(),
+  })
+  .refine(
+    (data) => {
+      const members = data.householdInfo.memberCount;
+      const females = data.householdInfo.femaleCount;
+
+      if (isNaN(members) || isNaN(females)) return true;
+
+      return females <= members;
+    },
+    {
+      message:
+        "Female members count cannot exceed the total number of members.",
+      path: ["householdInfo", "femaleCount"],
+    },
+  );
 
 export const UpdateProfileInfoRequestSchema = z
   .object({
@@ -119,24 +121,29 @@ export const UpdateProfileInfoRequestSchema = z
   })
   .partial()
   .refine(
-  (data) => {
-    const members = data.householdInfo?.memberCount;
-    const females = data.householdInfo?.femaleCount;
+    (data) => {
+      const members = data.householdInfo?.memberCount;
+      const females = data.householdInfo?.femaleCount;
 
-    if (
-      members === undefined || members === null || isNaN(members) ||
-      females === undefined || females === null || isNaN(females)
-    ) {
-      return true;
-    }
-   
-    return females <= members;
-  },
-  {
-    message: "Female members count cannot exceed the total number of members.",
-    path: ["householdInfo", "femaleCount"],
-  }
-);
+      if (
+        members === undefined ||
+        members === null ||
+        isNaN(members) ||
+        females === undefined ||
+        females === null ||
+        isNaN(females)
+      ) {
+        return true;
+      }
+
+      return females <= members;
+    },
+    {
+      message:
+        "Female members count cannot exceed the total number of members.",
+      path: ["householdInfo", "femaleCount"],
+    },
+  );
 
 export const GetLeaderboardQuerySchema = z.object({
   sortBy: z

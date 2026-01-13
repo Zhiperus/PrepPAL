@@ -22,6 +22,8 @@ export default class PostRepository {
       search,
       page = 1,
       limit = 10,
+      city,
+      barangay,
     } = options;
 
     const sortOrder = order === 'asc' ? 1 : -1;
@@ -29,6 +31,27 @@ export default class PostRepository {
 
     // 1. Build the Search Query
     const query: FilterQuery<any> = {};
+
+    if (barangay && city) {
+      // Find users in this specific Barangay AND City
+      // (Using both prevents mixing up "Brgy San Jose" from different cities)
+      const usersInBarangay = await UserModel.find({
+        'location.city': city,
+        'location.barangay': barangay,
+      }).select('_id');
+
+      const localUserIds = usersInBarangay.map((u) => u._id);
+
+      // Restrict query to ONLY neighbors
+      query.userId = { $in: localUserIds };
+    }
+    // Fallback: If only city is provided (optional, if you want mixed modes)
+    else if (city) {
+      const usersInCity = await UserModel.find({
+        'location.city': city,
+      }).select('_id');
+      query.userId = { $in: usersInCity.map((u) => u._id) };
+    }
 
     if (search) {
       const searchRegex = { $regex: search, $options: 'i' }; // Case-insensitive
