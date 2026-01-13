@@ -177,6 +177,11 @@ export const createAppRouter = (queryClient: QueryClient) =>
           lazy: () =>
             import('./routes/admin/module-editor').then(convert(queryClient)),
         },
+        {
+          path: paths.admin['question-moderation'].path,
+          lazy: () =>
+            import('./routes/admin/question-moderation').then(convert(queryClient)),
+        },
       ],
     },
 

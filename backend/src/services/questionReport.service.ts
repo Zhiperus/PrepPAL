@@ -30,7 +30,6 @@ export default class QuestionReportService {
     const report = await this.questionReportRepo.findByIdAndUpdate(id, data);
 
     if (!report) throw new NotFoundError('Report not found');
-    console.log(data.status);
 
     return report;
   }

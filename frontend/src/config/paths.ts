@@ -88,6 +88,14 @@ export const paths = {
       path: 'module-editor',
       getHref: () => '/admin/module-editor',
     },
+    'question-moderation': {
+      path: 'question-moderation',
+      getHref: () => '/admin/question-moderation',
+    },
+    'module-preview': {
+      path: 'modules/:moduleId',
+      getHref: (moduleId: string) => `/admin/modules/${moduleId}`,
+    },
   },
 
   lgu: {

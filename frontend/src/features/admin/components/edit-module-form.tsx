@@ -18,9 +18,8 @@ import { useUpdateQuiz } from '@/features/modules/api/update-quiz'; // 1. Ensure
 
 export const EditModuleModal = forwardRef<
   HTMLDialogElement,
-  { module: Module | null }
->(({ module }, ref) => {
-  // --- 1. FETCHING DATA ---
+  { module: Module | null; onClose?: () => void }
+>(({ module, onClose }, ref) => {
   const {
     data: response,
     isLoading,
@@ -200,7 +199,8 @@ export const EditModuleModal = forwardRef<
   if (!module) return <dialog ref={ref} className="modal"></dialog>;
 
   return (
-    <dialog ref={ref} className="modal">
+    <dialog ref={ref} className="modal" 
+      ={onClose}>
       <div className="modal-box w-11/12 max-w-4xl bg-white">
         <div className="flex items-center justify-between border-b pb-4">
           <h3 className="text-xl font-bold">
@@ -497,7 +497,7 @@ export const EditModuleModal = forwardRef<
       <form method="dialog" className="modal-backdrop">
         <button>close</button>
       </form>
-    </dialog>
+    </dialog >
   );
 });
 

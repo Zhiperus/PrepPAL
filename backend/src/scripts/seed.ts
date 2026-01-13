@@ -9,6 +9,7 @@ import GoBagItemModel from '../models/goBagItem.model.js';
 import LguModel from '../models/lgu.model.js';
 import ModuleModel from '../models/module.model.js';
 import PostModel from '../models/post.model.js';
+import QuestionReportModel from '../models/questionReport.model.js';
 import QuizModel from '../models/quiz.model.js';
 import QuizAttemptModel from '../models/quizAttempt.model.js';
 import UserModel from '../models/user.model.js';
@@ -125,6 +126,7 @@ const seed = async () => {
       ModuleModel.deleteMany({}),
       QuizModel.deleteMany({}),
       ContentReportModel.deleteMany({}),
+      QuestionReportModel.deleteMany({}),
       QuizAttemptModel.deleteMany({}),
     ]);
     console.log('🧹 Database cleared');
@@ -437,6 +439,46 @@ const seed = async () => {
 
     const createdReports = await ContentReportModel.insertMany(reportsData);
     console.log(`✅ Created ${createdReports.length} Content Reports`);
+
+    // 9. SEED QUESTION REPORTS
+    console.log('❓ Seeding Question Reports...');
+
+    const allQuizzes = await QuizModel.find();
+    const QUESTION_REPORT_REASONS = [
+      'Inaccurate answer key',
+      'Typo in question text',
+      'Confusing choices',
+      'Image not loading',
+      'Outdated information',
+    ];
+
+    const questionReportsData = [];
+
+    // Create ~30 question reports
+    for (let i = 0; i < 30; i++) {
+      const targetQuiz = getRandomItem(allQuizzes);
+
+      // Pick a random question from the quiz's questions array
+      const targetQuestion = getRandomItem(targetQuiz.questions);
+
+      const reporter = getRandomItem(createdCitizens);
+
+      questionReportsData.push({
+        quizId: targetQuiz._id,
+        questionId: targetQuestion._id, // References the subdocument ID
+        reporterId: reporter._id,
+        reason: getRandomItem(QUESTION_REPORT_REASONS),
+        status: getRandomItem(['PENDING', 'PENDING', 'RESOLVED']), // Weighted to Pending
+        createdAt: new Date(
+          Date.now() - getRandomInt(0, 15) * 24 * 60 * 60 * 1000,
+        ),
+      });
+    }
+
+    const createdQuestionReports = await QuestionReportModel.insertMany(
+      questionReportsData,
+    );
+    console.log(`✅ Created ${createdQuestionReports.length} Question Reports`);
 
     process.exit(0);
   } catch (error) {
