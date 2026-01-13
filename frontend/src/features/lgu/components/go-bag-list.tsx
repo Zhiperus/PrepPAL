@@ -145,7 +145,6 @@ export default function LguGoBagDashboard() {
     user?.location?.barangayCode || '',
   );
   const goBags = goBagsData?.data;
-  console.log(goBags);
 
   // 2. Local State for UI
   const [searchTerm, setSearchTerm] = useState('');

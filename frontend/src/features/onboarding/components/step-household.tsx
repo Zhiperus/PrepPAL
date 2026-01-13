@@ -6,9 +6,6 @@ interface StepHouseholdProps {
   isSubmitting: boolean;
 }
 
-const STORAGE_KEY = 'onboarding_progress';
-const STEP_KEY = 'onboarding_step';
-
 export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
   const {
     register,
