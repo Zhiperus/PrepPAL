@@ -30,7 +30,6 @@ export default class PostController {
    * Retrieves all posts with optional sorting via query params.
    * Query params: sortBy (createdAt|verificationCount|verifiedItemCount), order (asc|desc)
    */
-  // Inside PostController class...
 
   getAllPosts = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -48,7 +47,6 @@ export default class PostController {
       });
 
       // 2. Extract Unique User IDs from the current page of posts
-      // We filter out null/undefined users just in case
       const userIds = [
         ...new Set(
           posts
@@ -57,7 +55,6 @@ export default class PostController {
         ),
       ] as string[];
       // 3. Get Actual Ranks for these users
-      // This calculates their global standing dynamically
       const rankMap = await this.leaderboardRepo.getUserRanks(userIds);
 
       // 4. Map Ranks back to Posts
@@ -65,7 +62,6 @@ export default class PostController {
         const user = post.userId || {};
         const userIdString = user._id?.toString();
 
-        // Get the real rank from our map, or default to 0/null if not found
         const actualRank = rankMap.get(userIdString) || 0;
 
         return {
@@ -75,7 +71,7 @@ export default class PostController {
           author: {
             name: user.householdName || 'Unknown',
             userImage: user.profileImage,
-            rank: actualRank, // <--- Now uses the real DB rank
+            rank: actualRank,
           },
         };
       });
