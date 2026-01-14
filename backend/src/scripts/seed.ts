@@ -318,19 +318,6 @@ const seedCamalig = async () => {
     await ContentReportModel.insertMany(reportsData);
     console.log(`✅ Created 8 Pending Reports`);
 
-    // 8. QUESTION REPORTS (For Super Admin Demo)
-    const quiz = await QuizModel.findOne();
-    if (quiz && quiz.questions.length > 0) {
-      await QuestionReportModel.create({
-        quizId: quiz._id,
-        questionId: quiz.questions[0]._id,
-        reporterId: kyle._id,
-        reason: 'Typo in the second choice',
-        status: 'PENDING',
-      });
-      console.log(`✅ Created 1 Question Report`);
-    }
-
     process.exit(0);
   } catch (error) {
     console.error('❌ Seeding failed:', error);

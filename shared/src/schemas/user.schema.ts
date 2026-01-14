@@ -61,6 +61,7 @@ export const UserSchema = z.object({
   resetPasswordExpires: z.date(),
   createdAt: z.date(),
   updatedAt: z.date(),
+  lastActiveAt: z.date(),
 });
 
 export const PublicUserSchema = UserSchema.omit({

@@ -70,6 +70,7 @@ const BaseUserSchema = new Schema<IUser>(
     verificationTokenExpires: { type: Date, select: false },
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpires: { type: Date, select: false },
+    lastActiveAt: { type: Date, select: false },
   },
   baseOptions,
 );

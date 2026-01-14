@@ -26,7 +26,6 @@ postRoutes.post(
 postRoutes.post(
   '/:postId/verify',
   authenticate,
-
   ensureVerified,
   controller.verifyPost.bind(controller),
 );

@@ -17,14 +17,14 @@ export default function LguLeaderboardLayout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const TARGET_BARANGAY = user?.location?.barangay;
+  const TARGET_BARANGAY = user?.location?.barangayCode;
 
   // --- API HOOKS (Fetch Real Data) ---
 
   // 1. Fetch ALL TIME Leaders (Top 50)
   const allTimeQuery = useLeaderboard({
     params: {
-      barangay: TARGET_BARANGAY,
+      barangayCode: TARGET_BARANGAY,
       metric: 'allTime',
       limit: 50,
     },
@@ -33,7 +33,7 @@ export default function LguLeaderboardLayout() {
   // 2. Fetch GO BAG Leaders (Top 50)
   const goBagQuery = useLeaderboard({
     params: {
-      barangay: TARGET_BARANGAY,
+      barangayCode: TARGET_BARANGAY,
       metric: 'goBag',
       limit: 50,
     },

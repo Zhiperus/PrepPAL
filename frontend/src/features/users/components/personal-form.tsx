@@ -50,7 +50,7 @@ export default function PersonalForm({ user }: { user: User }) {
     handleSubmit,
     reset,
     formState: { isSubmitting, isDirty },
-  } = useForm<UpdateProfileInfoRequest>({
+  } = useForm({
     resolver: zodResolver(UpdateProfileInfoRequestSchema),
     defaultValues: {
       notification: {

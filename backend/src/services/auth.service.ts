@@ -62,6 +62,8 @@ export default class AuthService {
 
     await this.GoBagRepo.findBagByUserId(String(newUser._id));
 
+    await this.AuthRepo.updateLastActive(String(newUser._id));
+
     const token = this.AuthRepo.generateToken({
       userId: String(newUser._id),
       role: newUser.role,
@@ -93,6 +95,8 @@ export default class AuthService {
     if (!isPasswordValid) {
       throw new NotFoundError('Invalid email or password');
     }
+
+    await this.AuthRepo.updateLastActive(String(user._id));
 
     const token = this.AuthRepo.generateToken({
       userId: String(user._id),

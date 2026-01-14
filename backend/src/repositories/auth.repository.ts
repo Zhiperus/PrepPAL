@@ -15,6 +15,9 @@ const BCRYPT_SALT_ROUNDS: number = process.env.BCRYPT_SALT_ROUNDS
   : 10;
 
 export default class AuthRepository {
+  async updateLastActive(userId: string) {
+    return UserModel.findByIdAndUpdate(userId, { lastActiveAt: new Date() });
+  }
   // Find user by Id
   async findById(userId: string) {
     return UserModel.findById(userId);
