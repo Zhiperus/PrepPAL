@@ -13,12 +13,14 @@ interface LocationItem {
 interface LGUFormData {
   lguName: string;
   adminEmail: string;
-  password: string; // Required for the account creation
+  password: string;
   location: {
     region: string;
     province: string;
     city: string;
+    cityCode: string; // Added
     barangay: string;
+    barangayCode: string; // Added
   };
 }
 
@@ -58,6 +60,7 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
   const selectedRegion = watch('location.region');
   const selectedProvince = watch('location.province');
   const selectedCity = watch('location.city');
+  const selectedBarangay = watch('location.barangay');
 
   useEffect(() => {
     if (isOpen) {
@@ -80,9 +83,14 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
     const regionObj = regionList.find((r) => r.code === code);
 
     setValue('location.region', regionObj?.name || '');
+
+    // Reset all children
     setValue('location.province', '');
     setValue('location.city', '');
+    setValue('location.cityCode', '');
     setValue('location.barangay', '');
+    setValue('location.barangayCode', '');
+
     setProvinceList([]);
     setCityList([]);
     setBarangayList([]);
@@ -97,6 +105,7 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
       const data: LocationItem[] = await response.json();
 
       if (data.length === 0) {
+        // NCR Case
         const cityRes = await fetch(
           `https://psgc.gitlab.io/api/regions/${code}/cities-municipalities/`,
         );
@@ -119,8 +128,13 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
     const provObj = provinceList.find((p) => p.code === code);
 
     setValue('location.province', provObj?.name || '');
+
+    // Reset children
     setValue('location.city', '');
+    setValue('location.cityCode', '');
     setValue('location.barangay', '');
+    setValue('location.barangayCode', '');
+
     setCityList([]);
     setBarangayList([]);
 
@@ -143,7 +157,12 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
     const cityObj = cityList.find((c) => c.code === code);
 
     setValue('location.city', cityObj?.name || '');
+    setValue('location.cityCode', code); // <-- Save City Code
+
+    // Reset child
     setValue('location.barangay', '');
+    setValue('location.barangayCode', '');
+
     setBarangayList([]);
 
     if (!code) return;
@@ -160,6 +179,14 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
     }
   };
 
+  const onBarangayChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const code = e.target.value;
+    const brgyObj = barangayList.find((b) => b.code === code);
+
+    setValue('location.barangay', brgyObj?.name || '');
+    setValue('location.barangayCode', code); // <-- Save Barangay Code
+  };
+
   // 2. Updated Submit Handler
   const onSubmit = (formData: LGUFormData) => {
     createLguMutation.mutate({
@@ -169,7 +196,9 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
       region: formData.location.region,
       province: formData.location.province,
       city: formData.location.city,
+      cityCode: formData.location.cityCode, // Included
       barangay: formData.location.barangay,
+      barangayCode: formData.location.barangayCode, // Included
     });
   };
 
@@ -316,15 +345,19 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
               </label>
               <select
                 className="select select-bordered w-full rounded-xl focus:border-[#2a4263] focus:outline-none"
-                {...register('location.barangay', { required: true })}
-                defaultValue=""
+                onChange={onBarangayChange}
+                // Reverse lookup: Find the code for the selected name to set the select's value
+                value={
+                  barangayList.find((b) => b.name === selectedBarangay)?.code ||
+                  ''
+                }
                 disabled={barangayList.length === 0}
               >
                 <option value="" disabled>
                   {loadingLocation ? 'Loading...' : 'Select Barangay'}
                 </option>
                 {barangayList.map((brgy) => (
-                  <option key={brgy.code} value={brgy.name}>
+                  <option key={brgy.code} value={brgy.code}>
                     {brgy.name}
                   </option>
                 ))}
@@ -355,7 +388,7 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
               </div>
             </div>
 
-            {/* Password Field (ADDED) */}
+            {/* Password Field */}
             <div className="form-control w-full">
               <label className="label">
                 <span className="label-text font-bold text-gray-700">
@@ -406,9 +439,11 @@ export function AddLGUModal({ isOpen, onClose }: AddLGUModalProps) {
           <button
             type="submit"
             form="add-lgu-form"
-            // Disable button if form is invalid, location is loading, or request is pending
             disabled={
-              !isValid || loadingLocation || createLguMutation.isPending
+              !isValid ||
+              loadingLocation ||
+              createLguMutation.isPending ||
+              !selectedBarangay
             }
             className="btn flex-1 gap-2 rounded-xl border-none bg-[#2a4263] text-white hover:bg-[#1e3a5a] disabled:bg-gray-300"
           >

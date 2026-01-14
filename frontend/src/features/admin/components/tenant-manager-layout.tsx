@@ -74,7 +74,7 @@ export function TenantManagerLayout() {
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-[#2a4263]">
+              <h1 className="pt-10 text-3xl font-extrabold tracking-tight text-[#2a4263] lg:pt-0">
                 Tenant Manager
               </h1>
               <p className="mt-1 text-sm text-gray-500">

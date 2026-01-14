@@ -1,7 +1,11 @@
 import { Router } from 'express';
 
 import QuestionReportController from '../controllers/questionReport.controller.js';
-import { authenticate, authorizeRoles } from '../middleware/auth.middleware.js';
+import {
+  authenticate,
+  authorizeRoles,
+  ensureVerified,
+} from '../middleware/auth.middleware.js';
 
 const questionReportRoutes: Router = Router();
 const controller = new QuestionReportController();
@@ -9,6 +13,7 @@ const controller = new QuestionReportController();
 questionReportRoutes.post(
   '/',
   authenticate,
+  ensureVerified,
   controller.createQuestionReport.bind(controller),
 );
 

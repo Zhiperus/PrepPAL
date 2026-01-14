@@ -84,13 +84,7 @@ export function AdminDashboardLayout({
           {/* Sidebar Container */}
           <div className="flex min-h-full w-72 flex-col rounded-tr-[50px] rounded-br-[50px] bg-white p-6 shadow-lg">
             {/* 1. Header: Profile */}
-            <div
-              className="mt-4 mb-6 flex items-center gap-4 pl-2 hover:cursor-pointer hover:bg-gray-100"
-              onClick={() => {
-                navigate(paths.app.profile.getHref());
-                closeDrawer();
-              }}
-            >
+            <div className="mt-4 mb-6 flex items-center gap-4 pl-2">
               <div className="avatar placeholder">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-black">
                   <img

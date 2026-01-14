@@ -20,13 +20,19 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
       <div className="relative mb-2 flex flex-col items-center">
         <div className="avatar">
           <div className="border-border-container mb-0 h-[140px] w-[140px] rounded-full border-[6px] shadow-sm">
-            <img
-              src={
-                user.profileImage ||
-                `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${user.email}`
-              }
-              alt="Profile"
-            />
+            {user.profileImage ? (
+              <img
+                src={user.profileImage}
+                alt={user.householdName}
+                className="object-cover"
+              />
+            ) : (
+              <div className="bg-neutral text-neutral-content flex h-full w-full items-center justify-center rounded-full">
+                <span className="text-3xl font-bold">
+                  {user.householdName.charAt(0)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

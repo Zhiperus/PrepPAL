@@ -32,6 +32,7 @@ export const useCreatePost = ({
           cityCode as string,
         ),
       );
+      queryClient.invalidateQueries({ queryKey: ['authenticated-user'] });
     },
   });
 };

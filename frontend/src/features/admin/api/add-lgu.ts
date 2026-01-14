@@ -14,6 +14,8 @@ export type AddLguDTO = {
   province: string;
   city: string;
   barangay: string;
+  cityCode: string; // Added
+  barangayCode: string; // Added
 };
 
 export const createLgu = (data: AddLguDTO): Promise<LguTenant> => {

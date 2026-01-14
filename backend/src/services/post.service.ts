@@ -181,6 +181,7 @@ export default class PostService {
           : 'Rating submitted and verified count updated.',
     };
   }
+
   async deletePost(postId: string) {
     const post = await this.postRepo.findById(postId);
     if (!post) throw new NotFoundError('Post not found');

@@ -1,6 +1,8 @@
 import type { QuizAttemptInput } from '@repo/shared/dist/schemas/quizAttempt.schema'; // Adjust path if needed
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { getModulesQueryOptions } from './get-modules';
+
 import { api } from '@/lib/api-client';
 import type { MutationConfig } from '@/lib/react-query';
 
@@ -23,9 +25,9 @@ export const useSubmitQuiz = ({
     onSuccess: (...args) => {
       onSuccess?.(...args);
       queryClient.invalidateQueries({ queryKey: ['authenticated-user'] });
+      queryClient.invalidateQueries(getModulesQueryOptions({}));
     },
     ...restConfig,
     mutationFn: submitQuiz,
   });
 };
-

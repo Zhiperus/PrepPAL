@@ -5,12 +5,12 @@ import UserModel from '../models/user.model.js';
 
 export default class LeaderboardRepository {
   async getAggregatedLeaderboard({
-    barangay,
+    barangayCode,
     limit,
     search,
     metric = 'allTime',
   }: {
-    barangay?: string;
+    barangayCode?: string;
     limit: number;
     search?: string;
     metric?: 'allTime' | 'goBag';
@@ -19,8 +19,10 @@ export default class LeaderboardRepository {
 
     // 1. MATCH STAGE
     const matchStage: Record<string, unknown> = { role: 'citizen' };
-    if (barangay) {
-      matchStage['location.barangay'] = { $regex: new RegExp(barangay, 'i') };
+    if (barangayCode) {
+      matchStage['location.barangayCode'] = {
+        $regex: new RegExp(barangayCode, 'i'),
+      };
     }
     pipeline.push({ $match: matchStage });
 

@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 import { UnauthorizedError } from '../errors/index.js';
+import UserModel from '../models/user.model.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'DEFAULT-SECRET';
 
@@ -106,4 +107,30 @@ export const authorizeLocationScope = (
   }
 
   next();
+};
+
+export const ensureVerified = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    // 1. verifyToken middleware has already run, so we have req.user.userId
+    if (!req.userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await UserModel.findById(req.userId).select('isEmailVerified');
+
+    if (!user || !user.isEmailVerified) {
+      return res.status(403).json({
+        message: 'Email verification required',
+      });
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error during verification check' });
+  }
 };

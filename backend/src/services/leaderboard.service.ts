@@ -3,7 +3,7 @@ import type { LeaderboardEntry } from '@repo/shared/dist/schemas/leaderboard.sch
 import LeaderboardRepository from '../repositories/leaderboard.repository.js';
 
 interface GetLeaderboardParams {
-  barangay?: string;
+  barangayCode?: string;
   limit?: string | number; // Controller might pass a string from req.query
   search?: string;
   metric?: 'allTime' | 'goBag';
@@ -13,7 +13,7 @@ export default class LeaderboardService {
   private leaderboardRepo = new LeaderboardRepository();
 
   async getLeaderboard({
-    barangay,
+    barangayCode,
     limit,
     search,
     metric,
@@ -25,7 +25,7 @@ export default class LeaderboardService {
     const finalLimit = parsedLimit && !isNaN(parsedLimit) ? parsedLimit : 20;
 
     const data = await this.leaderboardRepo.getAggregatedLeaderboard({
-      barangay,
+      barangayCode,
       limit: finalLimit,
       search,
       metric,

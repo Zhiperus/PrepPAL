@@ -14,7 +14,7 @@ export default class UserRepository {
   }
 
   async updateUserCommunityPoints(userId: string, pointsToAdd: number) {
-    return UserModel.findByIdAndUpdate(
+    return CitizenModel.findByIdAndUpdate(
       userId,
       { $inc: { 'points.community': pointsToAdd } },
       { new: true },
@@ -22,7 +22,7 @@ export default class UserRepository {
   }
 
   async updateGoBagScore(userId: string, newScore: number) {
-    return UserModel.findByIdAndUpdate(
+    return CitizenModel.findByIdAndUpdate(
       userId,
       {
         $set: { 'points.goBag': newScore },

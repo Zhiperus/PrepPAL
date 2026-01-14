@@ -488,7 +488,11 @@ export function QuizRunner(): React.ReactNode {
               <button
                 onClick={handleCheckAnswer}
                 disabled={selectedOptionId === null}
-                className={`flex-1 rounded-xl py-4 text-xl font-bold text-white transition-all duration-200 ${selectedOptionId ? 'bg-[#2A4263] shadow-lg hover:-translate-y-0.5 hover:bg-[#0891B2] hover:shadow-xl active:translate-y-0' : 'cursor-not-allowed bg-gray-300'}`}
+                className={`flex-1 rounded-xl py-4 text-xl font-bold text-white transition-all duration-200 ${
+                  selectedOptionId !== null
+                    ? 'bg-[#2A4263] shadow-lg hover:-translate-y-0.5 hover:bg-[#0891B2] hover:shadow-xl active:translate-y-0'
+                    : 'cursor-not-allowed bg-gray-300'
+                }`}
               >
                 Check Answer
               </button>

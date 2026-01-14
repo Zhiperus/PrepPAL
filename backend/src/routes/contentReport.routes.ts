@@ -1,7 +1,11 @@
 import { Router } from 'express';
 
 import ContentReportController from '../controllers/contentReport.controller.js';
-import { authenticate, authorizeRoles } from '../middleware/auth.middleware.js';
+import {
+  authenticate,
+  authorizeRoles,
+  ensureVerified,
+} from '../middleware/auth.middleware.js';
 
 const contentReportRoutes: Router = Router();
 const controller = new ContentReportController();
@@ -9,6 +13,7 @@ const controller = new ContentReportController();
 contentReportRoutes.post(
   '/',
   authenticate,
+  ensureVerified,
   controller.createContentReport.bind(controller),
 );
 
