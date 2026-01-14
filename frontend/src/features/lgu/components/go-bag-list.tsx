@@ -10,6 +10,7 @@ import {
   FaIdCard,
   FaBath,
   FaBolt,
+  FaVenus,
 } from 'react-icons/fa';
 import {
   FiSearch,
@@ -25,6 +26,7 @@ import {
   FiChevronRight,
   FiChevronDown,
 } from 'react-icons/fi';
+import { LuPawPrint } from 'react-icons/lu';
 import { MdLocationOn } from 'react-icons/md';
 
 // Hooks
@@ -425,8 +427,36 @@ export default function LguGoBagDashboard() {
                         </div>
                       </td>
                       <td>
-                        <div className="badge badge-ghost gap-1 text-xs">
-                          <FiUsers /> {bag.userId.householdInfo.memberCount}
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                          {/* Total Members */}
+                          <div
+                            className="flex items-center gap-1"
+                            title="Total Members"
+                          >
+                            <FiUsers size={14} />
+                            <span>{bag.userId.householdInfo.memberCount}</span>
+                          </div>
+
+                          {/* Slanted Separator */}
+                          <span className="text-gray-300">/</span>
+
+                          {/* Female Count */}
+                          <div
+                            className="flex items-center gap-1"
+                            title="Female Members"
+                          >
+                            <FaVenus size={14} />
+                            <span>{bag.userId.householdInfo.femaleCount}</span>
+                          </div>
+
+                          {/* Slanted Separator */}
+                          <span className="text-gray-300">/</span>
+
+                          {/* Pets Count */}
+                          <div className="flex items-center gap-1" title="Pets">
+                            <LuPawPrint size={14} />
+                            <span>{bag.userId.householdInfo.pets}</span>
+                          </div>
                         </div>
                       </td>
                       <td>

@@ -261,6 +261,8 @@ export default class GoBagRepository {
             phoneNumber: '$userDetails.phoneNumber',
             householdInfo: {
               memberCount: '$userDetails.householdInfo.memberCount',
+              femaleCount: '$userDetails.householdInfo.femaleCount',
+              pets: '$userDetails.householdInfo.pets',
             },
             location: {
               region: '$userDetails.location.region',

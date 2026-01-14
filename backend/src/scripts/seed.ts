@@ -196,44 +196,6 @@ const seedCamalig = async () => {
     });
     console.log('✅ Created Super Admin (super@prep.gov.ph)');
 
-    // 3b. The LGU Admin for THIS Barangay
-    const lguAdmin = await UserModel.create({
-      email: 'admin.camalig@prep.gov.ph',
-      password: hashedPassword,
-      role: 'lgu',
-      location: TARGET_LOCATION,
-      householdName: 'Barangay 6 Hall',
-      isEmailVerified: true,
-      onboardingCompleted: true,
-      profileImage: `https://api.dicebear.com/7.x/initials/svg?seed=Camalig`,
-    });
-
-    // 3c. Main Demo Citizens
-    const iorie = await UserModel.create({
-      email: 'iorie@example.com',
-      password: hashedPassword,
-      householdName: 'Chua Household',
-      role: 'citizen',
-      location: TARGET_LOCATION, // <--- Put Iorie in Camalig
-      points: { goBag: 50, community: 10, modules: 5 },
-      householdInfo: { memberCount: 4, femaleCount: 2, pets: 1 },
-      isEmailVerified: true,
-      onboardingCompleted: true,
-      profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Iorie',
-    });
-
-    const kyle = await UserModel.create({
-      email: 'kyle@example.com',
-      password: hashedPassword,
-      householdName: 'The Dev Cave',
-      role: 'citizen',
-      location: TARGET_LOCATION, // <--- Put Kyle in Camalig
-      points: { goBag: 120, community: 200, modules: 50 },
-      isEmailVerified: true,
-      onboardingCompleted: true,
-      profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kyle',
-    });
-
     // 3d. Filler Citizens (All in Camalig for Leaderboard density)
     const randomUsersData = Array.from({ length: 40 }).map((_, i) => ({
       email: `resident${i}@example.com`,
@@ -241,6 +203,11 @@ const seedCamalig = async () => {
       householdName: `Resident ${i}`,
       role: 'citizen',
       location: TARGET_LOCATION, // <--- EVERYONE is in Camalig
+      householdInfo: {
+        memberCount: 4,
+        femaleCount: 2,
+        pets: 1,
+      },
       isEmailVerified: true,
       onboardingCompleted: true,
       points: {
@@ -252,7 +219,7 @@ const seedCamalig = async () => {
     }));
 
     const randomUsers = await UserModel.insertMany(randomUsersData);
-    const allCitizens = [iorie, kyle, ...randomUsers];
+    const allCitizens = [...randomUsers];
 
     console.log(
       `✅ Created ${allCitizens.length} Citizens in Barangay 6 (Pob.), Camalig`,
