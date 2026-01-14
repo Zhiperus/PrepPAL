@@ -6,6 +6,12 @@ import { authenticate, authorizeRoles } from '../middleware/auth.middleware.js';
 const questionReportRoutes: Router = Router();
 const controller = new QuestionReportController();
 
+questionReportRoutes.post(
+  '/',
+  authenticate,
+  controller.createQuestionReport.bind(controller),
+);
+
 questionReportRoutes.get(
   '/',
   authenticate,

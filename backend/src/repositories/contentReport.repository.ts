@@ -3,9 +3,19 @@ import {
   GetContentReportsQuery,
 } from '@repo/shared/dist/schemas/contentReport.schema';
 
-import ContentReportModel from '../models/contentReport.model.js';
+import ContentReportModel, {
+  IContentReport,
+} from '../models/contentReport.model.js';
 
 export default class ContentReportRepository {
+  async create(data: Partial<IContentReport>) {
+    return ContentReportModel.create(data);
+  }
+
+  async findExistingReport(reporterId: string, postId: string) {
+    return ContentReportModel.findOne({ reporterId, postId });
+  }
+
   async findByIdAndUpdate(id: string, data: CompleteContentReportRequest) {
     return ContentReportModel.findByIdAndUpdate(id, data, { new: true });
   }

@@ -4,9 +4,19 @@ import {
 } from '@repo/shared/dist/schemas/questionReport.schema';
 import mongoose from 'mongoose';
 
-import QuestionReportModel from '../models/questionReport.model.js';
+import QuestionReportModel, {
+  IQuestionReport,
+} from '../models/questionReport.model.js';
 
 export default class QuestionReportRepository {
+  async create(data: Partial<IQuestionReport>) {
+    return QuestionReportModel.create(data);
+  }
+
+  async findExisting(reporterId: string, questionId: string) {
+    return QuestionReportModel.findOne({ reporterId, questionId });
+  }
+
   async findByIdAndUpdate(id: string, data: CompleteQuestionReportRequest) {
     return QuestionReportModel.findByIdAndUpdate(id, data, { new: true });
   }

@@ -130,6 +130,11 @@ export default class UserService {
     return citizenCount;
   }
 
+  async countLguAccounts(query: Record<string, any>) {
+    const safeQuery = { ...query, role: 'lgu' };
+    return this.userRepo.count(safeQuery);
+  }
+
   async findByEmail(query: any) {
     return this.userRepo.findByEmail(query);
   }

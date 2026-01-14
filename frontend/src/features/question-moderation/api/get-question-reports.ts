@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
 import type { QueryConfig } from '@/lib/react-query';
+import type { Meta } from '@/types/api';
 
 // 1. Updated Type to match the AGGREGATION result
 export type QuestionReport = {
@@ -34,12 +35,7 @@ export type QuestionReport = {
 
 export type QuestionReportResponse = {
   data: QuestionReport[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  meta: Meta;
 };
 
 // 2. Fetch Function (Endpoint updated to match your likely route)

@@ -18,8 +18,15 @@ export interface ReportMetrics {
 }
 
 export default class LguRepository {
-  // 1. GET LGU PROFILE (Find the Admin User for this area)
   // We use this to get the "Official Name" of the LGU (e.g. "Barangay Batasan Hills Office")
+  async delete(id: string) {
+    return UserModel.findByIdAndDelete(id);
+  }
+
+  async findById(id: string) {
+    return UserModel.findById(id);
+  }
+
   async getLguAdminProfile(barangayCode: string) {
     return UserModel.findOne({
       role: 'lgu',

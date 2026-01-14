@@ -1,3 +1,4 @@
+import { NotFoundError } from '../errors/index.js';
 import GoBagRepository from '../repositories/goBag.repository.js';
 import GoBagItemRepository from '../repositories/goBagItem.repository.js';
 import LguRepository from '../repositories/lgu.repository.js';
@@ -24,6 +25,18 @@ export default class LguService {
   private lguRepo = new LguRepository();
   private goBagItemRepo = new GoBagItemRepository();
   private goBagRepo = new GoBagRepository();
+
+  async delete(id: string) {
+    const existingLgu = await this.lguRepo.findById(id);
+
+    if (!existingLgu) {
+      throw new NotFoundError('LGU Account not found');
+    }
+
+    await this.lguRepo.delete(id);
+
+    return { success: true, message: 'LGU Account deleted successfully' };
+  }
 
   async getDashboardMetrics(
     cityCode: string,

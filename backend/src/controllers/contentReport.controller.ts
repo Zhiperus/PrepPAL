@@ -2,13 +2,38 @@ import {
   CompleteContentReportRequestSchema,
   GetContentReportsQuerySchema,
   GetContentReportsQuery,
+  CreateContentReportSchema,
 } from '@repo/shared/dist/schemas/contentReport.schema';
 import { NextFunction, Request, Response } from 'express';
 
+import { handleInternalError } from '../errors/index.js';
 import ContentReportService from '../services/contentReport.service.js';
 
 export default class ContentReportController {
   private reportService = new ContentReportService();
+
+  createContentReport = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const data = CreateContentReportSchema.parse(req.body);
+
+      // Get the ID of the user reporting
+      const reporterId = req.userId;
+
+      const report = await this.reportService.create({
+        ...data,
+        reporterId: reporterId as string,
+        status: 'PENDING',
+      });
+
+      res.status(201).json({ success: true, data: report });
+    } catch (error) {
+      handleInternalError(error, next);
+    }
+  };
 
   findAllContentReports = async (
     req: Request,
@@ -41,7 +66,7 @@ export default class ContentReportController {
         meta: result.meta,
       });
     } catch (error) {
-      next(error);
+      handleInternalError(error, next);
     }
   };
 
@@ -61,7 +86,7 @@ export default class ContentReportController {
         result,
       });
     } catch (error) {
-      next(error);
+      handleInternalError(error, next);
     }
   };
 }

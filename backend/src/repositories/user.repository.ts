@@ -9,6 +9,10 @@ import { Types } from 'mongoose';
 import UserModel, { CitizenModel, IUser } from '../models/user.model.js';
 
 export default class UserRepository {
+  async count(filter: Record<string, any>) {
+    return UserModel.countDocuments(filter);
+  }
+
   async findById(userId: string) {
     return UserModel.findById(userId);
   }

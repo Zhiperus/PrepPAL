@@ -6,6 +6,12 @@ import { authenticate, authorizeRoles } from '../middleware/auth.middleware.js';
 const contentReportRoutes: Router = Router();
 const controller = new ContentReportController();
 
+contentReportRoutes.post(
+  '/',
+  authenticate,
+  controller.createContentReport.bind(controller),
+);
+
 contentReportRoutes.get(
   '/',
   authenticate,

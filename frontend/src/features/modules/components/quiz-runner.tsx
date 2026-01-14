@@ -13,7 +13,9 @@ import { useNavigate, useParams } from 'react-router';
 import { useQuiz } from '../api/get-quiz';
 import { useSubmitQuiz } from '../api/submit-attempt';
 
+import Toast from '@/components/ui/toast/toast';
 import { paths } from '@/config/paths';
+import { useCreateQuestionReport } from '@/features/question-moderation/api/create-question-report';
 
 // Helper to ensure questions have a stable ID
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,6 +37,18 @@ export function QuizRunner(): React.ReactNode {
   const hasInitialized = useRef(false);
   const [isFinished, setIsFinished] = useState(false);
 
+  // --- NEW: State for Reporting ---
+  const [reportReason, setReportReason] = useState('');
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: 'success' | 'error';
+  }>({
+    show: false,
+    message: '',
+    type: 'success',
+  });
+
   const { mutate: submitQuiz, isPending: isSubmitting } = useSubmitQuiz({
     mutationConfig: {
       onSuccess: () => {
@@ -46,6 +60,40 @@ export function QuizRunner(): React.ReactNode {
       },
     },
   });
+
+  // --- NEW: Report Hook Integration ---
+  const { mutate: reportQuestion, isPending: isReporting } =
+    useCreateQuestionReport({
+      mutationConfig: {
+        onSuccess: () => {
+          setToast({
+            show: true,
+            message: 'Report submitted. Thank you for the feedback!',
+            type: 'success',
+          });
+          setReportReason('');
+          // Close modal after delay
+          setTimeout(() => {
+            setIsReportModalOpen(false);
+            setToast((prev) => ({ ...prev, show: false }));
+          }, 2000);
+        },
+        onError: (error: any) => {
+          const msg =
+            error?.response?.data?.message ||
+            'Failed to send report. Please try again.';
+          setToast({
+            show: true,
+            message: msg,
+            type: 'error',
+          });
+          setTimeout(
+            () => setToast((prev) => ({ ...prev, show: false })),
+            3000,
+          );
+        },
+      },
+    });
 
   const {
     data: quizData,
@@ -75,8 +123,8 @@ export function QuizRunner(): React.ReactNode {
   // 1. Initialize Queue
   useEffect(() => {
     if (quiz?.questions && !hasInitialized.current) {
-       
       const initializedQuestions = quiz.questions.map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (q: any, index: number) => ({
           ...q,
           originalIndex: index,
@@ -95,7 +143,7 @@ export function QuizRunner(): React.ReactNode {
   const currentNumber =
     totalQuestions > 0 ? Math.min(rawCurrentNumber, totalQuestions) : 1;
 
-  // Self-Healing Effect (Restores state if you go back to a completed question)
+  // Self-Healing Effect
   useEffect(() => {
     if (!currentQuestion) return;
 
@@ -103,13 +151,11 @@ export function QuizRunner(): React.ReactNode {
     const isActuallySolved = completedIds.has(qId);
 
     if (isActuallySolved && !isFeedbackMode) {
-      // Restore the user's previous selection from history if available
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const historyItem = history.find((h: any) => getQuestionKey(h) === qId);
       if (historyItem) {
         setSelectedOptionId(historyItem.selectedAnswerId);
       } else {
-        // Fallback if not found (shouldn't happen in normal flow)
         setSelectedOptionId(currentQuestion.correctAnswer);
       }
       setIsFeedbackMode(true);
@@ -150,16 +196,8 @@ export function QuizRunner(): React.ReactNode {
   const handleNext = () => {
     if (!currentQuestion) return;
 
-    // --- LOGIC CHANGE: UNBLOCKED NAVIGATION ---
-    // We now advance regardless of whether the answer was correct or not.
-
     if (isAlreadySolved) {
-      // Review Mode (Question already answered)
       const newQueue = queue.slice(1);
-
-      // We don't add to history here because it's already there from the first pass.
-      // But we might need to visually restore the NEXT question's state.
-
       if (newQueue.length === 0) {
         handleSubmit();
       } else {
@@ -167,12 +205,10 @@ export function QuizRunner(): React.ReactNode {
         resetStateForNextQuestion(newQueue[0]);
       }
     } else {
-      // New Attempt Mode
       const newCompleted = new Set(completedIds);
       newCompleted.add(getQuestionKey(currentQuestion));
       setCompletedIds(newCompleted);
 
-      // 1. Record the attempt (Right OR Wrong)
       const historyEntry = {
         ...currentQuestion,
         selectedAnswerId: selectedOptionId,
@@ -183,24 +219,20 @@ export function QuizRunner(): React.ReactNode {
       const newQueue = queue.slice(1);
 
       if (newQueue.length === 0) {
-        // Submit immediately with the new entry
         handleSubmit([...history, historyEntry]);
       } else {
         setQueue(newQueue);
-        // 2. Reset UI for next question
         setSelectedOptionId(null);
         setIsFeedbackMode(false);
       }
     }
   };
 
-  // Helper to safely reset or restore state when moving between questions
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const resetStateForNextQuestion = (nextQ: any) => {
     const nextQId = nextQ ? getQuestionKey(nextQ) : null;
     if (nextQ && completedIds.has(nextQId!)) {
-      // If next question is also solved, restore its state from history
-       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const prevAnswer = history.find(
         (h: any) => getQuestionKey(h) === nextQId,
       );
@@ -217,17 +249,9 @@ export function QuizRunner(): React.ReactNode {
   const handleBack = () => {
     if (history.length === 0) return;
     const previousQuestion = history[history.length - 1];
-    const newHistory = history.slice(0, -1); // Remove from history so we can "re-answer" if needed, OR just view.
-
-    // In this "Submit with Mistakes" model, usually Back = Review.
-    // So we keep it in completedIds, but we visually move back.
+    const newHistory = history.slice(0, -1);
 
     setQueue((prev) => [previousQuestion, ...prev]);
-    // NOTE: If you want to allow changing the answer, you'd modify history/completedIds here.
-    // For now, let's assume "Back" is for review, so we restore the selection.
-
-    // We actually REMOVE it from history in this logic so the progress bar syncs correctly
-    // (since currentNumber relies on history.length).
     setHistory(newHistory);
 
     setSelectedOptionId(previousQuestion.selectedAnswerId);
@@ -240,17 +264,27 @@ export function QuizRunner(): React.ReactNode {
     setIsFinished(true);
 
     const historyToSubmit = finalHistory || history;
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const answers = historyToSubmit.map((q: any) => ({
       questionIndex: q.originalIndex,
-      // Fallback to -1 or similar if something went wrong, but flow guarantees selection
       selectedAnswerId: q.selectedAnswerId,
     }));
 
     submitQuiz({
       moduleId,
       answers,
+    });
+  };
+
+  // --- NEW: Report Handler ---
+  const handleReportSubmit = () => {
+    if (!reportReason.trim() || !currentQuestion || !quiz?._id) return;
+
+    reportQuestion({
+      quizId: quiz._id,
+      // Use _id if available (from DB), fallback to uniqueId locally if needed
+      questionId: currentQuestion._id || currentQuestion.uniqueId,
+      reason: reportReason,
     });
   };
 
@@ -297,6 +331,9 @@ export function QuizRunner(): React.ReactNode {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[#F9FAFB] font-sans text-gray-800">
+      {/* Toast Notification Layer */}
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
+
       {/* HEADER */}
       <div className="sticky top-0 z-20 w-full border-b border-gray-100 bg-white shadow-sm">
         <div className="flex items-center justify-between px-6 py-4 pt-15">
@@ -474,27 +511,44 @@ export function QuizRunner(): React.ReactNode {
           <div className="animate-in zoom-in-95 w-full max-w-sm scale-100 rounded-3xl bg-white p-8 shadow-2xl duration-200">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-[#2A4263]">
-                Report a Question?
+                Report Question
               </h2>
               <button
                 type="button"
                 title="Close report modal"
                 onClick={() => setIsReportModalOpen(false)}
                 className="text-gray-400 transition-colors hover:text-red-600"
+                disabled={isReporting}
               >
                 <LuX size={24} />
               </button>
             </div>
+
+            <p className="mb-4 text-sm text-gray-500">
+              Is there a typo or an incorrect answer? Let us know.
+            </p>
+
             <textarea
-              className="mb-6 h-32 w-full resize-none rounded-2xl border-2 border-gray-200 bg-gray-50 p-4 text-lg outline-none focus:border-[#2A4263]"
-              placeholder="Type here"
+              className="mb-6 h-32 w-full resize-none rounded-2xl border-2 border-gray-200 bg-gray-50 p-4 text-lg transition-all outline-none focus:border-[#2A4263]"
+              placeholder="Describe the issue..."
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              disabled={isReporting}
             ></textarea>
-            <button
-              onClick={() => setIsReportModalOpen(false)}
-              className="w-full rounded-2xl bg-[#2A4263] py-4 text-xl font-bold text-white shadow-lg transition-all hover:bg-[#0891B2]"
-            >
-              Submit
-            </button>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleReportSubmit}
+                disabled={isReporting || !reportReason.trim()}
+                className="w-full rounded-2xl bg-[#2A4263] py-4 text-xl font-bold text-white shadow-lg transition-all hover:bg-[#0891B2] disabled:bg-gray-300"
+              >
+                {isReporting ? (
+                  <span className="loading loading-spinner loading-md"></span>
+                ) : (
+                  'Submit Report'
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

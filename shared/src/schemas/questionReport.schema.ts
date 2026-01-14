@@ -14,6 +14,13 @@ export const questionReportSchema = z.object({
   updatedAt: z.date().optional(),
 });
 
+export const CreateQuestionReportSchema = z.object({
+  quizId: z.string().min(1, "Quiz ID is required"),
+  questionId: z.string().min(1, "Question ID is required"),
+  reason: z.string().min(1, "Reason is required"),
+  status: z.enum(["PENDING", "RESOLVED", "DISMISSED"]).default("PENDING"),
+});
+
 export const GetQuestionReportsQuerySchema = z.object({
   sortBy: z.string().default("createdAt"),
   order: z.enum(["asc", "desc"]).default("desc"),
@@ -34,4 +41,7 @@ export type GetQuestionReportsQuery = z.infer<
 >;
 export type CompleteQuestionReportRequest = z.infer<
   typeof CompleteQuestionReportRequestSchema
+>;
+export type CreateQuestionReportRequest = z.infer<
+  typeof CreateQuestionReportSchema
 >;

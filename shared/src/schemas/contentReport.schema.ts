@@ -14,6 +14,12 @@ export const contentReportSchema = z.object({
   updatedAt: z.date().optional(),
 });
 
+export const CreateContentReportSchema = z.object({
+  postId: z.string().min(1, "Post ID is required"),
+  reason: z.string().min(1, "Reason is required"),
+  status: z.enum(["PENDING", "RESOLVED", "DISMISSED"]).default("PENDING"),
+});
+
 export const GetContentReportsQuerySchema = z.object({
   sortBy: z.string().default("createdAt"),
   order: z.enum(["asc", "desc"]).default("desc"),
@@ -35,4 +41,7 @@ export type GetContentReportsQuery = z.infer<
 >;
 export type CompleteContentReportRequest = z.infer<
   typeof CompleteContentReportRequestSchema
+>;
+export type CreateContentReportRequest = z.infer<
+  typeof CreateContentReportSchema
 >;

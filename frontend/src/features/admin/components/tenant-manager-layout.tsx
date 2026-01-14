@@ -1,69 +1,75 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { IoMdMore } from 'react-icons/io';
-import { LuSearch, LuPlus, LuMapPin, LuMail, LuLoader } from 'react-icons/lu';
+import {
+  LuSearch,
+  LuPlus,
+  LuMapPin,
+  LuMail,
+  LuLoader,
+  LuTrash2,
+  LuChevronLeft,
+  LuChevronRight,
+} from 'react-icons/lu';
 
-import { useUpdateLgu } from '../api/edit-lgu';
-import { useLgus } from '../api/get-lgus';
+import { useDeleteLgu } from '../api/delete-lgu';
+import { useLgus, type LguTenant } from '../api/get-lgus';
 
 import { AddLGUModal } from './add-lgu';
-import { EditLGUModal } from './edit-lgu';
+import { ViewLGUModal } from './edit-lgu';
 
-interface LguTenant {
-  id: string; // Note: This ID corresponds to the barangayCode from the backend
-  name: string;
-  region: string;
-  province: string;
-  city: string;
-  adminEmail: string;
-  status: 'active' | 'inactive';
-  registeredUsers?: number;
-}
+import { useDebounce } from '@/hooks/use-debounce'; // Assuming you have a debounce hook
 
 export function TenantManagerLayout() {
+  // State
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [page, setPage] = useState(1); // Current Page
   const [selectedBarangayCode, setSelectedBarangayCode] = useState<
     string | null
   >(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const { data, isLoading, isError } = useLgus();
-  const { mutate: updateLgu } = useUpdateLgu();
+  // Debounce search to prevent API spam while typing
+  const debouncedSearch = useDebounce(searchTerm, 500);
 
-  const lgus = Array.isArray(data) ? data : data?.data || [];
+  // Reset page to 1 when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
-  const filteredTenants = lgus.filter(
-    (tenant: LguTenant) =>
-      tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tenant.city.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // Fetch Data
+  const {
+    data: response,
+    isLoading,
+    isError,
+    isPlaceholderData,
+  } = useLgus({
+    params: {
+      search: debouncedSearch,
+      page: page,
+      limit: 10,
+    },
+  });
 
-  // [Fixed] Find tenant by checking if tenant.id matches the selected code
-  const selectedTenant = lgus.find(
-    (t: LguTenant) => t.id === selectedBarangayCode,
-  );
+  const { mutate: deleteLguMutation, isPending: isDeleting } = useDeleteLgu();
 
-  const handleDeactivate = (barangayCode: string) => {
-    if (confirm('Are you sure you want to deactivate this account?')) {
-      updateLgu({
-        // passing the barangayCode here.
-        barangayCode: barangayCode,
-        data: { status: 'inactive' },
-      });
-    }
-  };
+  const lgus = response?.data || [];
+  const meta = response?.meta;
 
-  const handleActivate = (barangayCode: string) => {
-    if (confirm('Are you sure you want to activate this account?')) {
-      updateLgu({
-        barangayCode: barangayCode,
-        data: { status: 'active' },
-      });
+  const selectedTenant = lgus.find((t) => t.id === selectedBarangayCode);
+
+  const handleDelete = (id: string, name: string) => {
+    if (
+      confirm(
+        `Are you sure you want to PERMANENTLY DELETE ${name}? This cannot be undone.`,
+      )
+    ) {
+      deleteLguMutation({ id });
     }
   };
 
   return (
     <div className="min-h-screen w-full bg-gray-50 pb-20">
+      {/* Header */}
       <div className="border-b border-gray-200 shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -87,6 +93,7 @@ export function TenantManagerLayout() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Search Bar */}
         <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="relative w-full sm:w-96">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -102,15 +109,15 @@ export function TenantManagerLayout() {
           </div>
         </div>
 
+        {/* Table Container */}
         <div className="flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div className="max-h-[600px] min-h-[300px] overflow-auto rounded-t-2xl">
+          <div className="min-h-[400px] overflow-auto rounded-t-2xl">
             <table className="w-full text-left text-sm text-gray-500">
               <thead className="sticky top-0 z-20 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-700 uppercase shadow-sm">
                 <tr>
                   <th className="bg-gray-50 px-6 py-4">LGU Name / Location</th>
                   <th className="bg-gray-50 px-6 py-4">Admin Email</th>
                   <th className="bg-gray-50 px-6 py-4 text-center">Users</th>
-                  <th className="bg-gray-50 px-6 py-4">Status</th>
                   <th className="bg-gray-50 px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -118,7 +125,7 @@ export function TenantManagerLayout() {
               <tbody className="divide-y divide-gray-100 bg-white">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-20 text-center">
+                    <td colSpan={4} className="px-6 py-20 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <LuLoader className="h-8 w-8 animate-spin text-[#2a4263]" />
                         <span className="text-gray-500">Loading LGUs...</span>
@@ -128,24 +135,24 @@ export function TenantManagerLayout() {
                 ) : isError ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={4}
                       className="px-6 py-10 text-center text-red-500"
                     >
                       Failed to load LGU data.
                     </td>
                   </tr>
-                ) : filteredTenants.length === 0 ? (
+                ) : lgus.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={4}
                       className="px-6 py-10 text-center text-gray-400"
                     >
                       No tenants found matching {searchTerm}
                     </td>
                   </tr>
                 ) : (
-                  filteredTenants.map((tenant: LguTenant, index: number) => {
-                    const isLastRows = index >= filteredTenants.length - 2;
+                  lgus.map((tenant: LguTenant, index: number) => {
+                    const isLastRows = index >= lgus.length - 2;
                     return (
                       <tr
                         key={tenant.id}
@@ -160,10 +167,6 @@ export function TenantManagerLayout() {
                               <LuMapPin size={12} />
                               {tenant.city}, {tenant.province}
                             </div>
-                            {/* Optional: Show Code for Debugging */}
-                            <div className="text-[10px] text-gray-300">
-                              Code: {tenant.id}
-                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-gray-600">
@@ -176,13 +179,6 @@ export function TenantManagerLayout() {
                           <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10">
                             {tenant.registeredUsers ?? 0} citizens
                           </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div
-                            className={`badge ${tenant.status === 'active' ? 'badge-success text-white' : 'badge-ghost text-gray-500'} badge-sm p-3 font-semibold`}
-                          >
-                            {tenant.status === 'active' ? 'Active' : 'Inactive'}
-                          </div>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div
@@ -205,25 +201,19 @@ export function TenantManagerLayout() {
                                     setSelectedBarangayCode(tenant.id)
                                   }
                                 >
-                                  Edit Account
+                                  View Account
                                 </button>
                               </li>
                               <li>
                                 <button
-                                  className={
-                                    tenant.status === 'active'
-                                      ? 'text-red-500'
-                                      : 'text-green-600'
-                                  }
+                                  className="text-red-500 hover:bg-red-50"
                                   onClick={() =>
-                                    tenant.status === 'active'
-                                      ? handleDeactivate(tenant.id)
-                                      : handleActivate(tenant.id)
+                                    handleDelete(tenant.id, tenant.name)
                                   }
+                                  disabled={isDeleting}
                                 >
-                                  {tenant.status === 'active'
-                                    ? 'Deactivate'
-                                    : 'Activate'}
+                                  <LuTrash2 size={16} />
+                                  Delete Account
                                 </button>
                               </li>
                             </ul>
@@ -236,10 +226,53 @@ export function TenantManagerLayout() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between rounded-b-2xl border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing page <span className="font-medium">{meta?.page}</span>{' '}
+                  of <span className="font-medium">{meta?.totalPages}</span> (
+                  {meta?.total} total results)
+                </p>
+              </div>
+              <div>
+                <nav
+                  className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                  aria-label="Pagination"
+                >
+                  <button
+                    onClick={() => setPage((old) => Math.max(old - 1, 1))}
+                    disabled={page === 1 || isLoading}
+                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                  >
+                    <span className="sr-only">Previous</span>
+                    <LuChevronLeft className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (
+                        !isPlaceholderData &&
+                        meta?.page !== meta?.totalPages
+                      ) {
+                        setPage((old) => old + 1);
+                      }
+                    }}
+                    disabled={meta?.page === meta?.totalPages || isLoading}
+                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                  >
+                    <span className="sr-only">Next</span>
+                    <LuChevronRight className="h-5 w-5" aria-hidden="true" />
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <EditLGUModal
+      <ViewLGUModal
         isOpen={!!selectedBarangayCode}
         tenant={selectedTenant}
         onClose={() => setSelectedBarangayCode(null)}

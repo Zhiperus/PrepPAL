@@ -28,4 +28,11 @@ lguRoutes.get(
   controller.getLguResidentGoBags.bind(controller),
 );
 
+lguRoutes.delete(
+  '/:id',
+  authenticate,
+  authorizeRoles('super_admin'),
+  controller.deleteLgu.bind(controller),
+);
+
 export default lguRoutes;

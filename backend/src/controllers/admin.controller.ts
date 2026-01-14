@@ -34,8 +34,9 @@ export default class AdminController {
   async getLgus(req: Request, res: Response, next: NextFunction) {
     try {
       const { search, page = 1, limit = 10 } = req.query;
+      const pageNum = parseInt(page as string, 10);
+      const limitNum = parseInt(limit as string, 10);
 
-      // [Fixed] Changed type to Record<string, any> to avoid 'Unexpected any'
       const query: Record<string, any> = { role: 'lgu' };
       if (search) {
         query.$or = [
@@ -45,27 +46,28 @@ export default class AdminController {
         ];
       }
 
-      // Find Users with role="lgu"
+      // Assuming userService has a count method, or use UserModel directly
+      const total = await this.userService.countLguAccounts(query);
+
+      // 2. Get Paginated Data
       const lguAccounts = await this.userService.findLguAccounts(
         query,
-        parseInt(page as string, 10),
-        parseInt(limit as string, 10),
+        pageNum,
+        limitNum,
       );
 
       const formattedLgus = await Promise.all(
         lguAccounts.map(async (lgu) => {
           const code = lgu.location?.barangayCode;
+          if (!code) return null;
 
-          if (!code) return null; // Skip broken records
-
-          // We derive citizen count from the code
           const citizenCount =
             await this.userService.getCitizenCountByLgu(code);
 
           return {
-            id: code, // ID is the barangayCode
-            userId: lgu._id, // Keep reference to the admin user ID
-            name: lgu.householdName, // "Barangay Batasan Hills"
+            id: code,
+            userId: lgu._id,
+            name: lgu.householdName,
             adminEmail: lgu.email,
             status: 'active',
             region: lgu.location?.region,
@@ -77,13 +79,20 @@ export default class AdminController {
         }),
       );
 
-      // Filter out nulls
-      return res.status(200).json(formattedLgus.filter(Boolean));
+      // 3. Return Wrapped Response
+      return res.status(200).json({
+        data: formattedLgus.filter(Boolean),
+        meta: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      });
     } catch (error) {
       next(error);
     }
   }
-
   /**
    * Create new LGU (Creates an Admin User)
    */

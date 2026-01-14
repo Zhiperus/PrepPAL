@@ -1,7 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { useState } from 'react';
-import { FiFilter, FiSearch } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import {
+  FiFilter,
+  FiSearch,
+  FiChevronLeft,
+  FiChevronRight,
+} from 'react-icons/fi';
 
 import { useCompleteReport } from '../api/complete-report';
 import { useContentReports } from '../api/get-reports';
@@ -47,12 +52,6 @@ function Avatar({
 // --- Props Definition ---
 
 interface ModerationPageProps {
-  /**
-   * Optional: Overrides the logged-in user's barangay code.
-   * - If provided, filters by this code.
-   * - If omitted for Super Admin, shows ALL reports.
-   * - If omitted for LGU Admin, defaults to their own code.
-   */
   barangayCode?: string | null;
 }
 
@@ -64,19 +63,30 @@ export default function ModerationPage({
   const user = useUser();
   const queryClient = useQueryClient();
 
-  // Determine the target code to filter by
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10); // Fixed limit, or make dynamic if needed
+
   const targetCode =
     propBarangayCode !== undefined
       ? propBarangayCode
       : user.data?.location?.barangayCode;
 
-  // 1. Fetch Reports (Pass undefined if no code exists to fetch ALL)
-  const { data: reportsData, isLoading } = useContentReports({
+  // 1. Fetch Reports with Pagination
+  const {
+    data: reportsData,
+    isLoading,
+    isPlaceholderData,
+  } = useContentReports({
     barangayCode: targetCode || undefined,
+    page,
+    limit,
   });
-  const reports = reportsData?.data;
 
-  // 2. Setup Single Mutation
+  const reports = reportsData?.data || [];
+  const meta = reportsData?.meta;
+
+  // 2. Setup Mutation
   const { mutate, isPending, variables } = useCompleteReport({
     mutationConfig: {
       onSuccess: () => {
@@ -86,17 +96,22 @@ export default function ModerationPage({
     },
   });
 
-  // Helpers to track which specific action is loading
   const isDismissing = isPending && variables?.status === 'DISMISSED';
   const isResolving = isPending && variables?.status === 'RESOLVED';
 
-  // State for selection
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Auto-select first item if selection becomes invalid (e.g. after page change)
+  useEffect(() => {
+    if (reports.length > 0 && !reports.find((r) => r._id === selectedId)) {
+      // Optional: Select the first one automatically or just clear it
+      // setSelectedId(reports[0]._id);
+    }
+  }, [reports, selectedId]);
 
   const selectedReport =
     reports?.find((r) => r._id === selectedId) || reports?.[0];
 
-  // Handlers
   const handleDismiss = () => {
     if (selectedReport) {
       mutate({ reportId: selectedReport._id, status: 'DISMISSED' });
@@ -105,9 +120,19 @@ export default function ModerationPage({
 
   const handleDelete = () => {
     if (selectedReport) {
-      // Backend: "RESOLVED" status triggers the delete post logic
       mutate({ reportId: selectedReport._id, status: 'RESOLVED' });
     }
+  };
+
+  // Pagination Handlers
+  const handleNextPage = () => {
+    if (!isPlaceholderData && meta && page < meta.totalPages) {
+      setPage((old) => old + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    setPage((old) => Math.max(old - 1, 1));
   };
 
   if (isLoading) {
@@ -120,7 +145,6 @@ export default function ModerationPage({
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 font-sans text-slate-800 md:p-10">
-      {/* Header */}
       <header className="mb-8 flex flex-col pt-12 lg:pt-2">
         <h1 className="text-text-primary text-3xl font-extrabold tracking-tight">
           Moderation {targetCode ? '(Local)' : '(Global)'}
@@ -146,13 +170,9 @@ export default function ModerationPage({
                   className="w-full rounded-lg border border-slate-300 py-2 pr-4 pl-10 text-sm focus:ring-2 focus:ring-blue-900/20 focus:outline-none"
                 />
               </div>
-              <button className="rounded-lg border border-slate-300 p-2 text-slate-500 hover:bg-slate-50">
-                <FiFilter size={20} />
-              </button>
             </div>
           </div>
 
-          {/* Table Header */}
           <div className="grid grid-cols-12 gap-4 border-b border-slate-200 bg-slate-50 px-6 py-3 text-xs font-bold tracking-wider text-slate-500 uppercase">
             <div className="col-span-4">User</div>
             <div className="col-span-3">Date</div>
@@ -160,65 +180,95 @@ export default function ModerationPage({
             <div className="col-span-3">Reason</div>
           </div>
 
-          {/* Table Body */}
+          {/* List Content */}
           <div className="flex-1 space-y-1 overflow-y-auto p-2">
-            {reports?.map((report) => (
-              <div
-                key={report._id}
-                onClick={() => setSelectedId(report._id)}
-                className={`grid cursor-pointer grid-cols-12 items-center gap-4 rounded-xl px-4 py-3 transition-colors ${
-                  selectedReport?._id === report._id
-                    ? 'border border-blue-100 bg-blue-50'
-                    : 'border border-transparent hover:bg-slate-50'
-                }`}
-              >
-                {/* User Info */}
-                <div className="col-span-4 flex items-center gap-3">
-                  <Avatar
-                    src={report.postId?.userId?.profileImage}
-                    name={report.postId?.userId?.householdName || 'Unknown'}
-                    size="sm"
-                  />
-                  <span className="truncate text-sm font-semibold">
-                    {report.postId?.userId?.householdName || 'Deleted User'}
-                  </span>
-                </div>
-
-                {/* Date */}
-                <div className="col-span-3 text-xs font-medium text-slate-500">
-                  {format(new Date(report.createdAt), 'MMMM d, yyyy')}
-                </div>
-
-                {/* Reporter */}
-                <div className="col-span-2 flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-600">
+            {reports.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center text-slate-400">
+                <p>No pending reports.</p>
+              </div>
+            ) : (
+              reports.map((report) => (
+                <div
+                  key={report._id}
+                  onClick={() => setSelectedId(report._id)}
+                  className={`grid cursor-pointer grid-cols-12 items-center gap-4 rounded-xl px-4 py-3 transition-colors ${
+                    selectedReport?._id === report._id
+                      ? 'border border-blue-100 bg-blue-50'
+                      : 'border border-transparent hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="col-span-4 flex items-center gap-3">
                     <Avatar
-                      src={report.reporterId.profileImage}
-                      name={report.reporterId?.householdName || 'Unknown'}
+                      src={report.postId?.userId?.profileImage}
+                      name={report.postId?.userId?.householdName || 'Unknown'}
                       size="sm"
                     />
+                    <span className="truncate text-sm font-semibold">
+                      {report.postId?.userId?.householdName || 'Deleted User'}
+                    </span>
                   </div>
-                  <span className="truncate text-xs">
-                    {report.reporterId.householdName}
-                  </span>
-                </div>
 
-                {/* Reason */}
-                <div className="col-span-3">
-                  <span className="inline-block max-w-full truncate rounded-md bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600 uppercase">
-                    {report.reason}
-                  </span>
+                  <div className="col-span-3 text-xs font-medium text-slate-500">
+                    {format(new Date(report.createdAt), 'MMMM d, yyyy')}
+                  </div>
+
+                  <div className="col-span-2 flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-600">
+                      <Avatar
+                        src={report.reporterId.profileImage}
+                        name={report.reporterId?.householdName || 'Unknown'}
+                        size="sm"
+                      />
+                    </div>
+                    <span className="truncate text-xs">
+                      {report.reporterId.householdName}
+                    </span>
+                  </div>
+
+                  <div className="col-span-3">
+                    <span className="inline-block max-w-full truncate rounded-md bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600 uppercase">
+                      {report.reason}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
+
+          {/* Pagination Controls */}
+          {meta && (
+            <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-6 py-3">
+              <span className="text-xs text-slate-500">
+                Page{' '}
+                <span className="font-bold text-slate-700">{meta.page}</span> of{' '}
+                <span className="font-bold text-slate-700">
+                  {meta.totalPages}
+                </span>
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={page === 1}
+                  className="flex items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+                >
+                  <FiChevronLeft size={16} />
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={isPlaceholderData || page === meta.totalPages}
+                  className="flex items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+                >
+                  <FiChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* RIGHT PANEL: Detail Card */}
         <div className="flex flex-col lg:col-span-5">
           {selectedReport ? (
             <div className="sticky top-6 flex h-fit flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              {/* Card Header */}
               <div className="mb-4 flex items-center gap-3">
                 <Avatar
                   src={selectedReport.postId?.userId?.profileImage}
@@ -274,11 +324,10 @@ export default function ModerationPage({
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="mt-auto space-y-3">
                 <button
                   onClick={handleDismiss}
-                  disabled={isPending} // Disable both when either is loading
+                  disabled={isPending}
                   className="flex w-full items-center justify-center rounded-xl bg-[#2a4263] py-3 font-bold text-white shadow-sm transition-colors hover:bg-[#1e3a8a] disabled:opacity-50"
                 >
                   {isDismissing ? (

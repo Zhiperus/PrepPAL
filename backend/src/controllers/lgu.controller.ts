@@ -5,6 +5,21 @@ import LguService from '../services/lgu.service.js';
 export default class LguController {
   private lguService = new LguService();
 
+  deleteLgu = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params; // Expecting /lgus/:id
+
+      await this.lguService.delete(id);
+
+      res.status(200).json({
+        success: true,
+        message: 'LGU Account deleted successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   // 1. ANALYTICS (Public or Shared)
   getLguAnalytics = async (req: Request, res: Response, next: NextFunction) => {
     try {

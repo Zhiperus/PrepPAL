@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { LuX, LuSend, LuImage } from 'react-icons/lu';
+import { useSearchParams } from 'react-router';
 
 import Toast from '@/components/ui/toast/toast';
 import { useCreatePost } from '@/features/community-posts/api/create-post';
+import type { SortOption } from '@/features/community-posts/api/get-posts';
+import { useUser } from '@/lib/auth';
 
 interface PostBagModalProps {
   onClose: () => void;
@@ -15,6 +18,8 @@ export default function PostBagModal({
   completeness,
   bagImage,
 }: PostBagModalProps) {
+  const { data: user } = useUser();
+  const [searchParams] = useSearchParams();
   const [caption, setCaption] = useState('');
 
   const [toast, setToast] = useState<{
@@ -27,7 +32,12 @@ export default function PostBagModal({
     type: 'success',
   });
 
-  const createPostMutation = useCreatePost();
+  const createPostMutation = useCreatePost({
+    search: searchParams.get('search') || '',
+    sort: (searchParams.get('sort') as SortOption) || ('newest' as SortOption),
+    barangayCode: user?.location?.barangayCode || '',
+    cityCode: user?.location?.cityCode || '',
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
