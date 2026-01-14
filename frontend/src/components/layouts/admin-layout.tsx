@@ -1,5 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { GoHome, GoOrganization, GoDatabase, GoSignOut } from 'react-icons/go'; // Icons for Admin tasks
+import {
+  GoOrganization,
+  GoDatabase,
+  GoSignOut,
+  GoQuestion,
+  GoDiscussionClosed,
+} from 'react-icons/go';
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { useNavigate } from 'react-router';
 
@@ -78,13 +84,7 @@ export function AdminDashboardLayout({
           {/* Sidebar Container */}
           <div className="flex min-h-full w-72 flex-col rounded-tr-[50px] rounded-br-[50px] bg-white p-6 shadow-lg">
             {/* 1. Header: Profile */}
-            <div
-              className="mt-4 mb-6 flex items-center gap-4 pl-2 hover:cursor-pointer hover:bg-gray-100"
-              onClick={() => {
-                navigate(paths.app.profile.getHref());
-                closeDrawer();
-              }}
-            >
+            <div className="mt-4 mb-6 flex items-center gap-4 pl-2">
               <div className="avatar placeholder">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-black">
                   <img
@@ -106,18 +106,6 @@ export function AdminDashboardLayout({
             <ul className="flex flex-col gap-8 font-medium text-gray-700">
               <li>
                 <Link
-                  to={paths.admin.root.getHref()}
-                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
-                  onClick={closeDrawer}
-                >
-                  <GoHome className="h-6 w-6" />
-                  <span>Dashboard</span>
-                </Link>
-              </li>
-
-              {/* --- NEW ADMIN ROUTES --- */}
-              <li>
-                <Link
                   to={paths.admin['tenant-manager'].getHref()}
                   className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
                   onClick={closeDrawer}
@@ -135,6 +123,28 @@ export function AdminDashboardLayout({
                 >
                   <GoDatabase className="h-6 w-6" />
                   <span>Module Editor</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to={paths.admin['question-moderation'].getHref()}
+                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                  onClick={closeDrawer}
+                >
+                  <GoQuestion className="h-6 w-6" />
+                  <span>Question Moderation</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to={paths.admin['content-moderation'].getHref()}
+                  className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
+                  onClick={closeDrawer}
+                >
+                  <GoDiscussionClosed className="h-6 w-6" />
+                  <span>Content Moderation</span>
                 </Link>
               </li>
             </ul>

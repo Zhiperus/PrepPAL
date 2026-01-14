@@ -3,6 +3,7 @@ declare namespace Express {
     token?: string;
     userId?: string;
     role?: 'citizen' | 'lgu' | 'super_admin';
-    lguId?: string | null;
+    cityCode?: string;
+    barangayCode?: string;
   }
 }

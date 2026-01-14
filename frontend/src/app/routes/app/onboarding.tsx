@@ -4,7 +4,7 @@ import {
   type OnboardingRequest,
 } from '@repo/shared/dist/schemas/user.schema';
 import { useState, useEffect } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm, FormProvider, type Resolver } from 'react-hook-form';
 import type { SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
@@ -16,10 +16,23 @@ import { StepHousehold } from '@/features/onboarding/components/step-household';
 import { StepLocation } from '@/features/onboarding/components/step-location';
 import { useUser } from '@/lib/auth';
 
+// Define keys for LocalStorage
+const STORAGE_KEY = 'onboarding_progress';
+const STEP_KEY = 'onboarding_step';
+
 export default function OnboardingRoute() {
   const navigate = useNavigate();
   const { data: user, isLoading } = useUser();
-  const [page, setPage] = useState(1);
+
+  // 1. Initialize Step from LocalStorage
+  const [page, setPage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedStep = localStorage.getItem(STEP_KEY);
+      return savedStep ? parseInt(savedStep, 10) : 1;
+    }
+    return 1;
+  });
+
   const [toastError, setToastError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,7 +49,9 @@ export default function OnboardingRoute() {
   }, [user, isLoading, navigate]);
 
   const methods = useForm<OnboardingRequest>({
-    resolver: zodResolver(OnboardingRequestSchema),
+    resolver: zodResolver(
+      OnboardingRequestSchema,
+    ) as Resolver<OnboardingRequest>,
     defaultValues: {
       emailConsent: true,
       householdInfo: {
@@ -48,9 +63,42 @@ export default function OnboardingRoute() {
     mode: 'onChange',
   });
 
+  const { watch, reset, getValues } = methods;
+
+  useEffect(() => {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        reset({ ...getValues(), ...parsed });
+      } catch (error) {
+        console.error('Failed to parse onboarding progress:', error);
+      }
+    }
+  }, [reset, getValues]);
+
+  // 4. Save Form Data on Change
+  useEffect(() => {
+    const subscription = watch((value) => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  // 5. Save Step on Change
+  useEffect(() => {
+    localStorage.setItem(STEP_KEY, page.toString());
+  }, [page]);
+
   const mutation = useUpdateOnboarding({
     mutationConfig: {
-      onSuccess: () => navigate(paths.app.root.getHref()),
+      onSuccess: () => {
+        // Clear Storage on Success
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STEP_KEY);
+        navigate(paths.app.root.getHref());
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onError: (error: any) => {
         const message =
           error?.response?.data?.message ||

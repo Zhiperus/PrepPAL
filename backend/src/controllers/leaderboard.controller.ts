@@ -4,7 +4,7 @@ import LeaderboardService from '../services/leaderboard.service.js';
 
 // Define the expected query parameters
 interface LeaderboardQuery {
-  barangay?: string;
+  barangayCode?: string;
   limit?: string;
   search?: string;
   metric?: 'allTime' | 'goBag';
@@ -19,10 +19,10 @@ export default class LeaderboardController {
     next: NextFunction,
   ) => {
     try {
-      const { barangay, limit, search, metric } = req.query;
+      const { barangayCode, limit, search, metric } = req.query;
 
       const result = await this.leaderboardService.getLeaderboard({
-        barangay,
+        barangayCode,
         limit,
         search,
         metric,

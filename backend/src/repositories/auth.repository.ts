@@ -6,7 +6,8 @@ import UserModel, { IUser } from '../models/user.model.js';
 interface TokenPayload {
   userId: string;
   role: 'citizen' | 'lgu' | 'super_admin';
-  lguId?: string | null;
+  cityCode?: string;
+  barangayCode?: string;
 }
 const JWT_SECRET = process.env.JWT_SECRET || 'DEFAULT-SECRET';
 const BCRYPT_SALT_ROUNDS: number = process.env.BCRYPT_SALT_ROUNDS
@@ -14,6 +15,9 @@ const BCRYPT_SALT_ROUNDS: number = process.env.BCRYPT_SALT_ROUNDS
   : 10;
 
 export default class AuthRepository {
+  async updateLastActive(userId: string) {
+    return UserModel.findByIdAndUpdate(userId, { lastActiveAt: new Date() });
+  }
   // Find user by Id
   async findById(userId: string) {
     return UserModel.findById(userId);
@@ -43,7 +47,6 @@ export default class AuthRepository {
     email: string;
     password: string;
     role: string;
-    lguId: string | null;
   }): Promise<IUser> {
     const user = new UserModel(data);
     return user.save();

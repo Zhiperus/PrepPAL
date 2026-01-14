@@ -1,4 +1,5 @@
 import type { LeaderboardEntry } from '@repo/shared/dist/schemas/leaderboard.schema';
+import { FaLocationDot } from 'react-icons/fa6';
 import { LuSearch } from 'react-icons/lu';
 
 interface LeaderboardListProps {
@@ -30,8 +31,10 @@ export function LeaderboardList({
         <h1 className="text-text-primary mb-2 text-4xl font-extrabold">
           Leaderboard
         </h1>
-        <span className="block text-sm font-medium text-gray-500">
-          {location}
+
+        <span className="flex gap-3 justify-self-center text-sm font-medium text-gray-500">
+          <FaLocationDot className="text-text-primary h-4 w-4 shrink-0" />
+          {'Brgy. ' + location}
         </span>
 
         {/* Search Bar */}
@@ -96,7 +99,11 @@ export function LeaderboardList({
 
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-gray-500">
-                    {user.householdName.charAt(0)}
+                    <div className="avatar">
+                      <div className="rounded-full">
+                        <img src={user.profileImage || ''} />
+                      </div>
+                    </div>
                   </div>
                   <span className="text-lg font-bold text-[#2a4263]">
                     {user.householdName}
@@ -106,8 +113,8 @@ export function LeaderboardList({
 
               <span className="text-lg font-bold text-gray-700">
                 {activeMetric === 'allTime'
-                  ? user.totalPoints
-                  : user.points.goBag}
+                  ? user.totalPoints.toFixed(0)
+                  : user.points.goBag.toFixed(0)}
               </span>
             </div>
           ))

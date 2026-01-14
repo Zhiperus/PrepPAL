@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
-import { CgSpinner } from 'react-icons/cg';
-import { GoSearch, GoDownload, GoCheckCircle, GoClock } from 'react-icons/go';
+import { GoSearch } from 'react-icons/go';
 import { MdLocationOn, MdClose } from 'react-icons/md';
 
 import { useLeaderboard } from '../api/get-leaderboard';
@@ -18,14 +17,14 @@ export default function LguLeaderboardLayout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const TARGET_BARANGAY = user?.location?.barangay;
+  const TARGET_BARANGAY = user?.location?.barangayCode;
 
   // --- API HOOKS (Fetch Real Data) ---
 
   // 1. Fetch ALL TIME Leaders (Top 50)
   const allTimeQuery = useLeaderboard({
     params: {
-      barangay: TARGET_BARANGAY,
+      barangayCode: TARGET_BARANGAY,
       metric: 'allTime',
       limit: 50,
     },
@@ -34,17 +33,21 @@ export default function LguLeaderboardLayout() {
   // 2. Fetch GO BAG Leaders (Top 50)
   const goBagQuery = useLeaderboard({
     params: {
-      barangay: TARGET_BARANGAY,
+      barangayCode: TARGET_BARANGAY,
       metric: 'goBag',
       limit: 50,
     },
   });
 
   // --- DATA PROCESSING ---
-  const allTimeData = allTimeQuery.data?.data || [];
-  const goBagData = goBagQuery.data?.data || [];
-
-  console.log(allTimeData, goBagData);
+  const allTimeData = useMemo(
+    () => allTimeQuery.data?.data || [],
+    [allTimeQuery.data?.data],
+  );
+  const goBagData = useMemo(
+    () => goBagQuery.data?.data || [],
+    [goBagQuery.data?.data],
+  );
 
   // Filter Logic for Modal (Client-side search)
   const modalDisplayData = useMemo(() => {
@@ -58,37 +61,37 @@ export default function LguLeaderboardLayout() {
   }, [activeModalTab, searchTerm, allTimeData, goBagData]);
 
   // --- TOAST & DOWNLOAD STATES ---
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [toast, setToast] = useState<{
-    show: boolean;
-    type: 'loading' | 'success';
-    message: string;
-  }>({
-    show: false,
-    type: 'loading',
-    message: '',
-  });
-
-  // --- DOWNLOAD HANDLER ---
-  const handleDownloadReport = () => {
-    if (isDownloading) return;
-    setIsDownloading(true);
-    setToast({
-      show: true,
-      type: 'loading',
-      message: 'Generating Excel Report...',
-    });
-
-    setTimeout(() => {
-      setIsDownloading(false);
-      setToast({
-        show: true,
-        type: 'success',
-        message: 'Report Downloaded Successfully!',
-      });
-      setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
-    }, 2000);
-  };
+  // const [isDownloading, setIsDownloading] = useState(false);
+  // const [toast, setToast] = useState<{
+  //   show: boolean;
+  //   type: 'loading' | 'success';
+  //   message: string;
+  // }>({
+  //   show: false,
+  //   type: 'loading',
+  //   message: '',
+  // });
+  //
+  // // --- DOWNLOAD HANDLER ---
+  // const handleDownloadReport = () => {
+  //   if (isDownloading) return;
+  //   setIsDownloading(true);
+  //   setToast({
+  //     show: true,
+  //     type: 'loading',
+  //     message: 'Generating Excel Report...',
+  //   });
+  //
+  //   setTimeout(() => {
+  //     setIsDownloading(false);
+  //     setToast({
+  //       show: true,
+  //       type: 'success',
+  //       message: 'Report Downloaded Successfully!',
+  //     });
+  //     setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000);
+  //   }, 2000);
+  // };
 
   const openModal = (tab: MetricType) => {
     setActiveModalTab(tab);
@@ -106,17 +109,11 @@ export default function LguLeaderboardLayout() {
             </h1>
 
             {/* Term Countdown Badge */}
-            <div className="flex items-center gap-1.5 rounded-full border border-[#0891B2]/20 bg-[#E0F7FA] px-3 py-1 text-xs font-bold text-[#0891B2] shadow-sm">
-              <GoClock className="text-sm" />
-              <span>Term ends in: 3 days</span>
-            </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
+          <div className="flex items-center gap-1.5 text-sm">
             <MdLocationOn className="text-xl text-[#2A4263]" />
-            <span className="font-bold text-[#2A4263]">
-              Brgy. {TARGET_BARANGAY}
-            </span>
+            <span className="text-text-secondary">Brgy. {TARGET_BARANGAY}</span>
           </div>
         </div>
 
@@ -164,27 +161,27 @@ export default function LguLeaderboardLayout() {
         </div>
 
         {/* --- DOWNLOAD BUTTON --- */}
-        <div className="flex justify-center pb-8">
-          <button
-            disabled={isDownloading}
-            className={`group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#0891B2] px-8 py-3.5 text-sm font-bold transition-all active:scale-95 md:w-auto ${
-              isDownloading
-                ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400'
-                : 'bg-transparent text-[#0891B2] hover:bg-[#E0F7FA] hover:shadow-lg'
-            }`}
-            onClick={handleDownloadReport}
-          >
-            {isDownloading ? (
-              <CgSpinner className="animate-spin text-lg" />
-            ) : (
-              <GoDownload
-                size={18}
-                className="transition-transform group-hover:-translate-y-0.5"
-              />
-            )}
-            {isDownloading ? 'Processing...' : 'Download Detailed Report'}
-          </button>
-        </div>
+        {/* <div className="flex justify-center pb-8"> */}
+        {/*   <button */}
+        {/*     disabled={isDownloading} */}
+        {/*     className={`group flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#0891B2] px-8 py-3.5 text-sm font-bold transition-all active:scale-95 md:w-auto ${ */}
+        {/*       isDownloading */}
+        {/*         ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400' */}
+        {/*         : 'bg-transparent text-[#0891B2] hover:bg-[#E0F7FA] hover:shadow-lg' */}
+        {/*     }`} */}
+        {/*     onClick={handleDownloadReport} */}
+        {/*   > */}
+        {/*     {isDownloading ? ( */}
+        {/*       <CgSpinner className="animate-spin text-lg" /> */}
+        {/*     ) : ( */}
+        {/*       <GoDownload */}
+        {/*         size={18} */}
+        {/*         className="transition-transform group-hover:-translate-y-0.5" */}
+        {/*       /> */}
+        {/*     )} */}
+        {/*     {isDownloading ? 'Processing...' : 'Download Detailed Report'} */}
+        {/*   </button> */}
+        {/* </div> */}
       </div>
 
       {/* --- MODAL --- */}
@@ -252,24 +249,24 @@ export default function LguLeaderboardLayout() {
       )}
 
       {/* --- TOAST --- */}
-      <div
-        className={`toast toast-end toast-bottom z-50 transition-all duration-300 ${toast.show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-10 opacity-0'}`}
-      >
-        <div
-          className={`alert flex items-center gap-3 font-bold shadow-lg ${
-            toast.type === 'loading'
-              ? 'bg-[#2A4263] text-white'
-              : 'border border-[#10B981]/20 bg-[#D1FAE5] text-[#10B981]'
-          }`}
-        >
-          {toast.type === 'loading' ? (
-            <CgSpinner className="animate-spin text-xl" />
-          ) : (
-            <GoCheckCircle className="text-xl" />
-          )}
-          <span>{toast.message}</span>
-        </div>
-      </div>
+      {/* <div */}
+      {/*   className={`toast toast-end toast-bottom z-50 transition-all duration-300 ${toast.show ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-10 opacity-0'}`} */}
+      {/* > */}
+      {/*   <div */}
+      {/*     className={`alert flex items-center gap-3 font-bold shadow-lg ${ */}
+      {/*       toast.type === 'loading' */}
+      {/*         ? 'bg-[#2A4263] text-white' */}
+      {/*         : 'border border-[#10B981]/20 bg-[#D1FAE5] text-[#10B981]' */}
+      {/*     }`} */}
+      {/*   > */}
+      {/*     {toast.type === 'loading' ? ( */}
+      {/*       <CgSpinner className="animate-spin text-xl" /> */}
+      {/*     ) : ( */}
+      {/*       <GoCheckCircle className="text-xl" /> */}
+      {/*     )} */}
+      {/*     <span>{toast.message}</span> */}
+      {/*   </div> */}
+      {/* </div> */}
     </div>
   );
 }

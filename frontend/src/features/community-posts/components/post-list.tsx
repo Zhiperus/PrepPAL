@@ -1,4 +1,7 @@
-import { LuInbox } from 'react-icons/lu';
+import type { FeedPost } from '@repo/shared/dist/schemas/post.schema';
+import { useState } from 'react';
+import { FiMoreHorizontal } from 'react-icons/fi';
+import { LuInbox, LuFlag } from 'react-icons/lu';
 import { useSearchParams } from 'react-router';
 
 import { FeedPostSkeleton } from '@/components/ui/skeletons/feed-skeletons';
@@ -6,23 +9,28 @@ import {
   useInfiniteFeed,
   type SortOption,
 } from '@/features/community-posts/api/get-posts';
+import ReportModal from '@/features/moderation/components/report-modal';
+import { useUser } from '@/lib/auth';
 import { timeAgo } from '@/utils/dateUtil';
 
 interface PostListProps {
-  onSelectPost: (postId: string) => void;
+  onSelectPost: (post: FeedPost) => void;
 }
 
-export function PostList({ onSelectPost }: PostListProps) {
+export default function PostList({ onSelectPost }: PostListProps) {
+  const { data: user } = useUser();
   const [searchParams] = useSearchParams();
-
-  // 3. Read directly from URL Params
   const search = searchParams.get('search') || '';
   const sort = (searchParams.get('sort') as SortOption) || 'newest';
+
+  const [reportingPostId, setReportingPostId] = useState<string | null>(null);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteFeed({
       sort,
       search,
+      barangayCode: user?.location?.barangayCode,
+      cityCode: user?.location?.cityCode,
     });
 
   if (isLoading) {
@@ -58,32 +66,58 @@ export function PostList({ onSelectPost }: PostListProps) {
               key={post._id}
               className="card bg-base-100 w-full overflow-hidden shadow-xl"
             >
-              {/* User Info */}
-              <div className="flex items-center gap-3 p-4">
-                <div className="avatar">
-                  <div className="h-10 w-10 rounded-full ring ring-[#2a4263] ring-offset-2">
-                    {post.author.userImage ? (
-                      <img
-                        src={post.author.userImage}
-                        alt={post.author.name}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="bg-neutral text-neutral-content flex h-full w-full items-center justify-center rounded-full">
-                        <span className="text-xs font-bold">
-                          {post.author.name.charAt(0)}
-                        </span>
-                      </div>
-                    )}
+              {/* User Info Header */}
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="avatar">
+                    <div className="h-10 w-10 rounded-full ring ring-[#2a4263] ring-offset-2">
+                      {post.author.userImage ? (
+                        <img
+                          src={post.author.userImage}
+                          alt={post.author.name}
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="bg-neutral text-neutral-content flex h-full w-full items-center justify-center rounded-full">
+                          <span className="text-xs font-bold">
+                            {post.author.name.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-gray-800">
+                      {post.author.name}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Rank #{post.author.rank}
+                    </span>
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-bold text-gray-800">
-                    {post.author.name}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    Rank #{post.author.rank}
-                  </span>
+
+                {/* Post Actions Menu */}
+                <div className="dropdown dropdown-end">
+                  <div
+                    tabIndex={0}
+                    role="button"
+                    className="btn btn-ghost btn-sm btn-circle"
+                  >
+                    <FiMoreHorizontal className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <ul
+                    tabIndex={0}
+                    className="dropdown-content menu bg-base-100 rounded-box z-[1] w-40 border border-gray-100 p-2 shadow"
+                  >
+                    <li>
+                      <button
+                        className="text-error flex items-center gap-2"
+                        onClick={() => setReportingPostId(post._id)}
+                      >
+                        <LuFlag className="h-4 w-4" /> Report Post
+                      </button>
+                    </li>
+                  </ul>
                 </div>
               </div>
 
@@ -114,7 +148,7 @@ export function PostList({ onSelectPost }: PostListProps) {
 
                 <div className="card-actions justify-center">
                   <button
-                    onClick={() => onSelectPost(post._id)}
+                    onClick={() => onSelectPost(post)}
                     className="btn btn-soft bg-btn-primary hover:bg-btn-primary-hover mt-4 w-64 gap-2 rounded text-white hover:shadow-md"
                   >
                     Rate Bag
@@ -125,6 +159,13 @@ export function PostList({ onSelectPost }: PostListProps) {
           ))}
         </div>
       ))}
+
+      {/* Global Report Modal */}
+      <ReportModal
+        postId={reportingPostId || ''}
+        isOpen={!!reportingPostId}
+        onClose={() => setReportingPostId(null)}
+      />
 
       {/* Load More Button */}
       {hasPosts && hasNextPage && (

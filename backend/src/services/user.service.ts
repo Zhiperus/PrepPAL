@@ -1,10 +1,13 @@
 import {
+  CreateLguAccountRequest,
   GetLeaderboardQuery,
   OnboardingRequest,
   UpdateProfileInfoRequest,
 } from '@repo/shared/dist/schemas/user.schema';
 
 import { NotFoundError } from '../errors/index.js';
+import GoBagItemRepository from '../repositories/goBagItem.repository.js';
+import PostRepository from '../repositories/post.repository.js';
 import UserRepository from '../repositories/user.repository.js';
 import {
   deleteFromCloudinary,
@@ -13,6 +16,44 @@ import {
 
 export default class UserService {
   private userRepo = new UserRepository();
+  private postRepo = new PostRepository();
+  private goBagItemRepo = new GoBagItemRepository();
+
+  async recalculateAndSaveGoBagScore(userId: string, postId: string) {
+    const post = await this.postRepo.findPostById(postId);
+    const totalPossibleItems = await this.goBagItemRepo.countAll();
+
+    if (!post || totalPossibleItems === 0) return;
+
+    const userItemCount = post.bagSnapshot.length;
+    const completenessRatio = userItemCount / totalPossibleItems;
+    const completenessPoints = completenessRatio * 100 * 0.6;
+
+    const verifiedItemCount = post?.verifiedItemCount || 0;
+    const verificationRatio = verifiedItemCount / totalPossibleItems;
+    const verificationPoints = verificationRatio * 100 * 0.4;
+
+    const finalScore = Math.round(completenessPoints + verificationPoints);
+
+    await this.userRepo.updateGoBagScore(userId, finalScore);
+
+    return finalScore;
+  }
+
+  async getUserRank(userId: string) {
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const rankData = await this.userRepo.getUserRank(userId);
+
+    // Default to rank 0 or null if something goes wrong, though unlikely if user exists
+    return {
+      rank: rankData ? rankData.rank : 0,
+      totalScore: rankData ? rankData.totalScore : 0,
+    };
+  }
 
   async completeOnboarding(userId: string, data: OnboardingRequest) {
     const user = await this.userRepo.findById(userId);
@@ -57,8 +98,6 @@ export default class UserService {
     // Explicitly construct the update object
     const updatePayload: any = {};
 
-    // if (data.email) updatePayload.email = data.email;
-    // if (data.phoneNumber) updatePayload.phoneNumber = data.phoneNumber;
     if (data.householdName) updatePayload.householdName = data.householdName;
 
     // To update nested fields without overwriting others, use dot notation:
@@ -101,5 +140,43 @@ export default class UserService {
       barangay: filterBarangay,
     });
     return users;
+  }
+
+  async findById(id: string) {
+    return this.userRepo.findById(id);
+  }
+
+  async findLguAccounts(query: any, page: number = 1, limit: number = 10) {
+    return this.userRepo.findLguAccounts(query, page, limit);
+  }
+
+  async getCitizenCountByLgu(barangayCode: string) {
+    const citizenCount = await this.userRepo.getCitizenCountByLgu(barangayCode);
+    return citizenCount;
+  }
+
+  async countLguAccounts(query: Record<string, any>) {
+    const safeQuery = { ...query, role: 'lgu' };
+    return this.userRepo.count(safeQuery);
+  }
+
+  async findByEmail(query: any) {
+    return this.userRepo.findByEmail(query);
+  }
+
+  async createLguAccount(data: CreateLguAccountRequest) {
+    return this.userRepo.createLguAccount(data);
+  }
+
+  async findLguAdminByCode(barangayCode: string) {
+    return this.userRepo.findByEmail({
+      // We look for the user who manages this code
+      barangayCode: barangayCode,
+      role: 'lgu',
+    });
+  }
+
+  async updateUser(userId: string, data: any) {
+    return this.userRepo.updateProfileInfo(userId, data);
   }
 }

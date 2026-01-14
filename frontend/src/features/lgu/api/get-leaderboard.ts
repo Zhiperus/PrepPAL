@@ -5,7 +5,7 @@ import { api } from '@/lib/api-client';
 import type { QueryConfig } from '@/lib/react-query';
 
 type GetLeaderboardParams = {
-  barangay?: string;
+  barangayCode?: string;
   limit?: number;
   search?: string;
   metric?: 'allTime' | 'goBag';
@@ -38,4 +38,3 @@ export const useLeaderboard = ({
     ...queryConfig,
   });
 };
-

@@ -2,358 +2,321 @@ import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 
+// Import your models
 import { GO_BAG_ITEMS } from '../lib/seedData.js';
 import ContentReportModel from '../models/contentReport.model.js';
 import GoBagModel from '../models/goBag.model.js';
 import GoBagItemModel from '../models/goBagItem.model.js';
-import LguModel from '../models/lgu.model.js';
 import ModuleModel from '../models/module.model.js';
 import PostModel from '../models/post.model.js';
+import QuestionReportModel from '../models/questionReport.model.js';
 import QuizModel from '../models/quiz.model.js';
 import QuizAttemptModel from '../models/quizAttempt.model.js';
+import RatingModel from '../models/rating.model.js';
 import UserModel from '../models/user.model.js';
 
 dotenv.config();
 
 const MONGO_URI = process.env.DATABASE_URL || '';
 
+// --- CONFIGURATION ---
+const TARGET_LOCATION = {
+  region: 'V', // Bicol Region
+  province: 'Albay',
+  city: 'Camalig',
+  cityCode: '050502000', // Actual PSGC
+  barangay: 'Barangay 6 (Pob.)',
+  barangayCode: '050502051', // Actual PSGC
+};
+
+// Realistic "Go Bag" Images (Authentic photos)
+const REALISTIC_BAG_IMAGES = [
+  'https://aarp.widen.net/content/waj0amhnsw/jpeg/20250320-.org-disaster-go-bag_-121_v2_D-curved.jpg?crop=true&anchor=84,65&q=80&color=ffffffff&u=lywnjt&w=1841&h=1058',
+  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHyKnQZDCq2rNuzonCL9XQ9VWNpOPEhzNWYw&s',
+  'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80', // Tactical backpack
+  'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80', // Military gear
+  'https://images.unsplash.com/photo-1544365558-35aa4afcf11f?auto=format&fit=crop&w=800&q=80', // Hiking pack
+];
+
+// Realistic Captions for the Feed
+const FEED_CAPTIONS = [
+  'Mayon is acting up again, refreshed my grab bag just in case! 🌋 ',
+  'Barangay meeting said we need more water storage. Done! 💧',
+  'Ready for the rainy season. Stay safe neighbors! ☔',
+  'Finally completed my first aid kit. 🩹',
+  'Does anyone have extra batteries? I have extra canned goods to trade. 🔋',
+  'Evacuation simulation was helpful. Bag is packed! 🏃‍♂️',
+  'Check your expiration dates everyone! 📅',
+  'Preparedness is the key. #CamaligReady 🇵🇭',
+];
+
+// High-Quality Module Content
+const PROPER_MODULES = [
+  {
+    title: 'Earthquake Preparedness',
+    description:
+      'Essential survival strategies before, during, and after an earthquake.',
+    logo: '🌋',
+    content: [
+      {
+        text: 'DURING SHAKING: Drop, Cover, and Hold On. Do not run outside while the ground is shaking.',
+        imageUrl:
+          'https://images.unsplash.com/photo-1590422502687-73b378129712?auto=format&fit=crop&w=800&q=80',
+      },
+      {
+        text: 'AFTER SHAKING: Check for gas leaks. If you smell rotten eggs, open windows and leave.',
+        imageUrl: '',
+      },
+    ],
+    questions: [
+      {
+        q: 'What is the most recommended action during an earthquake?',
+        choices: [
+          'Run outside',
+          'Drop, Cover, and Hold On',
+          'Stand in a doorway',
+        ],
+        a: 1,
+      },
+      {
+        q: 'If you are in bed when it strikes?',
+        choices: ['Roll to floor', 'Cover head with pillow', 'Run to CR'],
+        a: 1,
+      },
+      {
+        q: 'What to check for immediately after?',
+        choices: ['Facebook updates', 'Gas leaks', 'Pets'],
+        a: 1,
+      },
+    ],
+  },
+  {
+    title: 'Typhoon Safety',
+    description: 'Understanding signals and evacuation protocols.',
+    logo: '🌀',
+    content: [
+      {
+        text: 'SIGNAL NO 3: Destructive winds (89-117 kph). Evacuate if you are in a low-lying area.',
+        imageUrl:
+          'https://images.unsplash.com/photo-1544365558-35aa4afcf11f?auto=format&fit=crop&w=800&q=80',
+      },
+      {
+        text: 'PREPARATION: Secure loose roofing and store 3 days of water.',
+        imageUrl: '',
+      },
+    ],
+    questions: [
+      {
+        q: 'How much water per person per day?',
+        choices: ['1 Liter', '4 Liters (1 Gallon)', '10 Liters'],
+        a: 1,
+      },
+      {
+        q: 'When to evacuate?',
+        choices: ['When water rises', 'During the eye', 'When advised by LGU'],
+        a: 2,
+      },
+    ],
+  },
+  {
+    title: 'Fire Safety (PASS)',
+    description: 'How to use a fire extinguisher correctly.',
+    logo: '🔥',
+    content: [
+      {
+        text: 'Remember P.A.S.S.: Pull, Aim, Squeeze, Sweep.',
+        imageUrl:
+          'https://images.unsplash.com/photo-1505494200-a5061b47480a?auto=format&fit=crop&w=800&q=80',
+      },
+    ],
+    questions: [
+      {
+        q: 'What does "P" stand for?',
+        choices: ['Push', 'Pull', 'Panic'],
+        a: 1,
+      },
+      {
+        q: 'Where do you aim?',
+        choices: ['Top of flames', 'Base of fire', 'Middle'],
+        a: 1,
+      },
+    ],
+  },
+];
+
+// --- UTILS ---
 const getRandomInt = (min: number, max: number) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
-
 const getRandomItem = <T>(arr: T[]): T =>
   arr[Math.floor(Math.random() * arr.length)];
+const getRandomSubset = <T>(arr: T[], size: number): T[] =>
+  arr
+    .slice()
+    .sort(() => 0.5 - Math.random())
+    .slice(0, size);
 
-const getRandomSubset = <T>(arr: T[], size: number): T[] => {
-  const shuffled = arr.slice().sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, size);
-};
-
-// --- LOCATIONS ---
-const TARGET_LOCATION = {
-  region: 'NCR',
-  province: 'Metro Manila',
-  city: 'Quezon City',
-  barangay: 'Batasan Hills',
-};
-
-const PH_LOCATIONS = [
-  TARGET_LOCATION,
-  {
-    region: 'NCR',
-    province: 'Metro Manila',
-    city: 'Quezon City',
-    barangay: 'Diliman',
-  },
-  {
-    region: 'NCR',
-    province: 'Metro Manila',
-    city: 'Manila',
-    barangay: 'Tondo',
-  },
-  {
-    region: 'NCR',
-    province: 'Metro Manila',
-    city: 'Makati',
-    barangay: 'Poblacion',
-  },
-  {
-    region: 'NCR',
-    province: 'Metro Manila',
-    city: 'Taguig',
-    barangay: 'Fort Bonifacio',
-  },
-  {
-    region: 'IV-A',
-    province: 'Laguna',
-    city: 'Santa Rosa',
-    barangay: 'Balibago',
-  },
-];
-
-const CAPTIONS = [
-  'Just updated my kit! 🎒',
-  'Safety first. Ready for the typhoon season.',
-  'Finally bought a proper flashlight.',
-  'Checking expiration dates on my canned goods.',
-  'Added a whistle to my bag today.',
-  'My Go Bag is finally 100% complete!',
-  'Hope I never have to use this, but glad I have it.',
-  'Reminder: Check your batteries!',
-  'Packing light but essential.',
-  'Got this new multi-tool, highly recommend it.',
-  'Preparing for the worst, hoping for the best.',
-  'Family safety is priority #1.',
-  'Reviewing my checklist...',
-  'Don’t forget your important documents!',
-  'Water supply refreshed. 💧',
-];
-
-const IMAGES = [
-  'https://images.unsplash.com/photo-1544365558-35aa4afcf11f?q=80&w=1000',
-  'https://images.unsplash.com/photo-1516939884455-14a5cbe23644?q=80&w=1000',
-  'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?q=80&w=1000',
-  'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000',
-  'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1000',
-  'https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=1000',
-  'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=1000',
-  'https://images.unsplash.com/photo-1534081333815-ae5019106622?q=80&w=1000',
-  'https://images.unsplash.com/photo-1615655406736-b37c4fabf923?q=80&w=1000',
-];
-
-const seed = async () => {
+const seedCamalig = async () => {
   try {
     await mongoose.connect(MONGO_URI);
     console.log('✅ Connected to MongoDB');
 
-    // 1. CLEAR EXISTING DATA
+    // 1. WIPE CLEAN
     await Promise.all([
       UserModel.deleteMany({}),
       PostModel.deleteMany({}),
-      LguModel.deleteMany({}),
       GoBagItemModel.deleteMany({}),
       GoBagModel.deleteMany({}),
       ModuleModel.deleteMany({}),
       QuizModel.deleteMany({}),
       ContentReportModel.deleteMany({}),
+      QuestionReportModel.deleteMany({}),
       QuizAttemptModel.deleteMany({}),
+      RatingModel.deleteMany({}),
     ]);
-    console.log('🧹 Database cleared');
+    console.log('🧹 Database Wiped');
 
-    // 2. SEED CATALOG ITEMS
+    // 2. SEED CATALOG
     const createdItems = await GoBagItemModel.insertMany(GO_BAG_ITEMS);
-    console.log(`✅ Created ${createdItems.length} catalog items`);
-
-    // 3. CREATE LGUS (Per Barangay)
-    const lguData = PH_LOCATIONS.map((loc) => ({
-      name: `Brgy. ${loc.barangay}`,
-      region: loc.region,
-      province: loc.province,
-      city: loc.city,
-      barangay: loc.barangay,
-    }));
-
-    const createdLgus = await LguModel.insertMany(lguData);
-    console.log(`✅ Created ${createdLgus.length} Barangay LGUs`);
-
-    // Helper: Find LGU ID by matching Name (Safest way)
-    const getLguId = (barangayName: string) => {
-      const match = createdLgus.find((l) => l.name.includes(barangayName));
-      return match?._id || null;
-    };
+    console.log(`✅ Catalog populated`);
 
     const hashedPassword = await bcrypt.hash('password', 10);
 
-    // 3a. Create LGU ADMINS
-    const lguUsers = createdLgus.map((lgu: any) => {
-      // FIX: Use lgu.name to guarantee uniqueness.
-      // e.g. "Brgy. Batasan Hills" -> "lgu.brgybatasanhills@test.com"
-      const rawSlug = lgu.name;
-      const emailSlug = rawSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // 3. CREATE USERS
 
-      return {
-        email: `lgu.${emailSlug}@test.com`,
-        password: hashedPassword,
-        role: 'lgu',
-        lguId: lgu._id,
-        householdName: `${lgu.name} Hall`,
-        location: {
-          region: lgu.region,
-          province: lgu.province,
-          city: lgu.city,
-          // Fallback if schema stripped the barangay field
-          barangay: lgu.barangay || lgu.name.replace('Brgy. ', ''),
-        },
-      };
-    });
-
-    // 3b. Specific Citizen Users
-    const mainUsers = [
-      {
-        email: 'iorie@example.com',
-        password: hashedPassword,
-        householdName: 'Chua Household',
-        role: 'citizen',
-        lguId: getLguId('Batasan Hills'),
-        points: { goBag: 50, community: 10, modules: 5 },
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Iorie',
-        location: TARGET_LOCATION,
-      },
-      {
-        email: 'kyle@example.com',
-        password: hashedPassword,
-        householdName: 'The Dev Cave',
-        role: 'citizen',
-        lguId: getLguId('Fort Bonifacio'),
-        points: { goBag: 80, community: 150, modules: 20 },
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kyle',
-        location: {
-          region: 'NCR',
-          province: 'Metro Manila',
-          city: 'Taguig',
-          barangay: 'Fort Bonifacio',
-        },
-      },
-      {
-        email: 'jarence@example.com',
-        password: hashedPassword,
-        householdName: 'Design Studio',
-        role: 'citizen',
-        lguId: getLguId('Batasan Hills'),
-        points: { goBag: 30, community: 5, modules: 0 },
-        profileImage: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jarence',
-        location: TARGET_LOCATION,
-      },
-    ];
-
-    // 3c. Super Admin
-    const superAdmin = {
-      email: 'super@test.com',
+    // 3a. SUPER ADMIN (National Level) - ADDED THIS
+    await UserModel.create({
+      email: 'super@prep.gov.ph',
       password: hashedPassword,
       role: 'super_admin',
-      lguId: null,
-      householdName: 'Global HQ',
-      location: TARGET_LOCATION,
-    };
-
-    // 3d. Random Citizens
-    const randomUsersData = Array.from({ length: 40 }).map((_, i) => {
-      const location = getRandomItem(PH_LOCATIONS);
-      // Find the specific LGU document for this location's barangay
-      const userLguId = getLguId(location.barangay);
-
-      return {
-        email: `user${i + 1}@example.com`,
-        password: hashedPassword,
-        householdName: `Resident ${i + 1}`,
-        phoneNumber: `0917${getRandomInt(1000000, 9999999)}`,
-        role: 'citizen',
-        lguId: userLguId,
-        location: location,
-        onboardingCompleted: true,
-        points: {
-          goBag: getRandomInt(10, 100),
-          community: getRandomInt(0, 50),
-          modules: getRandomInt(0, 10),
-        },
-        profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=User${
-          i + 1
-        }`,
-      };
+      location: null, // Super Admins don't have a specific location
+      householdName: 'National HQ',
+      isEmailVerified: true,
+      onboardingCompleted: true,
+      profileImage: 'https://api.dicebear.com/7.x/initials/svg?seed=Super',
     });
+    console.log('✅ Created Super Admin (super@prep.gov.ph)');
 
-    const createdUsers = await UserModel.create([
-      superAdmin,
-      ...lguUsers,
-      ...mainUsers,
-      ...randomUsersData,
-    ]);
+    // 3d. Filler Citizens (All in Camalig for Leaderboard density)
+    const randomUsersData = Array.from({ length: 40 }).map((_, i) => ({
+      email: `resident${i}@example.com`,
+      password: hashedPassword,
+      householdName: `Resident ${i}`,
+      role: 'citizen',
+      location: TARGET_LOCATION, // <--- EVERYONE is in Camalig
+      householdInfo: {
+        memberCount: 4,
+        femaleCount: 2,
+        pets: 1,
+      },
+      isEmailVerified: true,
+      onboardingCompleted: true,
+      points: {
+        goBag: getRandomInt(20, 100),
+        community: getRandomInt(0, 50),
+        modules: getRandomInt(0, 30),
+      },
+      profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=Resident${i}`,
+    }));
 
-    const createdCitizens = createdUsers.filter((u) => u.role === 'citizen');
-    console.log(`✅ Created ${createdUsers.length} total users`);
+    const randomUsers = await UserModel.insertMany(randomUsersData);
+    const allCitizens = [...randomUsers];
+
+    console.log(
+      `✅ Created ${allCitizens.length} Citizens in Barangay 6 (Pob.), Camalig`,
+    );
 
     // 4. CREATE GO BAGS
-    const goBagDocs = createdCitizens.map((user) => {
-      const packedCount = getRandomInt(5, createdItems.length);
-      const packedItems = getRandomSubset(createdItems, packedCount);
+    const goBagDocs = allCitizens.map((user) => {
+      // Iorie gets an empty bag for demo purposes
+      if (user.email === 'iorie@example.com') {
+        return {
+          userId: user._id,
+          items: [],
+          imageUrl: 'https://placehold.co/600x400?text=No+Photo+Yet',
+          lastUpdated: new Date(),
+        };
+      }
+
+      // Everyone else gets random items
+      const count = getRandomInt(5, 15);
+      const items = getRandomSubset(createdItems, count).map((i) => i._id);
+
       return {
         userId: user._id,
-        imageUrl: getRandomItem(IMAGES),
-        items: packedItems.map((i) => i.id.toString()),
+        items: items,
+        imageUrl: getRandomItem(REALISTIC_BAG_IMAGES),
         lastUpdated: new Date(),
       };
     });
+
     await GoBagModel.insertMany(goBagDocs);
     console.log(`✅ Created Go Bags`);
 
-    // 5. CREATE POSTS
+    // 5. CREATE COMMUNITY POSTS
     const postsData = [];
-    const eligibleAuthors = createdCitizens.filter((u) => u.lguId);
+    for (let i = 0; i < 50; i++) {
+      const author = getRandomItem(allCitizens);
+      const snapshotItems = getRandomSubset(createdItems, 3).map((item) => ({
+        itemId: item._id,
+        name: item.name,
+        category: item.category,
+      }));
 
-    if (eligibleAuthors.length > 0) {
-      for (let i = 0; i < 100; i++) {
-        const author = getRandomItem(eligibleAuthors);
-        const snapshotCount = getRandomInt(2, 6);
-        const snapshotItems = getRandomSubset(createdItems, snapshotCount).map(
-          (item) => ({
-            itemId: item._id,
-            name: item.name,
-            category: item.category,
-          }),
-        );
-        const daysAgo = getRandomInt(0, 30);
-        const postDate = new Date();
-        postDate.setDate(postDate.getDate() - daysAgo);
+      postsData.push({
+        userId: author._id,
+        barangayCode: TARGET_LOCATION.barangayCode,
+        imageUrl: getRandomItem(REALISTIC_BAG_IMAGES),
+        caption: getRandomItem(FEED_CAPTIONS),
+        bagSnapshot: snapshotItems,
+        verificationCount: getRandomInt(0, 20),
+        createdAt: new Date(
+          Date.now() - getRandomInt(0, 14) * 24 * 60 * 60 * 1000,
+        ),
+      });
+    }
+    const createdPosts = await PostModel.insertMany(postsData);
+    console.log(`✅ Created ${createdPosts.length} Feed Posts`);
 
-        postsData.push({
-          userId: author._id,
-          lguId: author.lguId,
-          imageUrl: getRandomItem(IMAGES),
-          caption: getRandomItem(CAPTIONS),
-          bagSnapshot: snapshotItems,
-          verificationCount: getRandomInt(0, 50),
-          verifiedItemCount: getRandomInt(0, snapshotCount),
-          createdAt: postDate,
+    // 6. MODULES & QUIZZES
+    for (const mod of PROPER_MODULES) {
+      const newMod = await ModuleModel.create({
+        title: mod.title,
+        description: mod.description,
+        logo: mod.logo,
+        content: mod.content,
+      });
+
+      if (mod.questions.length > 0) {
+        await QuizModel.create({
+          moduleId: newMod._id,
+          questions: mod.questions.map((q) => ({
+            questionText: q.q,
+            choices: q.choices.map((c, i) => ({ id: i, text: c })),
+            correctAnswer: q.a,
+          })),
         });
       }
-      postsData.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-      await PostModel.insertMany(postsData);
-      console.log(`✅ Created Posts`);
     }
+    console.log(`✅ Created Proper Modules`);
 
-    // 6. SEED MODULES & QUIZZES
-    console.log('📚 Seeding Educational Modules...');
-    const fireSafetyModule = await ModuleModel.create({
-      title: 'Fire Safety',
-      description: 'Prevention and EDITH.',
-      logo: '🔥',
-      content: [{ text: 'Exit Drills In The Home', imageUrl: '' }],
-    });
-    await QuizModel.create({
-      moduleId: fireSafetyModule._id,
-      questions: [
-        {
-          questionText: 'Smell smoke?',
-          choices: [{ id: 1, text: 'Evacuate' }],
-          correctAnswer: 1,
-        },
-      ],
-    });
-    console.log('✅ Modules seeded');
-
-    // 7. CREATE CONTENT REPORTS
-    console.log('🚩 Seeding Content Reports...');
-    const allPosts = await PostModel.find();
-    const REASONS = [
-      'Misinformation',
-      'Inappropriate content',
-      'Impersonation',
-      'Spam',
-      'Fake verification',
-    ];
-    const reportStatuses = ['PENDING', 'RESOLVED', 'DISMISSED'];
-
-    const reportsData = Array.from({ length: 20 }).map(() => {
-      const reportedPost = getRandomItem(allPosts);
+    // 7. REPORTS (For Admin Demo)
+    const reportsData = [];
+    for (let i = 0; i < 8; i++) {
+      const post = getRandomItem(createdPosts);
       const reporter = getRandomItem(
-        createdCitizens.filter(
-          (u: any) => u._id.toString() !== reportedPost.userId,
-        ),
+        allCitizens.filter((u) => u._id !== post.userId),
       );
-
-      return {
-        postId: reportedPost._id,
+      reportsData.push({
+        postId: post._id,
         reporterId: reporter._id,
-        lguId: reportedPost.lguId,
-        reason: getRandomItem(REASONS),
-        status: getRandomItem(reportStatuses),
-        createdAt: new Date(
-          Date.now() - getRandomInt(0, 7) * 24 * 60 * 60 * 1000,
-        ),
-      };
-    });
-
-    const createdReports = await ContentReportModel.insertMany(reportsData);
-    console.log(`✅ Created ${createdReports.length} content reports`);
+        barangayCode: TARGET_LOCATION.barangayCode,
+        reason: i % 2 === 0 ? 'Spam / Irrelevant' : 'Fake Photo',
+        status: 'PENDING',
+        createdAt: new Date(),
+      });
+    }
+    await ContentReportModel.insertMany(reportsData);
+    console.log(`✅ Created 8 Pending Reports`);
 
     process.exit(0);
   } catch (error) {
@@ -362,4 +325,4 @@ const seed = async () => {
   }
 };
 
-seed();
+seedCamalig();

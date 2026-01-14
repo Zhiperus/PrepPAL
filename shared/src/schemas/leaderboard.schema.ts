@@ -5,6 +5,7 @@ export const LeaderboardEntrySchema = z.object({
   householdName: z.string(),
   rank: z.number(),
   totalPoints: z.number(),
+  profileImage: z.string(),
   points: z.object({
     goBag: z.number(),
     modules: z.number(),

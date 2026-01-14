@@ -1,6 +1,8 @@
 import { NotFoundError } from '../errors/index.js';
 import GoBagRepository from '../repositories/goBag.repository.js';
+import GoBagItemRepository from '../repositories/goBagItem.repository.js';
 import PostRepository from '../repositories/post.repository.js';
+import UserRepository from '../repositories/user.repository.js';
 import {
   deleteFromCloudinary,
   uploadToCloudinary,
@@ -9,6 +11,8 @@ import {
 export default class GoBagService {
   private goBagRepo = new GoBagRepository();
   private postRepo = new PostRepository();
+  private goBagItemRepo = new GoBagItemRepository();
+  private userRepo = new UserRepository();
 
   async getHydratedGoBag({ userId }: { userId: string }) {
     const [catalogItems, userBag] = await Promise.all([
@@ -110,6 +114,27 @@ export default class GoBagService {
       url,
       publicId,
     );
+
+    // 1. Get the denominator (Total Items defined by system)
+    const totalPossibleItems = await this.goBagItemRepo.countAll();
+
+    // 2. Get the numerator (Items user just checked)
+    const userItemCount = itemIds.length;
+
+    let newScore = 0;
+
+    if (totalPossibleItems > 0) {
+      // Calculate ratio (0.0 to 1.0)
+      const ratio = userItemCount / totalPossibleItems;
+
+      // Scale to max 60 points
+      newScore = Math.round(ratio * 60);
+    }
+
+    // 3. Update User Profile
+    // note: this "resets" the score. if they had verification points (the other 40%),
+    // changing their bag contents logically invalidates that verification anyway.
+    await this.userRepo.updateGoBagScore(userId, newScore);
 
     return updatedBag;
   }

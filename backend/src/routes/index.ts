@@ -9,6 +9,7 @@ import leaderboardRoutes from './leaderboard.routes.js';
 import lguRoutes from './lgu.routes.js';
 import moduleRoutes from './module.routes.js';
 import postRoutes from './post.routes.js';
+import questionReportRoutes from './questionReport.routes.js';
 import quizRoutes from './quiz.routes.js';
 import quizAttemptRoutes from './quizAttempt.routes.js';
 import ratingRoutes from './rating.routes.js';
@@ -32,7 +33,8 @@ const routes: Route[] = [
   { path: '/quiz', router: quizRoutes },
   { path: '/quiz-attempt', router: quizAttemptRoutes },
   { path: '/ratings', router: ratingRoutes },
-  { path: '/reports', router: contentReportRoutes },
+  { path: '/content-reports', router: contentReportRoutes },
+  { path: '/question-reports', router: questionReportRoutes },
 ];
 
 export default routes;

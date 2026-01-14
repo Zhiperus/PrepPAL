@@ -1,4 +1,4 @@
-import { useState, useRef, type ChangeEvent } from 'react';
+import { useState, useRef, type ChangeEvent, useEffect } from 'react';
 import { LuImagePlus, LuUpload, LuX } from 'react-icons/lu';
 
 import { useUpdateProfileImage } from '../api/update-profile-image';
@@ -52,6 +52,51 @@ export function UpdateImageModal({
       },
     },
   });
+
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      // 1. Check if clipboard has items
+      if (!e.clipboardData || !e.clipboardData.items) return;
+
+      const items = e.clipboardData.items;
+
+      // 2. Loop through items to find an image
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          // 3. Get the blob as a File
+          const file = items[i].getAsFile();
+          if (file) {
+            e.preventDefault(); // Prevent pasting into other inputs if any
+
+            // 4. Reuse your existing preview logic
+            const objectUrl = URL.createObjectURL(file);
+            setSelectedFile(file);
+            setPreviewUrl(objectUrl);
+
+            setToast({
+              show: true,
+              message: 'Image pasted from clipboard!',
+              type: 'success',
+            });
+            setTimeout(
+              () => setToast((prev) => ({ ...prev, show: false })),
+              2000,
+            );
+          }
+          break; // Stop after finding the first image
+        }
+      }
+    };
+
+    // Only attach listener if modal is open
+    if (isOpen) {
+      window.addEventListener('paste', handlePaste);
+    }
+
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, [isOpen]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

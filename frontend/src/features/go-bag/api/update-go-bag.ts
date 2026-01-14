@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { getGoBagQueryOptions } from './get-go-bag';
 
-import { getInfiniteFeedQueryOptions } from '@/features/community-posts/api/get-posts';
 import { api } from '@/lib/api-client';
 
 export const updateGoBag = async ({ items, image }: UpdateGoBagRequest) => {
@@ -26,8 +25,8 @@ export const useUpdateGoBag = () => {
   return useMutation({
     mutationFn: updateGoBag,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['authenticated-user'] });
       queryClient.invalidateQueries(getGoBagQueryOptions());
-      queryClient.invalidateQueries(getInfiniteFeedQueryOptions());
     },
   });
 };

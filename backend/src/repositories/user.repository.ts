@@ -1,14 +1,87 @@
 import {
+  CreateLguAccountRequest,
   GetLeaderboardQuery,
   UpdateModuleProgressInput,
   UpdateProfileInfoRequest,
 } from '@repo/shared/dist/schemas/user.schema';
+import { Types } from 'mongoose';
 
-import UserModel, { IUser } from '../models/user.model.js';
+import UserModel, { CitizenModel, IUser } from '../models/user.model.js';
 
 export default class UserRepository {
+  async count(filter: Record<string, any>) {
+    return UserModel.countDocuments(filter);
+  }
+
+  async updateUserCommunityPoints(userId: string, pointsToAdd: number) {
+    return CitizenModel.findByIdAndUpdate(
+      userId,
+      { $inc: { 'points.community': pointsToAdd } },
+      { new: true },
+    );
+  }
+
+  async updateGoBagScore(userId: string, newScore: number) {
+    return CitizenModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: { 'points.goBag': newScore },
+      },
+      { new: true },
+    );
+  }
+
   async findById(userId: string) {
     return UserModel.findById(userId);
+  }
+
+  async getUserRank(userId: string) {
+    // 1. Fetch the user first to get their location
+    const user = await this.findById(userId);
+    if (!user || !user.location) return null;
+
+    const pipeline: any[] = [
+      // 2. SCOPE: Filter users to ONLY those in the same Barangay/City
+      {
+        $match: {
+          'location.city': user.location.city,
+          'location.barangay': user.location.barangay,
+          // Optional: Ensure we only rank citizens, not admins/LGUs
+          role: 'citizen',
+        },
+      },
+      // 3. Calculate Total Points
+      {
+        $addFields: {
+          totalScore: {
+            $add: [
+              { $ifNull: ['$points.goBag', 0] },
+              { $ifNull: ['$points.modules', 0] },
+              { $ifNull: ['$points.community', 0] },
+            ],
+          },
+        },
+      },
+      // 4. Sort by highest score
+      { $sort: { totalScore: -1 } },
+      // 5. Assign Rank
+      {
+        $setWindowFields: {
+          sortBy: { totalScore: -1 },
+          output: {
+            rank: {
+              $rank: {},
+            },
+          },
+        },
+      },
+      // 6. Find the specific user again to extract their new rank
+      { $match: { _id: new Types.ObjectId(userId) } },
+      // 7. Return result
+      { $project: { rank: 1, totalScore: 1 } },
+    ];
+    const result = await UserModel.aggregate(pipeline);
+    return result[0] || null; // Return the first result or null if not found
   }
 
   async updateUserGoBagPoints(userId: string, pointsToAdd: number) {
@@ -22,7 +95,7 @@ export default class UserRepository {
   }
 
   async updateOnboardingDetails(userId: string, data: Partial<IUser>) {
-    return UserModel.findByIdAndUpdate(
+    return CitizenModel.findByIdAndUpdate(
       userId,
       {
         $set: {
@@ -134,6 +207,7 @@ export default class UserRepository {
         {
           $push: {
             completedModules: {
+              completedAt: new Date(),
               moduleId,
               bestScore: newScore,
               pointsAwarded: pointsToAward,
@@ -144,5 +218,27 @@ export default class UserRepository {
       );
     }
     return result;
+  }
+
+  async findLguAccounts(query: any, page: number = 1, limit: number = 10) {
+    return UserModel.find(query)
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit))
+      .sort({ createdAt: -1 });
+  }
+
+  async getCitizenCountByLgu(barangayCode: string) {
+    return UserModel.countDocuments({
+      'location.barangayCode': barangayCode,
+      role: 'citizen',
+    });
+  }
+
+  async findByEmail(query: any) {
+    return UserModel.findOne(query);
+  }
+
+  async createLguAccount(data: CreateLguAccountRequest) {
+    return UserModel.create(data);
   }
 }

@@ -9,7 +9,8 @@ interface StepHouseholdProps {
 export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
   const {
     register,
-    formState: { errors },
+    trigger,
+    formState: { errors, isValid },
   } = useFormContext<OnboardingRequest>();
 
   return (
@@ -63,8 +64,11 @@ export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
           type="number"
           min="1"
           defaultValue={1}
-          className="input validator bg-primary-container border-container-secondary w-full"
-          {...register('householdInfo.memberCount', { valueAsNumber: true })}
+          className={`input validator bg-primary-container border-container-secondary w-full ${errors.householdInfo?.memberCount ? 'input-error' : ''}`}
+          {...register('householdInfo.memberCount', {
+            valueAsNumber: true,
+            onChange: () => trigger('householdInfo.femaleCount'),
+          })}
         />
         {errors.householdInfo?.memberCount && (
           <span className="text-error text-sm">
@@ -81,9 +85,14 @@ export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
         <input
           type="number"
           min="0"
-          className="input validator bg-primary-container border-container-secondary w-full"
-          {...register('householdInfo.femaleCount')}
+          className={`input validator bg-primary-container border-container-secondary w-full ${errors.householdInfo?.femaleCount ? 'input-error' : ''}`}
+          {...register('householdInfo.femaleCount', { valueAsNumber: true })}
         />
+        {errors.householdInfo?.femaleCount && (
+          <span className="text-error text-sm">
+            {errors.householdInfo.femaleCount.message}
+          </span>
+        )}
       </fieldset>
 
       <fieldset className="fieldset mb-4 w-full">
@@ -94,7 +103,7 @@ export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
           type="number"
           min="0"
           className="input validator bg-primary-container border-container-secondary w-full"
-          {...register('householdInfo.pets')}
+          {...register('householdInfo.pets', { valueAsNumber: true })}
         />
       </fieldset>
 
@@ -110,7 +119,7 @@ export function StepHousehold({ onBack, isSubmitting }: StepHouseholdProps) {
         <button
           type="submit"
           className="btn btn-soft btn-primary-custom flex-1 rounded text-lg"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !isValid}
         >
           {isSubmitting ? 'Saving...' : 'Done'}
         </button>

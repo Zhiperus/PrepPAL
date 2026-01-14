@@ -7,7 +7,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { useVerifyPost } from '../api/verify-post';
 
 import Toast from '@/components/ui/toast/toast';
-import { timeAgo } from '@/utils/dateUtil';
 
 interface PostCardModalProps {
   isOpen: boolean;
@@ -108,12 +107,13 @@ export default function PostCardModal({
   if (!isOpen || !post) return null;
 
   return (
-    <div className={`modal ${isOpen ? 'modal-open' : ''}`}>
-      {/* Toast Notification */}
+    <div className={`modal ${isOpen ? 'modal-open' : ''} z-50`}>
       <Toast show={toast.show} message={toast.message} type={toast.type} />
 
-      <div className="modal-box flex h-[90vh] w-11/12 max-w-6xl flex-col overflow-hidden bg-white p-0 lg:flex-row">
-        <div className="relative flex min-h-[300px] w-full items-center justify-center bg-black lg:min-h-full lg:w-3/5">
+      {/* FIXED: Changed max-h and flex layout properties */}
+      <div className="modal-box flex h-full max-h-[90vh] w-11/12 max-w-6xl flex-col overflow-hidden bg-white p-0 lg:flex-row">
+        {/* Image Section - Adjusted height for mobile */}
+        <div className="relative flex h-[30%] min-h-[200px] w-full shrink-0 items-center justify-center bg-black lg:h-full lg:w-3/5">
           <img
             src={post.imageUrl}
             alt="Go Bag Image"
@@ -121,7 +121,9 @@ export default function PostCardModal({
           />
         </div>
 
-        <div className="relative flex h-full w-full flex-col lg:w-2/5">
+        {/* Right Side Container */}
+        <div className="flex h-[70%] w-full flex-col lg:h-full lg:w-2/5">
+          {/* Header - Fixed height */}
           <div className="z-10 flex shrink-0 items-center gap-3 border-b bg-white p-4 shadow-sm">
             <div className="avatar">
               <div className="h-10 w-10 rounded-full ring ring-[#2a4263] ring-offset-2">
@@ -134,30 +136,22 @@ export default function PostCardModal({
             </div>
             <button
               onClick={onClose}
-              className="btn btn-sm btn-circle btn-ghost ml-auto"
+              className="btn btn-sm btn-circle btn-ghost ml-auto text-2xl"
             >
               ✕
             </button>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto bg-gray-50 p-4">
+          {/* Content - Scrollable Area */}
+          {/* FIXED: Added min-h-0 to allow flex scrolling */}
+          <div className="min-h-0 flex-1 overflow-y-auto bg-gray-50 p-4">
             <p className="mb-4 text-sm leading-relaxed text-gray-700">
               <span className="mr-2 font-bold text-gray-900">
                 {post.author.name}
               </span>
               {post.caption}
             </p>
-            <p className="mb-4 text-xs text-gray-400">
-              Posted{' '}
-              {timeAgo(
-                typeof post.createdAt === 'string'
-                  ? post.createdAt
-                  : new Date(post.createdAt).toISOString(),
-              )}
-            </p>
-
-            {/* Checklist Loop */}
+            {/* ... rest of your list content ... */}
             <div className="space-y-4">
               <div className="divider text-xs tracking-widest text-gray-400 uppercase">
                 Verify Contents
@@ -202,8 +196,8 @@ export default function PostCardModal({
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="shrink-0 border-t bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          {/* Footer - Fixed at bottom */}
+          <div className="safe-area-pb shrink-0 border-t bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <button
               className="btn w-full bg-[#2a4263] text-white hover:bg-[#1f304a]"
               onClick={handleSubmit}

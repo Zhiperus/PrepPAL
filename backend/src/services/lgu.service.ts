@@ -1,3 +1,6 @@
+import { NotFoundError } from '../errors/index.js';
+import GoBagRepository from '../repositories/goBag.repository.js';
+import GoBagItemRepository from '../repositories/goBagItem.repository.js';
 import LguRepository from '../repositories/lgu.repository.js';
 
 export interface DashboardMetricsResponse {
@@ -20,21 +23,43 @@ export interface DashboardMetricsResponse {
 
 export default class LguService {
   private lguRepo = new LguRepository();
+  private goBagItemRepo = new GoBagItemRepository();
+  private goBagRepo = new GoBagRepository();
 
-  async getDashboardMetrics(lguId: string): Promise<DashboardMetricsResponse> {
-    const lguDetails = await this.lguRepo.getLguDetails(lguId);
-    if (!lguDetails) throw new Error('LGU not found');
+  async delete(id: string) {
+    const existingLgu = await this.lguRepo.findById(id);
 
+    if (!existingLgu) {
+      throw new NotFoundError('LGU Account not found');
+    }
+
+    await this.lguRepo.delete(id);
+
+    return { success: true, message: 'LGU Account deleted successfully' };
+  }
+
+  async getDashboardMetrics(
+    cityCode: string,
+    barangayCode: string,
+  ): Promise<DashboardMetricsResponse> {
+    // 1. Try to find the LGU Admin to get the "Official Name"
+    const lguAdmin = await this.lguRepo.getLguAdminProfile(barangayCode);
+
+    // 2. Run Stats
     const [citizenStats, reportStats] = await Promise.all([
-      this.lguRepo.getCitizenMetrics(lguId),
-      this.lguRepo.getReportMetrics(lguId),
+      this.lguRepo.getCitizenMetrics(barangayCode),
+      this.lguRepo.getReportMetrics(barangayCode),
     ]);
 
+    // 3. Resolve Display Info
+    // If admin exists, use their profile data. If not, use generic placeholders.
+    const name = lguAdmin?.householdName || `Barangay ${barangayCode}`;
+    const location = lguAdmin?.location
+      ? `${lguAdmin.location.city}, ${lguAdmin.location.province}`
+      : `City Code ${cityCode}`;
+
     return {
-      lguDetails: {
-        name: lguDetails.name,
-        location: `${lguDetails.city}, ${lguDetails.province}`,
-      },
+      lguDetails: { name, location },
       overall: {
         averageScore: Math.round(citizenStats.avgScore || 0),
         totalCitizens: citizenStats.totalCitizens,
@@ -46,6 +71,55 @@ export default class LguService {
       engagement: {
         activeThisWeek: citizenStats.activeThisWeek,
       },
+    };
+  }
+
+  async getLguAnalytics(barangayCode: string) {
+    const totalPossibleItems = await this.goBagItemRepo.countAll();
+    const goBagStats = await this.goBagRepo.getLguStats(
+      barangayCode,
+      totalPossibleItems,
+    );
+    const itemBreakdown = await this.goBagRepo.getItemBreakdown(
+      barangayCode,
+      goBagStats.length,
+    );
+
+    let fullyPrepared = 0;
+    let partiallyPrepared = 0;
+    let atRisk = 0;
+
+    goBagStats.forEach((bag) => {
+      if (bag.score >= 80) fullyPrepared++;
+      else if (bag.score >= 40) partiallyPrepared++;
+      else atRisk++;
+    });
+
+    return {
+      itemBreakdown,
+      distribution: {
+        fullyPrepared,
+        partiallyPrepared,
+        atRisk,
+        total: goBagStats.length,
+      },
+    };
+  }
+
+  async getResidentGoBags(barangayCode: string, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const totalPossibleItems = await this.goBagItemRepo.countAll();
+
+    const result = await this.goBagRepo.getResidentGoBags(
+      barangayCode,
+      skip,
+      limit,
+      totalPossibleItems,
+    );
+
+    return {
+      data: result[0].data,
+      total: result[0].metadata[0]?.total || 0,
     };
   }
 }

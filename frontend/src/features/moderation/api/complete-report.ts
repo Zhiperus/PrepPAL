@@ -11,7 +11,7 @@ export type CompleteReportDTO = {
 
 export const completeReport = ({ reportId, status }: CompleteReportDTO) => {
   // Assuming your controller maps this to PATCH /reports/:id
-  return api.patch(`/reports/${reportId}/complete`, { status });
+  return api.patch(`/content-reports/${reportId}/complete`, { status });
 };
 
 type UseCompleteReportOptions = {

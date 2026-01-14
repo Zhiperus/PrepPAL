@@ -24,7 +24,7 @@ export default class ModuleRepository {
       .lean();
 
     const progressMap = new Map(
-      user?.completedModules.map((m) => [m.moduleId.toString(), m]),
+      user?.completedModules?.map((m) => [m.moduleId.toString(), m]),
     );
 
     // 2. Standard Module Aggregation

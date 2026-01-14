@@ -6,15 +6,10 @@ const SnapshotItemSchema = z.object({
   category: z.string(),
 });
 
-export const CreatePostSchema = z.object({
-  caption: z.string(),
-  // If running in strict server-side Node (without File API), you might need z.any() or specific Blob types.
-  image: z.instanceof(File, { message: "Image file is required" }),
-});
 export const PostSchema = z.object({
   _id: z.string(),
   userId: z.string(),
-  lguId: z.string(),
+  barangayCode: z.string(),
   imageUrl: z.url(),
   imageId: z.string().optional(),
   caption: z.string().optional(),
@@ -37,8 +32,27 @@ export const VerifyPostSchema = z.object({
   verifiedItemIds: z.array(z.string()),
 });
 
+export const GetPostsQuerySchema = z.object({
+  sortBy: z.string().default("createdAt"),
+  order: z.enum(["asc", "desc"]).default("desc"),
+  search: z.string().optional(),
+  limit: z.coerce.number().default(10),
+  page: z.coerce.number().default(1),
+  cityCode: z.string(),
+  barangayCode: z.string(),
+});
+
+export const CreatePostSchema = z.object({
+  userId: z.string(),
+  imageUrl: z.string(),
+  imageId: z.string(),
+  caption: z.string(),
+  barangayCode: z.string(),
+});
+
 export type CreatePostRequest = z.infer<typeof CreatePostSchema>;
 export type VerifyPostRequest = z.infer<typeof VerifyPostSchema>;
 export type Post = z.infer<typeof PostSchema>;
 export type FeedPost = z.infer<typeof FeedPostSchema>;
 export type SnapshotItem = z.infer<typeof SnapshotItemSchema>;
+export type GetPostsQuery = z.infer<typeof GetPostsQuerySchema>;

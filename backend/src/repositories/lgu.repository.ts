@@ -1,14 +1,12 @@
-import { PipelineStage, Types } from 'mongoose';
+import { PipelineStage } from 'mongoose';
 
 import ContentReportModel from '../models/contentReport.model.js';
-import LguModel from '../models/lgu.model.js';
 import UserModel from '../models/user.model.js';
 
 export interface CitizenMetrics {
   totalCitizens: number;
   avgScore: number;
   activeThisWeek: number;
-  // We can keep these for internal calculation but won't send all to frontend if not needed
   preparedCount: number;
   inProgressCount: number;
   atRiskCount: number;
@@ -20,15 +18,28 @@ export interface ReportMetrics {
 }
 
 export default class LguRepository {
-  async getLguDetails(lguId: string) {
-    return LguModel.findById(lguId).select('name city province').lean();
+  // We use this to get the "Official Name" of the LGU (e.g. "Barangay Batasan Hills Office")
+  async delete(id: string) {
+    return UserModel.findByIdAndDelete(id);
   }
 
-  async getReportMetrics(lguId: string): Promise<ReportMetrics> {
-    const lguObjectId = new Types.ObjectId(lguId);
+  async findById(id: string) {
+    return UserModel.findById(id);
+  }
 
+  async getLguAdminProfile(barangayCode: string) {
+    return UserModel.findOne({
+      role: 'lgu',
+      'location.barangayCode': barangayCode,
+    })
+      .select('householdName location email') // householdName = LGU Name
+      .lean();
+  }
+
+  // 2. REPORT METRICS
+  async getReportMetrics(barangayCode: string): Promise<ReportMetrics> {
     const stats = await ContentReportModel.aggregate([
-      { $match: { lguId: lguObjectId } },
+      { $match: { barangayCode: barangayCode } },
       {
         $group: {
           _id: null,
@@ -41,12 +52,17 @@ export default class LguRepository {
     return stats[0] || { total: 0, pending: 0 };
   }
 
-  async getCitizenMetrics(lguId: string): Promise<CitizenMetrics> {
-    const lguObjectId = new Types.ObjectId(lguId);
+  // 3. CITIZEN METRICS
+  async getCitizenMetrics(barangayCode: string): Promise<CitizenMetrics> {
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const pipeline: PipelineStage[] = [
-      { $match: { lguId: lguObjectId, role: 'citizen' } },
+      {
+        $match: {
+          'location.barangayCode': barangayCode,
+          role: 'citizen',
+        },
+      },
       {
         $addFields: {
           calculatedScore: {

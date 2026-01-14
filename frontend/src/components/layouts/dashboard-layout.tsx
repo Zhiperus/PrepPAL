@@ -1,12 +1,5 @@
 import { useEffect, useRef } from 'react';
-import {
-  GoHome,
-  GoBook,
-  GoPencil,
-  GoGraph,
-  GoInfo,
-  GoSignOut,
-} from 'react-icons/go';
+import { GoHome, GoBook, GoPencil, GoGraph, GoSignOut } from 'react-icons/go';
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { useNavigate } from 'react-router';
 
@@ -33,16 +26,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
     if (isError || !user) {
       navigate(paths.auth.login.getHref());
-      return;
-    }
-
-    if (user.role === 'lgu') {
-      navigate(paths.lgu.root.getHref());
-      return;
-    }
-
-    if (user.role === 'super_admin') {
-      navigate(paths.admin.root.getHref());
       return;
     }
 
@@ -164,15 +147,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </ul>
 
             <div className="mt-auto mb-4 flex flex-col gap-4 font-medium text-gray-700">
-              <Link
-                to={paths.home.getHref()}
-                className="flex cursor-pointer items-center gap-4 rounded-lg p-2 hover:bg-gray-100"
-                onClick={closeDrawer}
-              >
-                <GoInfo className="h-6 w-6" />
-                <span>About</span>
-              </Link>
-
               <button
                 className="flex cursor-pointer items-center gap-4 rounded-lg p-2 text-red-500 hover:bg-red-50"
                 onClick={() => {

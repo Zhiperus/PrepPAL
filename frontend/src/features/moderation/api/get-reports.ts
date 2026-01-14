@@ -2,11 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
 import type { QueryConfig } from '@/lib/react-query';
+import type { Meta } from '@/types/api';
 
 // 1. Updated Type Definitions to match Post Model & Backend Populate
 export type ContentReport = {
   _id: string;
-  lguId: string;
+  barangayCode: string;
   reason: string;
   status: 'PENDING' | 'RESOLVED' | 'DISMISSED';
   createdAt: string;
@@ -18,7 +19,7 @@ export type ContentReport = {
     householdName: string;
     email: string;
     profileImage?: string;
-    lguId: string;
+    barangayCode: string;
   };
 
   // Populated Post
@@ -34,7 +35,7 @@ export type ContentReport = {
       householdName: string;
       email: string;
       profileImage?: string;
-      lguId: string;
+      location: { barangayCode: string };
     };
   } | null;
 };
@@ -42,47 +43,40 @@ export type ContentReport = {
 // 2. Pagination Meta Type
 export type ContentReportResponse = {
   data: ContentReport[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  meta: Meta;
 };
 
 // 3. Fetch Function
 export const getContentReports = ({
-  lguId,
+  barangayCode,
   page = 1,
   limit = 10,
 }: {
-  lguId: string;
+  barangayCode?: string;
   page?: number;
   limit?: number;
 }): Promise<ContentReportResponse> => {
-  return api.get('/reports', {
-    params: { lguId, page, limit },
+  return api.get('/content-reports', {
+    params: { barangayCode, page, limit },
   });
 };
 
 type UseContentReportsOptions = {
-  lguId: string;
+  barangayCode?: string;
   page?: number;
   limit?: number;
   queryConfig?: QueryConfig<typeof getContentReports>;
 };
 
-// 4. Hook
 export const useContentReports = ({
-  lguId,
+  barangayCode,
   page,
   limit,
   queryConfig,
 }: UseContentReportsOptions) => {
   return useQuery({
     ...queryConfig,
-    queryKey: ['content-reports', lguId, page, limit],
-    queryFn: () => getContentReports({ lguId, page, limit }),
-    enabled: !!lguId,
+    queryKey: ['content-reports', barangayCode, page, limit],
+    queryFn: () => getContentReports({ barangayCode, page, limit }),
   });
 };

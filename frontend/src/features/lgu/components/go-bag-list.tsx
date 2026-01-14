@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { useState, useMemo } from 'react';
+// Icons
 import {
   FaCheckCircle,
   FaUtensils,
@@ -9,6 +10,7 @@ import {
   FaIdCard,
   FaBath,
   FaBolt,
+  FaVenus,
 } from 'react-icons/fa';
 import {
   FiSearch,
@@ -20,52 +22,25 @@ import {
   FiDroplet,
   FiSmartphone,
   FiX,
+  FiChevronLeft,
+  FiChevronRight,
+  FiChevronDown,
 } from 'react-icons/fi';
+import { LuPawPrint } from 'react-icons/lu';
 import { MdLocationOn } from 'react-icons/md';
 
-import { useResidentGoBags } from '../api/get-go-bags'; // Fixed import path based on context
+// Hooks
+import {
+  useResidentGoBags,
+  type PopulatedGoBag,
+  type GoBagItem,
+} from '../api/get-go-bags';
 
 import { useUser } from '@/lib/auth';
 
-// --- Types ---
+// --- CONFIGURATION ---
 
-interface GoBagItem {
-  _id: string;
-  name: string;
-  category: string; // broadened string to match dynamic keys
-  defaultQuantity: number;
-}
-
-interface User {
-  _id: string;
-  householdName: string;
-  email: string;
-  phoneNumber: string;
-  location: {
-    barangay: string;
-    city: string;
-  };
-  householdInfo: {
-    memberCount: number;
-    pets: number;
-    femaleCount: number;
-  };
-  points: {
-    goBag: number;
-  };
-  profileImage: string | null;
-}
-
-interface PopulatedGoBag {
-  _id: string;
-  userId: User;
-  imageUrl: string;
-  items: GoBagItem[];
-  lastUpdated: string;
-  completeness: number;
-}
-
-// This matches the style of your Update Modal
+// Style configuration for item categories in the modal
 const CATEGORY_CONFIG: Record<
   string,
   { icon: any; color: string; bg: string; border: string }
@@ -138,60 +113,109 @@ const CATEGORY_CONFIG: Record<
   },
 };
 
-// --- Helper Components ---
+// --- HELPER COMPONENTS ---
 
 function StatusBadge({ points }: { points: number }) {
   if (points >= 80) {
     return (
-      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-        <FaCheckCircle className="mr-1 h-3 w-3" />
-        Prepared
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+        <FaCheckCircle className="text-emerald-600" /> Prepared
       </span>
     );
   }
   if (points >= 50) {
     return (
-      <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
-        <FiAlertCircle className="mr-1 h-3 w-3" />
-        Partial
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+        <FiAlertCircle className="text-amber-600" /> Partial
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
-      <FiAlertCircle className="mr-1 h-3 w-3" />
-      At Risk
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-800">
+      <FiAlertCircle className="text-red-600" /> At Risk
     </span>
   );
 }
 
-// --- Main Page Component ---
+// --- MAIN COMPONENT ---
 
 export default function LguGoBagDashboard() {
   const { data: user } = useUser();
-  const { data: goBags, isLoading } = useResidentGoBags(user?.lguId || '');
 
+  // 1. Fetch Data
+  const { data: goBagsData, isLoading } = useResidentGoBags(
+    user?.location?.barangayCode || '',
+  );
+  const goBags = goBagsData?.data;
+
+  // 2. Local State for UI
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBag, setSelectedBag] = useState<PopulatedGoBag | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
-  // Filter Logic
-  const filteredBags = useMemo(() => {
+  // Filters
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'prepared' | 'partial' | 'risk'
+  >('all');
+  const [sortBy, setSortBy] = useState<'recent' | 'score_desc' | 'score_asc'>(
+    'recent',
+  );
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  // 4. Filter & Sort Logic
+  const filteredData = useMemo(() => {
     if (!goBags) return [];
-    return goBags.filter(
-      (bag) =>
-        bag.userId.householdName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        bag.userId.location.barangay
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()),
-    );
-  }, [searchTerm, goBags]);
 
-  // Grouping Logic for the Modal
+    let result = [...goBags];
+
+    // Search
+    if (searchTerm) {
+      const lower = searchTerm.toLowerCase();
+      result = result.filter(
+        (bag) =>
+          bag.userId.householdName.toLowerCase().includes(lower) ||
+          bag.userId.location.barangay.toLowerCase().includes(lower),
+      );
+    }
+
+    // Status Filter
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'prepared')
+        result = result.filter((b) => b.completeness >= 80);
+      else if (statusFilter === 'partial')
+        result = result.filter(
+          (b) => b.completeness >= 50 && b.completeness < 80,
+        );
+      else if (statusFilter === 'risk')
+        result = result.filter((b) => b.completeness < 50);
+    }
+
+    // Sorting
+    result.sort((a, b) => {
+      if (sortBy === 'score_desc') return b.completeness - a.completeness;
+      if (sortBy === 'score_asc') return a.completeness - b.completeness;
+      // Default: recent
+      return (
+        new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+      );
+    });
+
+    return result;
+  }, [goBags, searchTerm, statusFilter, sortBy]);
+
+  // 5. Pagination Logic
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
+  // 6. Modal Grouping Logic
   const groupedItems = useMemo(() => {
     if (!selectedBag?.items) return {};
-
     return selectedBag.items.reduce(
       (acc, item) => {
         const catKey = item.category.toLowerCase();
@@ -203,357 +227,451 @@ export default function LguGoBagDashboard() {
     );
   }, [selectedBag]);
 
+  // --- RENDER ---
+
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center p-8 text-gray-500">
-        <span className="loading loading-spinner loading-lg text-blue-900"></span>
+      <div className="flex h-screen w-full items-center justify-center bg-gray-50">
+        <span className="loading loading-spinner loading-lg text-[#2a4263]"></span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8 font-sans">
-      {/* Header Stats */}
-      <div className="mb-8">
-        <h1 className="pt-10 text-xl font-bold text-slate-900">
-          Resident Go Bags
-        </h1>
-        <p className="text-gray-500">
-          Monitor preparedness levels across your LGU.
-        </p>
+    <div className="min-h-screen w-full bg-gray-50/50 p-6 md:p-10">
+      <div className="mx-auto max-w-7xl">
+        {/* HEADER SECTION */}
+        <header className="mb-8 pt-10 lg:pt-0">
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#2a4263]">
+            Resident Monitoring
+          </h1>
+          <p className="mt-2 text-gray-500">
+            Review submitted Go Bags and monitor preparedness levels across{' '}
+            {user?.location?.city}.
+          </p>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          {/* Stat Cards (Same as before) */}
-          <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Total Households
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {goBags?.length || 0}
-                </p>
+          {/* Quick Stats Grid */}
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Households
+                  </p>
+                  <p className="mt-1 text-3xl font-bold text-[#2a4263]">
+                    {goBags?.length || 0}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
+                  <FiUsers size={24} />
+                </div>
               </div>
-              <div className="rounded-lg bg-blue-50 p-3">
-                <FiUsers className="h-6 w-6 text-blue-600" />
+            </div>
+            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Fully Prepared
+                  </p>
+                  <p className="mt-1 text-3xl font-bold text-emerald-600">
+                    {goBags?.filter((b) => b.completeness >= 80).length || 0}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+                  <FaCheckCircle size={24} />
+                </div>
+              </div>
+            </div>
+            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">At Risk</p>
+                  <p className="mt-1 text-3xl font-bold text-red-600">
+                    {goBags?.filter((b) => b.completeness < 50).length || 0}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-red-50 p-3 text-red-600">
+                  <FiAlertCircle size={24} />
+                </div>
               </div>
             </div>
           </div>
-          <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Fully Prepared
-                </p>
-                <p className="text-2xl font-bold text-green-600">
-                  {goBags?.filter((u) => u.completeness >= 80).length || 0}
-                </p>
+        </header>
+
+        {/* CONTROLS & TABLE */}
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          {/* Toolbar */}
+          <div className="flex flex-col border-b border-gray-100 p-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-1 flex-col gap-3 lg:flex-row lg:items-center">
+              {/* Search */}
+              <div className="relative w-full lg:w-96">
+                <FiSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search household or barangay..."
+                  className="input input-bordered w-full pl-10"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1); // Reset page on search
+                  }}
+                />
               </div>
-              <div className="rounded-lg bg-green-50 p-3">
-                <FaCheckCircle className="h-6 w-6 text-green-600" />
-              </div>
+
+              {/* Toggle Filters Button */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`btn btn-sm ${showFilters ? 'btn-primary' : 'btn-ghost border-gray-300'}`}
+              >
+                <FiFilter /> Filters
+                <FiChevronDown
+                  className={`transition-transform ${showFilters ? 'rotate-180' : ''}`}
+                />
+              </button>
             </div>
           </div>
-          <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
+
+          {/* Expandable Filter Panel */}
+          {showFilters && (
+            <div className="grid grid-cols-1 gap-4 bg-gray-50 p-4 sm:grid-cols-3">
               <div>
-                <p className="text-sm font-medium text-gray-500">
-                  At Risk (Low Score)
-                </p>
-                <p className="text-2xl font-bold text-red-600">
-                  {goBags?.filter((u) => u.completeness < 50).length || 0}
-                </p>
-              </div>
-              <div className="rounded-lg bg-red-50 p-3">
-                <FiAlertCircle className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Table Content */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        {/* Toolbar */}
-        <div className="flex flex-col items-center justify-between gap-4 border-b border-gray-200 bg-white p-4 md:flex-row">
-          <div className="relative w-full md:w-96">
-            <FiSearch className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search household or barangay..."
-              className="w-full rounded-lg border border-gray-300 py-2 pr-4 pl-10 text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <button className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-            <FiFilter className="h-4 w-4" />
-            Filters
-          </button>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="border-b border-gray-200 bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                  Household
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                  Location
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                  Household Info
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                <label className="label text-xs font-bold text-gray-500 uppercase">
                   Status
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                  Last Updated
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold tracking-wider text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredBags.length === 0 ? (
+                </label>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value as any);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="prepared">Fully Prepared</option>
+                  <option value="partial">Partially Prepared</option>
+                  <option value="risk">At Risk</option>
+                </select>
+              </div>
+              <div>
+                <label className="label text-xs font-bold text-gray-500 uppercase">
+                  Sort By
+                </label>
+                <select
+                  className="select select-bordered select-sm w-full"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                >
+                  <option value="recent">Most Recent</option>
+                  <option value="score_desc">Highest Score</option>
+                  <option value="score_asc">Lowest Score</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              <thead className="bg-gray-50 text-gray-500">
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-500">
-                    No residents found.
-                  </td>
+                  <th>Household</th>
+                  <th>Location</th>
+                  <th>Info</th>
+                  <th>Status</th>
+                  <th>Last Updated</th>
+                  <th>Action</th>
                 </tr>
-              ) : (
-                filteredBags.map((bag) => (
-                  <tr
-                    key={bag._id}
-                    className="transition-colors hover:bg-gray-50"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <img
-                          className="h-10 w-10 rounded-full border border-gray-200 object-cover"
-                          src={bag.userId.profileImage || ''}
-                          alt=""
-                        />
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {bag.userId.householdName || 'Unknown Household'}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {bag.userId.email}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <MdLocationOn className="mr-1.5 h-4 w-4 text-gray-400" />
-                        {bag.userId.location?.barangay || 'N/A'},{' '}
-                        {bag.userId.location?.city || 'N/A'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-1 text-sm text-gray-500">
-                        <div className="flex items-center" title="Members">
-                          <FiUsers className="mr-1.5 h-3 w-3" />{' '}
-                          {bag.userId.householdInfo?.memberCount || 0} Members
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <StatusBadge points={bag.completeness} />
-                      <div className="mt-1 text-xs text-gray-400">
-                        Score: {bag.completeness}/100
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      <div className="flex items-center">
-                        <FiCalendar className="mr-1.5 h-3 w-3 text-gray-400" />
-                        {format(new Date(bag.lastUpdated), 'MMM d, yyyy')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => setSelectedBag(bag)}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-900"
-                      >
-                        View Details
-                      </button>
+              </thead>
+              <tbody>
+                {paginatedData.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-10 text-center text-gray-500">
+                      No households found matching your criteria.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  paginatedData.map((bag) => (
+                    <tr key={bag._id} className="hover:bg-gray-50">
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar">
+                            <div className="mask mask-squircle h-10 w-10 bg-gray-200">
+                              <img
+                                src={
+                                  bag.userId.profileImage ||
+                                  `https://api.dicebear.com/7.x/initials/svg?seed=${bag.userId.householdName}`
+                                }
+                                alt="Profile"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-bold text-[#2a4263]">
+                              {bag.userId.householdName}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {bag.userId.email}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-1 text-sm text-gray-600">
+                          <MdLocationOn className="text-gray-400" />
+                          <span className="font-medium">
+                            {bag.userId.location.barangay}
+                          </span>
+                        </div>
+                        <div className="pl-5 text-xs text-gray-400">
+                          {bag.userId.location.city}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
+                          {/* Total Members */}
+                          <div
+                            className="flex items-center gap-1"
+                            title="Total Members"
+                          >
+                            <FiUsers size={14} />
+                            <span>{bag.userId.householdInfo.memberCount}</span>
+                          </div>
+
+                          {/* Slanted Separator */}
+                          <span className="text-gray-300">/</span>
+
+                          {/* Female Count */}
+                          <div
+                            className="flex items-center gap-1"
+                            title="Female Members"
+                          >
+                            <FaVenus size={14} />
+                            <span>{bag.userId.householdInfo.femaleCount}</span>
+                          </div>
+
+                          {/* Slanted Separator */}
+                          <span className="text-gray-300">/</span>
+
+                          {/* Pets Count */}
+                          <div className="flex items-center gap-1" title="Pets">
+                            <LuPawPrint size={14} />
+                            <span>{bag.userId.householdInfo.pets}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex flex-col gap-1">
+                          <StatusBadge points={bag.completeness} />
+                          <span className="text-[10px] font-medium text-gray-400">
+                            {bag.completeness}% Score
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <FiCalendar />{' '}
+                          {format(new Date(bag.lastUpdated), 'MMM d, yyyy')}
+                        </div>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => setSelectedBag(bag)}
+                          className="btn btn-ghost btn-xs text-blue-600 hover:bg-blue-50"
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Footer */}
+          {paginatedData.length > 0 && (
+            <div className="flex items-center justify-between border-t border-gray-100 p-4">
+              <span className="text-sm text-gray-500">
+                Page <strong>{currentPage}</strong> of{' '}
+                <strong>{totalPages}</strong> ({filteredData.length} items)
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="btn btn-outline btn-sm"
+                >
+                  <FiChevronLeft />
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="btn btn-outline btn-sm"
+                >
+                  <FiChevronRight />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* --- DETAIL MODAL --- */}
+      {/* --- DETAIL MODAL (Slide-over) --- */}
       {selectedBag && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-50 overflow-hidden">
           <div
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity"
             onClick={() => setSelectedBag(null)}
           />
 
-          {/* Drawer Panel */}
-          <div className="animate-in slide-in-from-right relative h-full w-full max-w-2xl transform overflow-y-auto bg-white shadow-2xl transition-transform duration-300">
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  {selectedBag.userId.householdName || 'Household Inspection'}
-                </h2>
-                <p className="text-sm text-gray-500">Go Bag Verification</p>
-              </div>
-              <button
-                onClick={() => setSelectedBag(null)}
-                className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
-              >
-                <FiX className="h-6 w-6" />
-              </button>
-            </div>
+          <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+            <div className="pointer-events-auto w-screen max-w-md transform transition-transform duration-300">
+              <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-2xl">
+                {/* Modal Header */}
+                <div className="bg-[#2a4263] px-4 py-6 text-white sm:px-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h2 className="text-lg font-bold">
+                        {selectedBag.userId.householdName}
+                      </h2>
+                      <p className="text-sm text-blue-100">
+                        Go Bag Verification
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setSelectedBag(null)}
+                      className="rounded-full bg-white/10 p-1 text-white hover:bg-white/20"
+                    >
+                      <FiX size={20} />
+                    </button>
+                  </div>
+                </div>
 
-            <div className="space-y-8 p-6">
-              {/* Snapshot Image */}
-              <div>
-                <h3 className="mb-3 text-sm font-semibold tracking-wider text-gray-900 uppercase">
-                  Verification Image
-                </h3>
-                <div className="group relative aspect-video w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
-                  {selectedBag.imageUrl ? (
-                    <>
-                      <img
-                        src={selectedBag.imageUrl}
-                        alt="Go Bag Content"
-                        className="h-full w-full object-cover"
-                      />
-                      <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                        <p className="text-sm font-medium text-white">
-                          Uploaded:{' '}
-                          {format(new Date(selectedBag.lastUpdated), 'PPP p')}
+                {/* Modal Body */}
+                <div className="flex-1 px-4 py-6 sm:px-6">
+                  {/* Bag Image */}
+                  <div className="group relative mb-6 aspect-video w-full overflow-hidden rounded-xl bg-gray-100 ring-1 ring-gray-200">
+                    {selectedBag.imageUrl ? (
+                      <>
+                        <img
+                          src={selectedBag.imageUrl}
+                          alt="Bag Content"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100">
+                          <div className="absolute bottom-3 left-3 text-xs text-white">
+                            Verified on{' '}
+                            {format(new Date(selectedBag.lastUpdated), 'PPP')}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex h-full flex-col items-center justify-center text-gray-400">
+                        <FiPackage size={32} />
+                        <span className="mt-2 text-sm">No Image Uploaded</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Readiness Score Card */}
+                  <div className="mb-6 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-gray-500 uppercase">
+                          Completeness Score
+                        </p>
+                        <p className="text-3xl font-black text-[#2a4263]">
+                          {selectedBag.completeness}%
                         </p>
                       </div>
-                    </>
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-gray-400">
-                      No Image Uploaded
+                      <div className="scale-125">
+                        <StatusBadge points={selectedBag.completeness} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Items List */}
+                  <div className="space-y-6">
+                    <h3 className="flex items-center gap-2 border-b border-gray-100 pb-2 text-sm font-bold text-gray-900">
+                      <FiPackage className="text-blue-600" /> Inventory
+                      Checklist
+                    </h3>
+
+                    {selectedBag.items.length === 0 ? (
+                      <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500">
+                        No items have been logged yet.
+                      </div>
+                    ) : (
+                      Object.entries(groupedItems).map(([category, items]) => {
+                        const config =
+                          CATEGORY_CONFIG[category] || CATEGORY_CONFIG.default;
+                        const Icon = config.icon;
+
+                        return (
+                          <div
+                            key={category}
+                            className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
+                          >
+                            <div
+                              className={`flex items-center justify-between border-b ${config.border} ${config.bg} px-4 py-2`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Icon className={config.color} />
+                                <span
+                                  className={`text-sm font-bold capitalize ${config.color}`}
+                                >
+                                  {category}
+                                </span>
+                              </div>
+                              <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-gray-500">
+                                {items.length}
+                              </span>
+                            </div>
+                            <div className="divide-y divide-gray-50">
+                              {items.map((item) => (
+                                <div
+                                  key={item._id}
+                                  className="flex items-center justify-between px-4 py-3 text-sm hover:bg-gray-50"
+                                >
+                                  <span className="font-medium text-gray-700">
+                                    {item.name}
+                                  </span>
+                                  {/* If you had quantity in the schema, you'd show it here */}
+                                  <FaCheckCircle
+                                    className="text-emerald-400"
+                                    size={14}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Alert for low scores */}
+                  {selectedBag.completeness < 50 && (
+                    <div className="mt-6 rounded-xl border border-red-100 bg-red-50 p-4">
+                      <div className="flex gap-3">
+                        <FiAlertCircle className="mt-0.5 shrink-0 text-red-600" />
+                        <div>
+                          <h4 className="text-sm font-bold text-red-800">
+                            Assistance Recommended
+                          </h4>
+                          <p className="mt-1 text-xs text-red-600">
+                            This household is missing critical survival items
+                            (Food, Water). Consider flagging for relief
+                            distribution.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                  <p className="text-xs font-medium text-gray-500 uppercase">
-                    Status
-                  </p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-2xl font-bold text-gray-900">
-                      {selectedBag.completeness}
-                    </span>
-                    <StatusBadge points={selectedBag.completeness} />
-                  </div>
-                </div>
-                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                  <p className="text-xs font-medium text-gray-500 uppercase">
-                    Items Count
-                  </p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-2xl font-bold text-gray-900">
-                      {selectedBag.items.length}
-                    </span>
-                    <FiPackage className="h-6 w-6 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Items List - CATEGORIZED */}
-              <div>
-                <h3 className="mb-3 text-sm font-semibold tracking-wider text-gray-900 uppercase">
-                  Inventory Checklist
-                </h3>
-
-                {selectedBag.items.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 py-8 text-center">
-                    <FiPackage className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-                    <p className="text-sm text-gray-500">
-                      No items logged in this bag.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Render Categories */}
-                    {Object.entries(groupedItems).map(([category, items]) => {
-                      // Get config for this category
-                      const config =
-                        CATEGORY_CONFIG[category] || CATEGORY_CONFIG.default;
-                      const Icon = config.icon;
-
-                      return (
-                        <div
-                          key={category}
-                          className={`rounded-xl border ${config.border} overflow-hidden bg-white shadow-sm`}
-                        >
-                          {/* Category Header */}
-                          <div
-                            className={`flex items-center gap-3 border-b ${config.border} ${config.bg} px-4 py-3`}
-                          >
-                            <div
-                              className={`flex h-8 w-8 items-center justify-center rounded-lg bg-white ${config.color}`}
-                            >
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <span
-                              className={`font-bold capitalize ${config.color}`}
-                            >
-                              {category}
-                            </span>
-                            <span className="ml-auto text-xs font-medium text-gray-500">
-                              {items.length} item{items.length !== 1 && 's'}
-                            </span>
-                          </div>
-
-                          {/* Items in this Category */}
-                          <div className="divide-y divide-gray-100">
-                            {items.map((item) => (
-                              <div
-                                key={item._id}
-                                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-                              >
-                                <div className="text-sm font-medium text-gray-700">
-                                  {item.name}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Missing Essentials Recommendation */}
-              {selectedBag.items.length < 5 && (
-                <div className="rounded-xl border border-orange-200 bg-orange-50 p-4">
-                  <div className="flex items-start">
-                    <FiAlertCircle className="mt-0.5 mr-3 h-5 w-5 flex-shrink-0 text-orange-600" />
-                    <div>
-                      <h4 className="text-sm font-bold text-orange-900">
-                        Recommendation Needed
-                      </h4>
-                      <p className="mt-1 text-sm text-orange-800">
-                        This household is missing key essentials (Water, Food).
-                        Consider marking for LGU assistance distribution.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

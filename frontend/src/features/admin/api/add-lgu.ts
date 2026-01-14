@@ -9,10 +9,13 @@ import type { MutationConfig } from '@/lib/react-query';
 export type AddLguDTO = {
   name: string;
   adminEmail: string;
+  password: string;
   region: string;
   province: string;
   city: string;
   barangay: string;
+  cityCode: string; // Added
+  barangayCode: string; // Added
 };
 
 export const createLgu = (data: AddLguDTO): Promise<LguTenant> => {
@@ -35,4 +38,3 @@ export const useCreateLgu = ({ config }: UseCreateLguOptions = {}) => {
     mutationFn: createLgu,
   });
 };
-

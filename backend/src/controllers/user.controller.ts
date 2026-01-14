@@ -6,22 +6,25 @@ import {
 import { NextFunction, Request, Response } from 'express';
 
 import { handleInternalError } from '../errors/index.js';
-import UserRepository from '../repositories/user.repository.js';
+import AuthService from '../services/auth.service.js';
 import UserService from '../services/user.service.js';
 import { parseFileRequest } from '../utils/image.util.js';
 
 export default class UserController {
   private userService = new UserService();
+  private authService = new AuthService();
 
-  complete = async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * Retrieves the current user's global rank based on total points.
+   * Path: GET /api/users/rank
+   */
+  getUserRank = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = OnboardingRequestSchema.parse(req.body);
+      const userId = req.userId!;
 
-      const userId = req.userId;
+      const result = await this.userService.getUserRank(userId);
 
-      const result = await this.userService.completeOnboarding(userId!, data);
-
-      res.json({
+      res.status(200).json({
         success: true,
         data: result,
       });
@@ -30,6 +33,24 @@ export default class UserController {
     }
   };
 
+  complete = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = OnboardingRequestSchema.parse(req.body);
+      const userId = req.userId;
+
+      const result = await this.userService.completeOnboarding(userId!, data);
+
+      const newToken = await this.authService.generateFreshToken(userId!);
+
+      res.json({
+        success: true,
+        data: result,
+        token: newToken,
+      });
+    } catch (err) {
+      handleInternalError(err, next);
+    }
+  };
   /**
    * Updates the user's profile picture using Multer and Cloudinary.
    * Path: PATCH users/avatar
@@ -37,11 +58,8 @@ export default class UserController {
   updateAvatar = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.userId!;
-
-      // 1. FILE PARSING: Extract the image file from the multipart/form-data request
       const file = await parseFileRequest(req, res);
 
-      // 2. SERVICE CALL: Service handles Cloudinary upload and DB URL update
       const result = await this.userService.updateAvatar(userId, file);
       res.status(200).json({
         success: true,

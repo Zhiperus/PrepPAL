@@ -1,5 +1,5 @@
 import type { VerifyPostRequest } from '@repo/shared/dist/schemas/post.schema';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api-client';
 import type { MutationConfig } from '@/lib/react-query';
@@ -15,13 +15,14 @@ type UseVerifyPostOptions = {
 export const useVerifyPost = ({
   mutationConfig,
 }: UseVerifyPostOptions = {}) => {
-  // const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   const { onSuccess, ...restConfig } = mutationConfig || {};
 
   return useMutation({
     onSuccess: (...args) => {
       onSuccess?.(...args);
+      queryClient.invalidateQueries({ queryKey: ['authenticated-user'] });
     },
     ...restConfig,
     mutationFn: verifyPost,

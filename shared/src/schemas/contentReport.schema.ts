@@ -4,7 +4,7 @@ export const contentReportSchema = z.object({
   id: z.string(),
   postId: z.string(),
   reporterId: z.string(),
-  lguId: z.string(),
+  barangayCode: z.string(),
   reason: z
     .string()
     .min(10, "Please provide a more detailed reason (min 10 characters)")
@@ -14,7 +14,13 @@ export const contentReportSchema = z.object({
   updatedAt: z.date().optional(),
 });
 
-export const GetReportsQuerySchema = z.object({
+export const CreateContentReportSchema = z.object({
+  postId: z.string().min(1, "Post ID is required"),
+  reason: z.string().min(1, "Reason is required"),
+  status: z.enum(["PENDING", "RESOLVED", "DISMISSED"]).default("PENDING"),
+});
+
+export const GetContentReportsQuerySchema = z.object({
   sortBy: z.string().default("createdAt"),
   order: z.enum(["asc", "desc"]).default("desc"),
   limit: z.coerce.number().default(10),
@@ -22,13 +28,20 @@ export const GetReportsQuerySchema = z.object({
   status: z
     .enum(["PENDING", "RESOLVED", "DISMISSED", "ALL"])
     .default("PENDING"),
-  lguId: z.string().optional(),
+  barangayCode: z.string().optional(),
 });
 
-export const CompleteReportRequestSchema = z.object({
+export const CompleteContentReportRequestSchema = z.object({
   status: z.enum(["RESOLVED", "DISMISSED"]),
 });
 
 export type ContentReport = z.infer<typeof contentReportSchema>;
-export type GetReportsQuery = z.infer<typeof GetReportsQuerySchema>;
-export type CompleteReportRequest = z.infer<typeof CompleteReportRequestSchema>;
+export type GetContentReportsQuery = z.infer<
+  typeof GetContentReportsQuerySchema
+>;
+export type CompleteContentReportRequest = z.infer<
+  typeof CompleteContentReportRequestSchema
+>;
+export type CreateContentReportRequest = z.infer<
+  typeof CreateContentReportSchema
+>;
