@@ -10,6 +10,8 @@ import PostRepository from '../repositories/post.repository.js';
 import RatingRepository from '../repositories/rating.repository.js';
 import UserRepository from '../repositories/user.repository.js';
 
+import UserService from './user.service.js';
+
 export interface CreatePostInput {
   userId: string;
   caption: string;
@@ -19,6 +21,7 @@ export default class PostService {
   private postRepo = new PostRepository();
   private ratingRepo = new RatingRepository();
   private userRepo = new UserRepository();
+  private userService = new UserService();
   private goBagRepo = new GoBagRepository();
 
   /**
@@ -67,14 +70,22 @@ export default class PostService {
     }
 
     // 2. Create the post with the snapshot of the go bag image
-    return this.postRepo.create({
+    const newPost = await this.postRepo.create({
       userId,
       caption,
       imageUrl: goBag.imageUrl,
       imageId: goBag.imageId,
       barangayCode: user.location.barangayCode,
     });
+
+    await this.userService.recalculateAndSaveGoBagScore(
+      userId,
+      newPost._id.toString(),
+    );
+
+    return newPost;
   }
+
   /**
    * Handles the community verification logic.
    * Calculates majority votes and awards points.
@@ -88,13 +99,17 @@ export default class PostService {
     postId: string;
     verifiedItemIds: string[];
   }) {
+    const MIN_RATERS_TO_VERIFY = 3;
+
     const post = await this.postRepo.findPostById(postId);
     if (!post) throw new NotFoundError('Post not found');
 
+    // Prevent Author from rating their own post
     if (post.userId.toString() === raterUserId) {
       throw new ForbiddenError('You cannot verify your own post.');
     }
 
+    // Prevent Double Voting (Idempotency)
     const existingRating = await this.ratingRepo.findByPostAndUser(
       postId,
       raterUserId,
@@ -109,25 +124,28 @@ export default class PostService {
       verifiedItemIds,
     });
 
-    // We need ALL ratings to calculate consensus
+    // We fetch ALL ratings to see if we have enough people (Quorum)
     const allRatings = await this.ratingRepo.findByPostId(postId);
-
     const totalRaters = allRatings.length;
     const majorityThreshold = totalRaters / 2;
 
     let newVerifiedItemCount = 0;
 
-    // Check every item in the snapshot against the "Votes" ledger
-    post.bagSnapshot.forEach((item) => {
-      // Count how many rating documents contain this specific Item ID
-      const votesForItem = allRatings.filter((r) =>
-        r.verifiedItemIds.includes(item.itemId.toString()),
-      ).length;
+    // ONLY calculate verification if we have enough raters (Quorum Met)
+    if (totalRaters >= MIN_RATERS_TO_VERIFY) {
+      // Iterate through the items the AUTHOR claimed to have
+      post.bagSnapshot.forEach((item) => {
+        // Count how many neighbors said "Yes, I see this item"
+        const votesForItem = allRatings.filter((r) =>
+          r.verifiedItemIds.includes(item.itemId.toString()),
+        ).length;
 
-      if (votesForItem > majorityThreshold) {
-        newVerifiedItemCount++;
-      }
-    });
+        // If > 50% of raters verified it, it counts as Verified
+        if (votesForItem > majorityThreshold) {
+          newVerifiedItemCount++;
+        }
+      });
+    }
 
     await this.postRepo.updatePostStats(
       postId,
@@ -135,14 +153,34 @@ export default class PostService {
       totalRaters,
     );
 
-    //Add 1 to the rater's community points
-    await this.userRepo.updateUserGoBagPoints(post.userId.toString(), 1);
+    // 5. REWARDS & SCORING
 
+    // A. Reward the RATER (The Neighbor)
+    // They get +1 COMMUNITY Point for helping out.
+    // (Ensure you have this method in UserRepo, or use updatePoints('community', 1))
+    await this.userRepo.updateUserCommunityPoints(raterUserId, 1);
+
+    // B. Update the AUTHOR (The Post Owner)
+    // Their GoBag Readiness Score might change because of this new verification.
+    if (totalRaters >= MIN_RATERS_TO_VERIFY) {
+      await this.userService.recalculateAndSaveGoBagScore(
+        post.userId.toString(),
+        postId,
+      );
+    }
+
+    // 6. Return Result
     return {
+      success: true,
       verifiedCount: newVerifiedItemCount,
+      totalRaters,
+      isPendingConsensus: totalRaters < MIN_RATERS_TO_VERIFY,
+      message:
+        totalRaters < MIN_RATERS_TO_VERIFY
+          ? `Rating submitted! Need ${MIN_RATERS_TO_VERIFY - totalRaters} more reviews to verify.`
+          : 'Rating submitted and verified count updated.',
     };
   }
-
   async deletePost(postId: string) {
     const post = await this.postRepo.findById(postId);
     if (!post) throw new NotFoundError('Post not found');

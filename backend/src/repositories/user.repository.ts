@@ -13,6 +13,24 @@ export default class UserRepository {
     return UserModel.countDocuments(filter);
   }
 
+  async updateUserCommunityPoints(userId: string, pointsToAdd: number) {
+    return UserModel.findByIdAndUpdate(
+      userId,
+      { $inc: { 'points.community': pointsToAdd } },
+      { new: true },
+    );
+  }
+
+  async updateGoBagScore(userId: string, newScore: number) {
+    return UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: { 'points.goBag': newScore },
+      },
+      { new: true },
+    );
+  }
+
   async findById(userId: string) {
     return UserModel.findById(userId);
   }

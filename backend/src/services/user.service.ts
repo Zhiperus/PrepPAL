@@ -6,6 +6,8 @@ import {
 } from '@repo/shared/dist/schemas/user.schema';
 
 import { NotFoundError } from '../errors/index.js';
+import GoBagItemRepository from '../repositories/goBagItem.repository.js';
+import PostRepository from '../repositories/post.repository.js';
 import UserRepository from '../repositories/user.repository.js';
 import {
   deleteFromCloudinary,
@@ -14,6 +16,29 @@ import {
 
 export default class UserService {
   private userRepo = new UserRepository();
+  private postRepo = new PostRepository();
+  private goBagItemRepo = new GoBagItemRepository();
+
+  async recalculateAndSaveGoBagScore(userId: string, postId: string) {
+    const post = await this.postRepo.findPostById(postId);
+    const totalPossibleItems = await this.goBagItemRepo.countAll();
+
+    if (!post || totalPossibleItems === 0) return;
+
+    const userItemCount = post.bagSnapshot.length;
+    const completenessRatio = userItemCount / totalPossibleItems;
+    const completenessPoints = completenessRatio * 100 * 0.6;
+
+    const verifiedItemCount = post?.verifiedItemCount || 0;
+    const verificationRatio = verifiedItemCount / totalPossibleItems;
+    const verificationPoints = verificationRatio * 100 * 0.4;
+
+    const finalScore = Math.round(completenessPoints + verificationPoints);
+
+    await this.userRepo.updateGoBagScore(userId, finalScore);
+
+    return finalScore;
+  }
 
   async getUserRank(userId: string) {
     const user = await this.userRepo.findById(userId);

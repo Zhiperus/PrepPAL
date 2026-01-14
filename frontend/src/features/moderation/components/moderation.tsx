@@ -1,12 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
-import {
-  FiFilter,
-  FiSearch,
-  FiChevronLeft,
-  FiChevronRight,
-} from 'react-icons/fi';
+import { FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 import { useCompleteReport } from '../api/complete-report';
 import { useContentReports } from '../api/get-reports';
