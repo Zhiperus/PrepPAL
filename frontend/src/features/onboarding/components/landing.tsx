@@ -458,8 +458,7 @@ export function Landing() {
                     Smart Go Bag Tracking
                   </h3>
                   <p className="leading-relaxed text-slate-500">
-                    Interactive inventory management for your emergency kit. We
-                    track expiration dates and suggest essential missing items.
+                    Interactive inventory management for your emergency kit.
                   </p>
                 </SpotlightCard>
               </PopIn>

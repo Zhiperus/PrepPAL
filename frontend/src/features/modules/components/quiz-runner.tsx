@@ -232,7 +232,7 @@ export function QuizRunner(): React.ReactNode {
   const resetStateForNextQuestion = (nextQ: any) => {
     const nextQId = nextQ ? getQuestionKey(nextQ) : null;
     if (nextQ && completedIds.has(nextQId!)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const prevAnswer = history.find(
         (h: any) => getQuestionKey(h) === nextQId,
       );

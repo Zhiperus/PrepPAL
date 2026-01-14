@@ -13,7 +13,7 @@
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
 
-  "postCreateCommand": "pnpm install",
+  "postCreateCommand": "pnpm install && pnpm --filter @repo/shared build",
 
   "customizations": {
     "vscode": {
