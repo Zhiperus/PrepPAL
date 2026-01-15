@@ -36,6 +36,12 @@ const REALISTIC_BAG_IMAGES = [
   'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80', // Tactical backpack
   'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80', // Military gear
   'https://images.unsplash.com/photo-1544365558-35aa4afcf11f?auto=format&fit=crop&w=800&q=80', // Hiking pack
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455855/20250320-.org-disaster-go-bag_-121_v2_D-curved_bzstjc.jpg',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455853/Go-bag-2023-Sarah-Stierch-1-scaled_yye9po.webp',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455851/bugoutbags-2048px-8374_lqodub.webp',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455849/Fire-Go-Bag-_sq5kmz.jpg',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455847/Kids-Go-Bag-2-min_zjnwjn.jpg',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455845/bug-out-bag-full-horizontal_cq3ifh.webp',
 ];
 
 // Realistic Captions for the Feed
@@ -53,91 +59,206 @@ const FEED_CAPTIONS = [
 // High-Quality Module Content
 const PROPER_MODULES = [
   {
-    title: 'Earthquake Preparedness',
+    title: 'Fire Safety & Prevention (BFP Philippines)',
     description:
-      'Essential survival strategies before, during, and after an earthquake.',
-    logo: '🌋',
+      'A focused guide on the EDITH program, electrical hazards, and the P.A.S.S. method.',
+    logo: '🔥',
     content: [
       {
-        text: 'DURING SHAKING: Drop, Cover, and Hold On. Do not run outside while the ground is shaking.',
+        text: 'The BFP promotes the EDITH (Exit Drills In The Home) program to ensure every family member knows how to escape safely. You should identify at least two ways out of every room and designate a specific meeting place outside, like a neighbor’s gate. Practice these drills at night or in the dark to simulate real fire conditions, and remember that once you are out, you must never re-enter the building.',
         imageUrl:
-          'https://images.unsplash.com/photo-1590422502687-73b378129712?auto=format&fit=crop&w=800&q=80',
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455247/people-crossing-road-during-fire-drill-evacuation-cartwright-gardens-bloomsbury-london-england-britain-uk-R7KCGK_qai33b.jpg',
+        reference: 'BFP Fire Safety Guide: EDITH Program',
+        referenceUrl: 'https://bfp.gov.ph/',
       },
       {
-        text: 'AFTER SHAKING: Check for gas leaks. If you smell rotten eggs, open windows and leave.',
-        imageUrl: '',
+        text: 'Electrical issues, specifically "octopus wiring," remain a leading cause of fires in Filipino households. This happens when too many high-wattage appliances are plugged into a single outlet or extension cord, leading to overheating. Homeowners should regularly check for frayed wires and ensure they unplug appliances like electric fans and irons when not in use, particularly during the peak heat of the summer months.',
+        imageUrl:
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455278/Octopus-300x200_vdcn3h.jpg',
+        reference: 'RA 9514: The Fire Code of the Philippines',
+        referenceUrl: 'https://bfp.gov.ph/resources/ra-9514/',
+      },
+      {
+        text: 'To effectively extinguish a small fire, use the P.A.S.S. technique: Pull the pin, Aim the nozzle at the base of the fire, Squeeze the lever, and Sweep side-to-side. Always aim at the fuel source rather than the flames themselves to ensure the fire is fully put out. If the fire is spreading quickly or blocking your exit, abandon the extinguisher and evacuate immediately to prioritize your life.',
+        imageUrl:
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455626/download_eb413abb-0d91-4f70-8cb2-0e382ea558b5_lmfczo.webp',
+        reference: 'BFP National Fire Prevention Month Training',
+        referenceUrl: 'https://bfp.gov.ph/fire-prevention-month/',
       },
     ],
     questions: [
       {
-        q: 'What is the most recommended action during an earthquake?',
+        q: 'When practicing the EDITH plan, what is the most important rule after escaping a burning building?',
         choices: [
-          'Run outside',
-          'Drop, Cover, and Hold On',
-          'Stand in a doorway',
+          'Go back inside for your Go Bag',
+          'Stay out and go to your designated meeting place',
+          'Wait by the front door for the BFP',
+          'Call your neighbors from inside the house',
         ],
         a: 1,
       },
       {
-        q: 'If you are in bed when it strikes?',
-        choices: ['Roll to floor', 'Cover head with pillow', 'Run to CR'],
-        a: 1,
+        q: 'What is the primary danger of "octopus wiring" in Filipino households?',
+        choices: [
+          'It increases your monthly electric bill',
+          'It causes the lights to flicker only',
+          'It leads to overheating and potential electrical fires',
+          'It attracts lightning strikes',
+        ],
+        a: 2,
       },
       {
-        q: 'What to check for immediately after?',
-        choices: ['Facebook updates', 'Gas leaks', 'Pets'],
-        a: 1,
+        q: 'During the P.A.S.S. method, where should you aim the fire extinguisher nozzle?',
+        choices: [
+          'At the very top of the flames',
+          'At the person nearest to the fire',
+          'At the smoke clouds',
+          'At the base of the fire',
+        ],
+        a: 3,
       },
     ],
   },
   {
-    title: 'Typhoon Safety',
-    description: 'Understanding signals and evacuation protocols.',
+    title: 'Typhoon & Flood Readiness',
+    description:
+      'Essential protocols for navigating PAGASA wind signals and rising floodwaters.',
     logo: '🌀',
     content: [
       {
-        text: 'SIGNAL NO 3: Destructive winds (89-117 kph). Evacuate if you are in a low-lying area.',
+        text: 'PAGASA issues Tropical Cyclone Wind Signals (TCWS) ranging from Signal 1 to Signal 5 to warn of incoming storm strength. It is equally important to monitor color-coded rainfall alerts; a "Red Warning" signals serious flooding is imminent and evacuation should be immediate. Even if wind signals are low, heavy rain can still trigger dangerous flash floods and landslides in vulnerable areas.',
         imageUrl:
-          'https://images.unsplash.com/photo-1544365558-35aa4afcf11f?auto=format&fit=crop&w=800&q=80',
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455392/577453265_1244659617697905_3058442703744152072_n_gmegt7.jpg',
+        reference: 'PAGASA Revised Tropical Cyclone Wind Signal System',
+        referenceUrl: 'https://www.pagasa.dost.gov.ph/',
       },
       {
-        text: 'PREPARATION: Secure loose roofing and store 3 days of water.',
-        imageUrl: '',
+        text: 'Flood safety begins with staying informed via battery-operated radios since power and mobile networks often fail during storms. If water begins to enter your home, the first priority is to turn off the main electrical switch to prevent accidental electrocution. Identify the highest point in your area or your local community evacuation center well before the water starts to rise.',
+        imageUrl:
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455495/4_po8hen.webp',
+        reference: 'NDRRMC Typhoon Safety Protocols',
+        referenceUrl: 'https://ndrrmc.gov.ph/',
       },
     ],
     questions: [
       {
-        q: 'How much water per person per day?',
-        choices: ['1 Liter', '4 Liters (1 Gallon)', '10 Liters'],
+        q: 'What should you do immediately if floodwater begins to enter your home?',
+        choices: [
+          'Open all windows',
+          'Turn off the main electrical switch',
+          'Wait for the rain to stop',
+          'Use a vacuum to remove the water',
+        ],
         a: 1,
       },
       {
-        q: 'When to evacuate?',
-        choices: ['When water rises', 'During the eye', 'When advised by LGU'],
+        q: 'Which government agency provides the official Tropical Cyclone Wind Signals in the Philippines?',
+        choices: ['PHIVOLCS', 'DENR', 'PAGASA', 'DepEd'],
         a: 2,
       },
     ],
   },
   {
-    title: 'Fire Safety (PASS)',
-    description: 'How to use a fire extinguisher correctly.',
-    logo: '🔥',
+    title: 'Earthquake Preparedness (PHIVOLCS)',
+    description:
+      'Mastering the Drop, Cover, and Hold On technique and recognizing tsunami warning signs.',
+    logo: '🌍',
     content: [
       {
-        text: 'Remember P.A.S.S.: Pull, Aim, Squeeze, Sweep.',
+        text: 'The Philippines is highly susceptible to earthquakes, making the "Drop, Cover, and Hold On" technique a vital survival skill. When shaking starts, drop to your knees, take cover under a sturdy table, and hold on until the movement stops. This position protects your head and neck from falling debris, which is the most common cause of injury during a quake.',
         imageUrl:
-          'https://images.unsplash.com/photo-1505494200-a5061b47480a?auto=format&fit=crop&w=800&q=80',
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/Drop_Cover_Hold_On_Cane_ENG_Blue_Orange_RGB_jiwzp4.png',
+        reference: 'PHIVOLCS Earthquake Preparedness Guide',
+        referenceUrl: 'https://www.phivolcs.dost.gov.ph/',
+      },
+      {
+        text: 'After an earthquake, always use the stairs to evacuate and never the elevator, as power cuts can trap you between floors. If you are near the coastline, watch for natural tsunami signs such as the sea receding rapidly or a loud roaring sound from the ocean. If you notice these signs, move to higher ground immediately without waiting for an official siren.',
+        imageUrl:
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/earthquake-people-and-evacuation-route-vector-49752543_ahmaed.avif',
+        reference: 'Official PHIVOLCS Tsunami Warning Signs',
+        referenceUrl: 'https://www.phivolcs.dost.gov.ph/',
       },
     ],
     questions: [
       {
-        q: 'What does "P" stand for?',
-        choices: ['Push', 'Pull', 'Panic'],
+        q: 'During an earthquake, what is the safest way to protect yourself if you are indoors?',
+        choices: [
+          'Run outside fast',
+          'Drop, Cover, and Hold On under a table',
+          'Stand near a window',
+          'Take the elevator',
+        ],
         a: 1,
       },
       {
-        q: 'Where do you aim?',
-        choices: ['Top of flames', 'Base of fire', 'Middle'],
+        q: 'What should you do if you are near the coast and notice the sea receding after an earthquake?',
+        choices: [
+          'Pick up fish',
+          'Take photos',
+          'Immediately move to higher ground',
+          'Stay and wait for a broadcast',
+        ],
+        a: 2,
+      },
+    ],
+  },
+  {
+    title: 'Basic First Aid & Wound Care',
+    description:
+      'Bite-sized life-saving skills for treating minor injuries and medical emergencies at home.',
+    logo: '🩹',
+    content: [
+      {
+        text: 'For minor cuts and abrasions, the priority is to stop the bleeding by applying firm, direct pressure with a clean cloth. Once the bleeding is controlled, wash the wound thoroughly with clean running water and mild soap to prevent infection. Avoid using hydrogen peroxide or alcohol directly on the open wound, as these can damage the tissue; instead, apply a thin layer of antibiotic ointment and cover it with a sterile bandage.',
+        imageUrl:
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768456808/getty_rm_photo_of_applying_gauze_to_wound_dvyeix.webp',
+        reference: 'Philippine Red Cross: First Aid Handbook',
+        referenceUrl: 'https://redcross.org.ph/',
+      },
+      {
+        text: 'When treating minor (first-degree) burns, immediately run cool—not cold—tap water over the affected area for at least 10 to 15 minutes to reduce heat and swelling. Do not apply butter, toothpaste, or ice, as these traditional "remedies" can actually worsen the burn or cause infection. If blisters form, do not pop them, as they serve as a natural barrier against bacteria; simply cover the area loosely with a clean, non-stick bandage.',
+        imageUrl:
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768456882/images_sejlbb.jpg',
+        reference: 'DOH Health Advisory: Burn Management',
+        referenceUrl: 'https://doh.gov.ph/',
+      },
+      {
+        text: 'In cases of fainting or heat exhaustion—common during the Philippine summer—move the person to a cool, shaded area and lie them flat on their back with their legs slightly elevated. Loosen any tight clothing and provide sips of water or an oral rehydration solution if they are conscious. If the person does not regain consciousness within a minute or shows signs of heat stroke (such as high body temperature and confusion), call 911 or local emergency services immediately.',
+        imageUrl:
+          'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768456967/heat-stroke-first-aid_o8un9u.webp',
+        reference: 'NDRRMC First Aid Protocols for Heat Emergencies',
+        referenceUrl: 'https://ndrrmc.gov.ph/',
+      },
+    ],
+    questions: [
+      {
+        q: 'What is the correct first step for treating a minor burn?',
+        choices: [
+          'Apply toothpaste to the area',
+          'Run cool tap water over it for 10-15 minutes',
+          'Put ice directly on the skin',
+          'Pop any blisters that appear',
+        ],
+        a: 1,
+      },
+      {
+        q: 'When cleaning a minor cut, what should you use to wash the wound?',
+        choices: [
+          'Alcohol directly on the open cut',
+          'Hydrogen peroxide only',
+          'Clean running water and mild soap',
+          'Vinegar and salt',
+        ],
+        a: 2,
+      },
+      {
+        q: 'What is the best position for a person who has fainted?',
+        choices: [
+          'Sitting upright in a chair',
+          'Lying flat with legs slightly elevated',
+          'Standing up to regain balance',
+          'Lying face down',
+        ],
         a: 1,
       },
     ],
