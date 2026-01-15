@@ -112,15 +112,12 @@ const CAPTIONS = [
 ];
 
 const IMAGES = [
-  'https://images.unsplash.com/photo-1544365558-35aa4afcf11f?q=80&w=1000',
-  'https://images.unsplash.com/photo-1516939884455-14a5cbe23644?q=80&w=1000',
-  'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?q=80&w=1000',
-  'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000',
-  'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=1000',
-  'https://images.unsplash.com/photo-1605379399642-870262d3d051?q=80&w=1000',
-  'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=1000',
-  'https://images.unsplash.com/photo-1534081333815-ae5019106622?q=80&w=1000',
-  'https://images.unsplash.com/photo-1615655406736-b37c4fabf923?q=80&w=1000',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455855/20250320-.org-disaster-go-bag_-121_v2_D-curved_bzstjc.jpg',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455853/Go-bag-2023-Sarah-Stierch-1-scaled_yye9po.webp',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455851/bugoutbags-2048px-8374_lqodub.webp',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455849/Fire-Go-Bag-_sq5kmz.jpg',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455847/Kids-Go-Bag-2-min_zjnwjn.jpg',
+  'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455845/bug-out-bag-full-horizontal_cq3ifh.webp',
 ];
 
 // --- SEED FUNCTION ---
@@ -161,8 +158,7 @@ const seed = async () => {
         email: `admin.${emailSlug}@prep.gov.ph`,
         password: hashedPassword,
         role: 'lgu',
-        // [Corrected] No root barangayCode. It's inside location.
-        location: loc, // 'loc' already contains { cityCode, barangayCode ... }
+        location: loc,
         householdName: `${rawSlug} Admin`,
         isEmailVerified: true,
         onboardingCompleted: true,
@@ -176,7 +172,6 @@ const seed = async () => {
         password: hashedPassword,
         householdName: 'Chua Household',
         role: 'citizen',
-        // [Corrected] No root barangayCode
         location: PH_LOCATIONS.find((l) => l.barangay === 'Batasan Hills'),
         points: { goBag: 50, community: 10, modules: 5 },
         householdInfo: { memberCount: 4, femaleCount: 2, pets: 1 },
@@ -270,7 +265,6 @@ const seed = async () => {
     // 5. CREATE POSTS (Increased volume for analytics)
     const postsData = [];
 
-    // [Corrected] Filter using the nested location.barangayCode
     const eligibleAuthors = createdCitizens.filter(
       (u) => u.location && u.location.barangayCode,
     );
@@ -293,7 +287,6 @@ const seed = async () => {
 
         postsData.push({
           userId: author._id,
-          // [Corrected] Access the nested barangayCode from the author
           barangayCode: author.location!.barangayCode,
           imageUrl: getRandomItem(IMAGES),
           caption: getRandomItem(CAPTIONS),
@@ -314,52 +307,145 @@ const seed = async () => {
 
     const modulesData = [
       {
-        title: 'Earthquake Readiness',
-        description: 'Drop, Cover, and Hold strategies.',
-        logo: '🌋',
+        title: 'Fire Safety & Prevention (BFP Philippines)',
+        description:
+          'A focused guide on the EDITH program, electrical hazards, and the P.A.S.S. method.',
+        logo: '🔥',
         content: [
           {
-            text: 'If you are indoors, stay there. Get under a desk.',
-            imageUrl: '',
+            text: 'The BFP promotes the EDITH (Exit Drills In The Home) program to ensure every family member knows how to escape safely. You should identify at least two ways out of every room and designate a specific meeting place outside, like a neighbor’s gate. Practice these drills at night or in the dark to simulate real fire conditions, and remember that once you are out, you must never re-enter the building.',
+            imageUrl:
+              'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455247/people-crossing-road-during-fire-drill-evacuation-cartwright-gardens-bloomsbury-london-england-britain-uk-R7KCGK_qai33b.jpg',
+            reference: 'BFP Fire Safety Guide: EDITH Program',
+            referenceUrl: 'https://bfp.gov.ph/',
+          },
+          {
+            text: 'Electrical issues, specifically "octopus wiring," remain a leading cause of fires in Filipino households. This happens when too many high-wattage appliances are plugged into a single outlet or extension cord, leading to overheating. Homeowners should regularly check for frayed wires and ensure they unplug appliances like electric fans and irons when not in use, particularly during the peak heat of the summer months.',
+            imageUrl:
+              'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455278/Octopus-300x200_vdcn3h.jpg',
+            reference: 'RA 9514: The Fire Code of the Philippines',
+            referenceUrl: 'https://bfp.gov.ph/resources/ra-9514/',
+          },
+          {
+            text: 'To effectively extinguish a small fire, use the P.A.S.S. technique: Pull the pin, Aim the nozzle at the base of the fire, Squeeze the lever, and Sweep side-to-side. Always aim at the fuel source rather than the flames themselves to ensure the fire is fully put out. If the fire is spreading quickly or blocking your exit, abandon the extinguisher and evacuate immediately to prioritize your life.',
+            imageUrl:
+              'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455626/download_eb413abb-0d91-4f70-8cb2-0e382ea558b5_lmfczo.webp',
+            reference: 'BFP National Fire Prevention Month Training',
+            referenceUrl: 'https://bfp.gov.ph/fire-prevention-month/',
           },
         ],
         questions: [
           {
-            q: 'What is the first thing to do?',
-            choices: ['Run', 'Drop', 'Scream'],
+            q: 'When practicing the EDITH plan, what is the most important rule after escaping a burning building?',
+            choices: [
+              'Go back inside for your Go Bag',
+              'Stay out and go to your designated meeting place',
+              'Wait by the front door for the BFP',
+              'Call your neighbors from inside the house',
+            ],
             a: 1,
           },
           {
-            q: 'Where should you hide?',
-            choices: ['Under a table', 'Near a window', 'Elevator'],
-            a: 0,
+            q: 'What is the primary danger of "octopus wiring" in Filipino households?',
+            choices: [
+              'It increases your monthly electric bill',
+              'It causes the lights to flicker only',
+              'It leads to overheating and potential electrical fires',
+              'It attracts lightning strikes',
+            ],
+            a: 2,
+          },
+          {
+            q: 'During the P.A.S.S. method, where should you aim the fire extinguisher nozzle?',
+            choices: [
+              'At the very top of the flames',
+              'At the person nearest to the fire',
+              'At the smoke clouds',
+              'At the base of the fire',
+            ],
+            a: 3,
           },
         ],
       },
       {
-        title: 'Typhoon Survival',
-        description: 'Preparing your home for heavy storms.',
-        logo: '🌀',
+        title: 'Typhoon & Flood Readiness',
+        description:
+          'Essential protocols for navigating PAGASA wind signals and rising floodwaters.',
+        logo: '⛈️',
         content: [
-          { text: 'Secure loose items outside your home.', imageUrl: '' },
+          {
+            text: 'PAGASA issues Tropical Cyclone Wind Signals (TCWS) ranging from Signal 1 to Signal 5 to warn of incoming storm strength. It is equally important to monitor color-coded rainfall alerts; a "Red Warning" signals serious flooding is imminent and evacuation should be immediate. Even if wind signals are low, heavy rain can still trigger dangerous flash floods and landslides in vulnerable areas.',
+            imageUrl:
+              'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455392/577453265_1244659617697905_3058442703744152072_n_gmegt7.jpg',
+            reference: 'PAGASA Revised Tropical Cyclone Wind Signal System',
+            referenceUrl: 'https://www.pagasa.dost.gov.ph/',
+          },
+          {
+            text: 'Flood safety begins with staying informed via battery-operated radios since power and mobile networks often fail during storms. If water begins to enter your home, the first priority is to turn off the main electrical switch to prevent accidental electrocution. Identify the highest point in your area or your local community evacuation center well before the water starts to rise.',
+            imageUrl:
+              'https://res.cloudinary.com/dm85mtqbe/image/upload/v1768455495/4_po8hen.webp',
+            reference: 'NDRRMC Typhoon Safety Protocols',
+            referenceUrl: 'https://ndrrmc.gov.ph/',
+          },
         ],
         questions: [
           {
-            q: 'When should you evacuate?',
-            choices: ['During the eye', 'When told by LGU', 'Never'],
+            q: 'What should you do immediately if floodwater begins to enter your home?',
+            choices: [
+              'Open all windows',
+              'Turn off the main electrical switch',
+              'Wait for the rain to stop',
+              'Use a vacuum to remove the water',
+            ],
             a: 1,
+          },
+          {
+            q: 'Which government agency provides the official Tropical Cyclone Wind Signals in the Philippines?',
+            choices: ['PHIVOLCS', 'DENR', 'PAGASA', 'DepEd'],
+            a: 2,
           },
         ],
       },
       {
-        title: 'Basic First Aid',
-        description: 'Treating minor cuts and burns.',
-        logo: '🩹',
-        content: [{ text: 'Clean cuts with soap and water.', imageUrl: '' }],
+        title: 'Earthquake Preparedness (PHIVOLCS)',
+        description:
+          'Mastering the Drop, Cover, and Hold On technique and recognizing tsunami warning signs.',
+        logo: '🌍',
+        content: [
+          {
+            text: 'The Philippines is highly susceptible to earthquakes, making the "Drop, Cover, and Hold On" technique a vital survival skill. When shaking starts, drop to your knees, take cover under a sturdy table, and hold on until the movement stops. This position protects your head and neck from falling debris, which is the most common cause of injury during a quake.',
+            imageUrl:
+              'https://res.cloudinary.com/dm85mtqbe/image/upload/Drop_Cover_Hold_On_Cane_ENG_Blue_Orange_RGB_jiwzp4.png',
+            reference: 'PHIVOLCS Earthquake Preparedness Guide',
+            referenceUrl: 'https://www.phivolcs.dost.gov.ph/',
+          },
+          {
+            text: 'After an earthquake, always use the stairs to evacuate and never the elevator, as power cuts can trap you between floors. If you are near the coastline, watch for natural tsunami signs such as the sea receding rapidly or a loud roaring sound from the ocean. If you notice these signs, move to higher ground immediately without waiting for an official siren.',
+            imageUrl:
+              'https://res.cloudinary.com/dm85mtqbe/image/upload/earthquake-people-and-evacuation-route-vector-49752543_ahmaed.avif',
+            reference: 'Official PHIVOLCS Tsunami Warning Signs',
+            referenceUrl: 'https://www.phivolcs.dost.gov.ph/',
+          },
+        ],
         questions: [
           {
-            q: 'Best treatment for minor burns?',
-            choices: ['Butter', 'Ice', 'Cool Water'],
+            q: 'During an earthquake, what is the safest way to protect yourself if you are indoors?',
+            choices: [
+              'Run outside fast',
+              'Drop, Cover, and Hold On under a table',
+              'Stand near a window',
+              'Take the elevator',
+            ],
+            a: 1,
+          },
+          {
+            q: 'What should you do if you are near the coast and notice the sea receding after an earthquake?',
+            choices: [
+              'Pick up fish',
+              'Take photos',
+              'Immediately move to higher ground',
+              'Stay and wait for a broadcast',
+            ],
             a: 2,
           },
         ],
@@ -412,7 +498,6 @@ const seed = async () => {
         reportsData.push({
           postId: reportedPost._id,
           reporterId: reporter._id,
-          // [Note] We access barangayCode directly from the Post, which is correct
           barangayCode: reportedPost.barangayCode,
           reason: getRandomItem(REPORT_REASONS),
           status: getRandomItem(REPORT_STATUSES),
@@ -457,8 +542,9 @@ const seed = async () => {
       });
     }
 
-    const createdQuestionReports =
-      await QuestionReportModel.insertMany(questionReportsData);
+    const createdQuestionReports = await QuestionReportModel.insertMany(
+      questionReportsData,
+    );
     console.log(`✅ Created ${createdQuestionReports.length} Question Reports`);
 
     process.exit(0);
