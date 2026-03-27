@@ -13,10 +13,15 @@ import { useModules } from '../api/get-modules';
 import { ModuleCard } from '../components/module-card';
 
 import { ModuleCardSkeleton } from '@/components/ui/skeletons/module-card-skeleton';
+import { paths } from '@/config/paths';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useUser } from '@/lib/auth';
 
-export default function ModuleDiscovery() {
+interface ModuleDiscoveryProps {
+  isPublic?: boolean;
+}
+
+export default function ModuleDiscovery({ isPublic = false }: ModuleDiscoveryProps) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -42,7 +47,7 @@ export default function ModuleDiscovery() {
     setSearchParams(params, { replace: true });
   }, [debouncedSearch, pageParam, setSearchParams, queryParam]);
 
-  const { data: user, isLoading: isUserLoading } = useUser();
+  const { data: user, isLoading: isUserLoading } = useUser({ enabled: !isPublic } as any);
 
   const {
     data: modulesData,
@@ -64,6 +69,14 @@ export default function ModuleDiscovery() {
 
   const featuredModule = modules.length > 0 ? modules[0] : null;
 
+  const handleModuleNavigate = (moduleId: string) => {
+    if (isPublic) {
+      navigate(paths.explore.module.getHref(moduleId));
+    } else {
+      navigate(`/app/modules/${moduleId}`);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-gray-50 pb-20">
       <div className="bg-white shadow-sm">
@@ -78,24 +91,26 @@ export default function ModuleDiscovery() {
               </p>
             </div>
 
-            {/* Points Card */}
-            <div className="flex items-center gap-3 rounded-xl bg-[#2a4263] px-5 py-3 text-white shadow-md">
-              <div className="rounded-full bg-white/20 p-2">
-                <LuTrophy className="h-6 w-6 text-yellow-300" />
-              </div>
-              <div className="flex flex-col leading-none">
-                {isUserLoading ? (
-                  <div className="h-6 w-12 animate-pulse rounded bg-white/20" />
-                ) : (
-                  <span className="text-2xl font-bold">
-                    {user?.points?.modules.toFixed(2) || 0}
+            {/* Points Card — hidden for public */}
+            {!isPublic && (
+              <div className="flex items-center gap-3 rounded-xl bg-[#2a4263] px-5 py-3 text-white shadow-md">
+                <div className="rounded-full bg-white/20 p-2">
+                  <LuTrophy className="h-6 w-6 text-yellow-300" />
+                </div>
+                <div className="flex flex-col leading-none">
+                  {isUserLoading ? (
+                    <div className="h-6 w-12 animate-pulse rounded bg-white/20" />
+                  ) : (
+                    <span className="text-2xl font-bold">
+                      {user?.points?.modules.toFixed(2) || 0}
+                    </span>
+                  )}
+                  <span className="text-[10px] font-medium tracking-wider uppercase opacity-80">
+                    Total Points
                   </span>
-                )}
-                <span className="text-[10px] font-medium tracking-wider uppercase opacity-80">
-                  Total Points
-                </span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Search Bar */}
@@ -133,7 +148,7 @@ export default function ModuleDiscovery() {
               </p>
               <div className="mt-8">
                 <button
-                  onClick={() => navigate(`/app/modules/${featuredModule._id}`)}
+                  onClick={() => handleModuleNavigate(featuredModule._id)}
                   className="inline-flex items-center rounded-lg bg-white px-6 py-3 font-semibold text-[#2a4263] transition-colors hover:bg-gray-100"
                 >
                   Start Learning
@@ -172,7 +187,11 @@ export default function ModuleDiscovery() {
             </div>
           ) : (
             modules.map((module) => (
-              <ModuleCard key={module._id} module={module} />
+              <ModuleCard
+                key={module._id}
+                module={module}
+                onClick={isPublic ? () => handleModuleNavigate(module._id) : undefined}
+              />
             ))
           )}
         </div>

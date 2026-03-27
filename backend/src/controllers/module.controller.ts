@@ -22,13 +22,7 @@ export default class ModuleController {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
       const search = req.query.search as string;
-      const userId = req.userId;
-
-      if (!userId) {
-        return res
-          .status(401)
-          .json({ success: false, message: 'Unauthorized' });
-      }
+      const userId = req.userId; // May be undefined for public access
 
       const { modules, total } = await this.moduleService.getAllModules(
         userId,

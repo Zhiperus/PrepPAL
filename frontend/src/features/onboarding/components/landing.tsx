@@ -11,14 +11,22 @@ import type { MouseEvent, ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 import {
   LuArrowRight,
+  LuBookOpen,
+  LuBuilding2,
   LuCircleCheck,
+  LuCompass,
+  LuEye,
+  LuFlag,
   LuShieldCheck,
+  LuTrophy,
   LuUsers,
   LuZap,
 } from 'react-icons/lu';
-import { Link, useSearchParams } from 'react-router'; // Ensure react-router-dom
+import { Link, useSearchParams } from 'react-router';
 import { twMerge } from 'tailwind-merge';
 
+import LguMonitoringImg from '@/assets/lgu_go_bag_checking.png';
+import LguModerationImg from '@/assets/lgu_moderation.png';
 import Refresher from '@/assets/light-bulb.png';
 import Logo from '@/assets/logo.png';
 import Leaderboard from '@/assets/podium.png';
@@ -282,6 +290,12 @@ export function Landing() {
           </div>
           <div className="flex items-center gap-4">
             <Link
+              to={paths.explore.community.getHref()}
+              className="hidden text-sm font-semibold text-slate-600 transition-colors hover:text-[#2A4362] md:block"
+            >
+              Explore
+            </Link>
+            <Link
               to={paths.auth.login.getHref(redirectTo)}
               className="text-sm font-semibold text-slate-600 transition-colors hover:text-[#2A4362]"
             >
@@ -495,6 +509,233 @@ export function Landing() {
                 </SpotlightCard>
               </PopIn>
             </div>
+          </div>
+        </section>
+
+        {/* --- EXPLORE SECTION --- */}
+        <section className="relative bg-gradient-to-b from-slate-50 to-white py-24">
+          <div className="mx-auto max-w-7xl px-6">
+            <PopIn>
+              <div className="mx-auto mb-16 max-w-2xl text-center">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50/50 px-4 py-1.5 shadow-sm">
+                  <LuCompass className="h-4 w-4 text-blue-600" />
+                  <span className="text-xs font-bold tracking-wider text-blue-600 uppercase">
+                    Preview Without an Account
+                  </span>
+                </div>
+                <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                  Explore PrepPAL
+                </h2>
+                <p className="mt-4 text-lg text-slate-600">
+                  Take a look around before signing up. Browse community posts,
+                  check leaderboards, and explore our learning modules.
+                </p>
+              </div>
+            </PopIn>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+              {/* Community Posts Card */}
+              <PopIn delay={0.1} className="h-full">
+                <Link
+                  to={paths.explore.community.getHref()}
+                  className="group relative block h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-indigo-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="relative p-8">
+                    <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 transition-transform duration-300 group-hover:scale-110">
+                      <LuUsers className="h-8 w-8" />
+                    </div>
+                    <h3 className="mb-3 text-xl font-bold text-slate-900">
+                      Community Posts
+                    </h3>
+                    <p className="mb-6 leading-relaxed text-slate-500">
+                      See what others have packed in their go bags. Get inspired
+                      by real households preparing for emergencies.
+                    </p>
+                    <div className="flex items-center gap-2 font-semibold text-blue-600 transition-all group-hover:gap-3">
+                      Browse Posts
+                      <LuArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </Link>
+              </PopIn>
+
+              {/* Leaderboard Card */}
+              <PopIn delay={0.2} className="h-full">
+                <Link
+                  to={paths.explore.leaderboard.getHref()}
+                  className="group relative block h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="relative p-8">
+                    <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/25 transition-transform duration-300 group-hover:scale-110">
+                      <LuTrophy className="h-8 w-8" />
+                    </div>
+                    <h3 className="mb-3 text-xl font-bold text-slate-900">
+                      Leaderboard
+                    </h3>
+                    <p className="mb-6 leading-relaxed text-slate-500">
+                      See the most prepared households in your area. Preparedness
+                      is a community effort — see who leads.
+                    </p>
+                    <div className="flex items-center gap-2 font-semibold text-amber-600 transition-all group-hover:gap-3">
+                      View Rankings
+                      <LuArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </Link>
+              </PopIn>
+
+              {/* Learning Modules Card */}
+              <PopIn delay={0.3} className="h-full">
+                <Link
+                  to={paths.explore.modules.getHref()}
+                  className="group relative block h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="relative p-8">
+                    <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25 transition-transform duration-300 group-hover:scale-110">
+                      <LuBookOpen className="h-8 w-8" />
+                    </div>
+                    <h3 className="mb-3 text-xl font-bold text-slate-900">
+                      Learning Modules
+                    </h3>
+                    <p className="mb-6 leading-relaxed text-slate-500">
+                      Bite-sized disaster preparedness lessons. Learn the DOs and
+                      DON&apos;Ts that could save lives.
+                    </p>
+                    <div className="flex items-center gap-2 font-semibold text-emerald-600 transition-all group-hover:gap-3">
+                      Start Learning
+                      <LuArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </div>
+                  </div>
+                </Link>
+              </PopIn>
+            </div>
+          </div>
+        </section>
+
+        {/* --- LGU FEATURES SECTION --- */}
+        <section className="relative overflow-hidden bg-[#0f1b2d] py-24">
+          <div className="absolute inset-0 bg-[radial-gradient(#ffffff15_1px,transparent_1px)] [background-size:24px_24px]"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-blue-600/10 blur-[120px]"></div>
+
+          <div className="relative z-10 mx-auto max-w-7xl px-6">
+            <PopIn>
+              <div className="mx-auto mb-16 max-w-2xl text-center">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 shadow-sm">
+                  <LuBuilding2 className="h-4 w-4 text-blue-400" />
+                  <span className="text-xs font-bold tracking-wider text-blue-400 uppercase">
+                    For Local Government Units
+                  </span>
+                </div>
+                <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                  Powerful tools for{' '}
+                  <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                    LGU administrators
+                  </span>
+                </h2>
+                <p className="mt-4 text-lg text-slate-400">
+                  Monitor community preparedness, moderate content, and keep your barangay safe — all from one dashboard.
+                </p>
+              </div>
+            </PopIn>
+
+            <div className="flex flex-col gap-24">
+              {/* Content Moderation Row */}
+              <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+                <PopIn delay={0.15}>
+                  <div>
+                    <div className="mb-6 flex items-center gap-4">
+                      <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 text-white shadow-lg shadow-rose-500/20">
+                        <LuFlag className="h-7 w-7" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">Content Moderation</h3>
+                        <p className="text-slate-400">Real-time community oversight</p>
+                      </div>
+                    </div>
+
+                    <p className="mb-6 text-lg leading-relaxed text-slate-400">
+                      Review flagged posts, manage community reports, and maintain a safe space for all residents directly from your LGU dashboard.
+                    </p>
+
+                    <div className="space-y-4">
+                      {[
+                        'Review flagged go-bag submissions instantly',
+                        'Manage and categorize community reports',
+                        'Dismiss false reports or delete violations',
+                        'Maintain full moderation history',
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-3 text-slate-300">
+                          <LuCircleCheck className="h-5 w-5 flex-shrink-0 text-rose-400" />
+                          <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </PopIn>
+
+                <PopIn delay={0.25}>
+                  <div className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-800/50 shadow-2xl shadow-rose-500/10 transition-transform duration-500 hover:scale-[1.02]">
+                    <img src={LguModerationImg} alt="Content Moderation Dashboard" className="h-auto w-full object-cover" />
+                    <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10" />
+                  </div>
+                </PopIn>
+              </div>
+
+              {/* Resident Monitoring Row */}
+              <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+                <PopIn delay={0.45} className="order-2 lg:order-1">
+                  <div className="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-800/50 shadow-2xl shadow-cyan-500/10 transition-transform duration-500 hover:scale-[1.02]">
+                    <img src={LguMonitoringImg} alt="Resident Monitoring Dashboard" className="h-auto w-full object-cover" />
+                    <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10" />
+                  </div>
+                </PopIn>
+
+                <PopIn delay={0.35} className="order-1 lg:order-2">
+                  <div>
+                    <div className="mb-6 flex items-center gap-4">
+                      <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/20">
+                        <LuEye className="h-7 w-7" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">Resident Monitoring</h3>
+                        <p className="text-slate-400">Household preparedness tracking</p>
+                      </div>
+                    </div>
+
+                    <p className="mb-6 text-lg leading-relaxed text-slate-400">
+                      Track every household&apos;s go bag status, preparedness score, and risk level across your barangay in a centralized view.
+                    </p>
+
+                    <div className="space-y-4">
+                      {[
+                        'Monitor all household go-bag submissions',
+                        'View up-to-date preparedness scores',
+                        'Filter by barangay, status, or specific households',
+                        'Identify and prioritize at-risk families instantly',
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-3 text-slate-300">
+                          <LuCircleCheck className="h-5 w-5 flex-shrink-0 text-cyan-400" />
+                          <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </PopIn>
+              </div>
+            </div>
+
+            {/* CTA for LGUs */}
+            <PopIn delay={0.45}>
+              <div className="mt-12 text-center">
+                <p className="text-slate-500">
+                  <span className="font-semibold text-slate-300">Are you an LGU?</span>{' '}
+                  Contact us to get your barangay set up with PrepPAL.
+                </p>
+              </div>
+            </PopIn>
           </div>
         </section>
 

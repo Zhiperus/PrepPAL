@@ -14,18 +14,21 @@ export default class ModuleRepository {
    * Retrieves all modules with pagination and optional search.
    * Search applies to both title and description fields.
    */
-  async findAll(userId: string, options: GetModulesOptions = {}) {
+  async findAll(userId: string | undefined, options: GetModulesOptions = {}) {
     const { page = 1, limit = 10, search } = options;
     const skip = (page - 1) * limit;
 
-    // 1. Fetch the User's Progress
-    const user = await UserModel.findById(userId)
-      .select('completedModules')
-      .lean();
+    // 1. Fetch the User's Progress (skip if no userId — public access)
+    let progressMap = new Map<string, any>();
+    if (userId) {
+      const user = await UserModel.findById(userId)
+        .select('completedModules')
+        .lean();
 
-    const progressMap = new Map(
-      user?.completedModules?.map((m) => [m.moduleId.toString(), m]),
-    );
+      progressMap = new Map(
+        user?.completedModules?.map((m) => [m.moduleId.toString(), m]),
+      );
+    }
 
     // 2. Standard Module Aggregation
     const matchStage: FilterQuery<any> = {};

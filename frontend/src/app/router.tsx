@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router';
 
 import AdminRoot from './routes/admin/root';
 import AppRoot from './routes/app/root';
+import ExploreRoot from './routes/explore/root';
 import LandingRoute from './routes/landing';
 import LguRoot from './routes/lgu/root';
 import NotFoundRoute from './routes/not-found';
@@ -55,6 +56,36 @@ export const createAppRouter = (queryClient: QueryClient) =>
       path: paths.auth['forget-password'].path,
       lazy: () =>
         import('./routes/auth/forget-password').then(convert(queryClient)),
+    },
+
+    // --- PUBLIC EXPLORE ROUTES (Read-Only) ---
+    {
+      path: paths.explore.root.path,
+      element: <ExploreRoot />,
+      children: [
+        {
+          path: paths.explore.community.path,
+          lazy: () =>
+            import('./routes/explore/community-posts').then(
+              convert(queryClient),
+            ),
+        },
+        {
+          path: paths.explore.leaderboard.path,
+          lazy: () =>
+            import('./routes/explore/leaderboard').then(convert(queryClient)),
+        },
+        {
+          path: paths.explore.modules.path,
+          lazy: () =>
+            import('./routes/explore/modules').then(convert(queryClient)),
+        },
+        {
+          path: paths.explore.module.path,
+          lazy: () =>
+            import('./routes/explore/module').then(convert(queryClient)),
+        },
+      ],
     },
 
     // --- PROTECTED APP ROUTES (Citizen) ---

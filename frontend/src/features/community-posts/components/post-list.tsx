@@ -15,10 +15,11 @@ import { timeAgo } from '@/utils/dateUtil';
 
 interface PostListProps {
   onSelectPost: (post: FeedPost) => void;
+  isPublic?: boolean;
 }
 
-export default function PostList({ onSelectPost }: PostListProps) {
-  const { data: user } = useUser();
+export default function PostList({ onSelectPost, isPublic = false }: PostListProps) {
+  const { data: user } = useUser({ enabled: !isPublic } as any);
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search') || '';
   const sort = (searchParams.get('sort') as SortOption) || 'newest';
@@ -29,8 +30,8 @@ export default function PostList({ onSelectPost }: PostListProps) {
     useInfiniteFeed({
       sort,
       search,
-      barangayCode: user?.location?.barangayCode,
-      cityCode: user?.location?.cityCode,
+      barangayCode: isPublic ? undefined : user?.location?.barangayCode,
+      cityCode: isPublic ? undefined : user?.location?.cityCode,
     });
 
   if (isLoading) {
@@ -96,29 +97,31 @@ export default function PostList({ onSelectPost }: PostListProps) {
                   </div>
                 </div>
 
-                {/* Post Actions Menu */}
-                <div className="dropdown dropdown-end">
-                  <div
-                    tabIndex={0}
-                    role="button"
-                    className="btn btn-ghost btn-sm btn-circle"
-                  >
-                    <FiMoreHorizontal className="h-5 w-5 text-gray-400" />
+                {/* Post Actions Menu — hidden for public */}
+                {!isPublic && (
+                  <div className="dropdown dropdown-end">
+                    <div
+                      tabIndex={0}
+                      role="button"
+                      className="btn btn-ghost btn-sm btn-circle"
+                    >
+                      <FiMoreHorizontal className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <ul
+                      tabIndex={0}
+                      className="dropdown-content menu bg-base-100 rounded-box z-[1] w-40 border border-gray-100 p-2 shadow"
+                    >
+                      <li>
+                        <button
+                          className="text-error flex items-center gap-2"
+                          onClick={() => setReportingPostId(post._id)}
+                        >
+                          <LuFlag className="h-4 w-4" /> Report Post
+                        </button>
+                      </li>
+                    </ul>
                   </div>
-                  <ul
-                    tabIndex={0}
-                    className="dropdown-content menu bg-base-100 rounded-box z-[1] w-40 border border-gray-100 p-2 shadow"
-                  >
-                    <li>
-                      <button
-                        className="text-error flex items-center gap-2"
-                        onClick={() => setReportingPostId(post._id)}
-                      >
-                        <LuFlag className="h-4 w-4" /> Report Post
-                      </button>
-                    </li>
-                  </ul>
-                </div>
+                )}
               </div>
 
               {/* Go Bag Picture */}
@@ -146,26 +149,31 @@ export default function PostList({ onSelectPost }: PostListProps) {
                   )}
                 </p>
 
-                <div className="card-actions justify-center">
-                  <button
-                    onClick={() => onSelectPost(post)}
-                    className="btn btn-soft bg-btn-primary hover:bg-btn-primary-hover mt-4 w-64 gap-2 rounded text-white hover:shadow-md"
-                  >
-                    Rate Bag
-                  </button>
-                </div>
+                {/* Rate Bag button — hidden for public */}
+                {!isPublic && (
+                  <div className="card-actions justify-center">
+                    <button
+                      onClick={() => onSelectPost(post)}
+                      className="btn btn-soft bg-btn-primary hover:bg-btn-primary-hover mt-4 w-64 gap-2 rounded text-white hover:shadow-md"
+                    >
+                      Rate Bag
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
       ))}
 
-      {/* Global Report Modal */}
-      <ReportModal
-        postId={reportingPostId || ''}
-        isOpen={!!reportingPostId}
-        onClose={() => setReportingPostId(null)}
-      />
+      {/* Global Report Modal — only for authenticated */}
+      {!isPublic && (
+        <ReportModal
+          postId={reportingPostId || ''}
+          isOpen={!!reportingPostId}
+          onClose={() => setReportingPostId(null)}
+        />
+      )}
 
       {/* Load More Button */}
       {hasPosts && hasNextPage && (

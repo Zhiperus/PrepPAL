@@ -10,7 +10,7 @@ export default class ModuleService {
   /**
    * Gets all modules with pagination and optional search.
    */
-  async getAllModules(userId: string, options: GetModulesOptions = {}) {
+  async getAllModules(userId: string | undefined, options: GetModulesOptions = {}) {
     // This supports the { page, limit } object from the controller
     return this.moduleRepo.findAll(userId, options);
   }

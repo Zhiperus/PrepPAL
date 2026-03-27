@@ -14,7 +14,7 @@ const controller = new ModuleController();
  */
 
 // GET /api/modules - Get all modules (paginated)
-moduleRoutes.get('/', authenticate, controller.getAllModules.bind(controller));
+moduleRoutes.get('/', controller.getAllModules.bind(controller));
 
 // POST /api/modules - Create a new module (Admin)
 moduleRoutes.post(

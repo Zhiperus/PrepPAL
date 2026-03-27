@@ -10,15 +10,24 @@ import { useNavigate } from 'react-router';
 
 interface ModuleCardProps {
   module: Module & { userScore?: number | null };
+  onClick?: () => void;
 }
 
-export function ModuleCard({ module }: ModuleCardProps) {
+export function ModuleCard({ module, onClick }: ModuleCardProps) {
   const navigate = useNavigate();
 
   const hasAttempted =
     module.userScore !== null && module.userScore !== undefined;
 
   const isPerfect = module.userScore === 100;
+
+  const handleReadClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(`/app/modules/${module._id}`);
+    }
+  };
 
   const renderStatus = () => {
     if (!hasAttempted) {
@@ -86,23 +95,25 @@ export function ModuleCard({ module }: ModuleCardProps) {
       {/* Buttons */}
       <div className="flex gap-3">
         <button
-          onClick={() => navigate(`/app/modules/${module._id}`)}
+          onClick={handleReadClick}
           className="flex-1 rounded-lg bg-[#2a4263] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1e3048]"
         >
           Read
         </button>
 
-        <button
-          onClick={() => navigate(`/app/modules/${module._id}/quiz`)}
-          className={clsx(
-            'rounded-lg border px-4 py-2 text-sm font-semibold transition-colors',
-            isPerfect
-              ? 'border-green-200 text-green-700 hover:bg-green-100'
-              : 'border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-[#2a4263]',
-          )}
-        >
-          {!hasAttempted ? 'Take Quiz' : isPerfect ? 'Review' : 'Retake'}
-        </button>
+        {!onClick && (
+          <button
+            onClick={() => navigate(`/app/modules/${module._id}/quiz`)}
+            className={clsx(
+              'rounded-lg border px-4 py-2 text-sm font-semibold transition-colors',
+              isPerfect
+                ? 'border-green-200 text-green-700 hover:bg-green-100'
+                : 'border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-[#2a4263]',
+            )}
+          >
+            {!hasAttempted ? 'Take Quiz' : isPerfect ? 'Review' : 'Retake'}
+          </button>
+        )}
       </div>
     </div>
   );

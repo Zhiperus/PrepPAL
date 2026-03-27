@@ -7,7 +7,11 @@ import { useLeaderboard } from '@/features/leaderboard/api/get-leaderboard';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useUser } from '@/lib/auth';
 
-export default function LeaderboardPage() {
+interface LeaderboardPageProps {
+  isPublic?: boolean;
+}
+
+export default function LeaderboardPage({ isPublic = false }: LeaderboardPageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const activeTab =
@@ -40,8 +44,8 @@ export default function LeaderboardPage() {
     });
   };
 
-  const { data: user, isLoading: isUserLoading } = useUser();
-  const userBarangay = user?.location?.barangay;
+  const { data: user, isLoading: isUserLoading } = useUser({ enabled: !isPublic } as any);
+  const userBarangay = isPublic ? undefined : user?.location?.barangay;
 
   const { data: leaderboardData, isLoading: isLeaderboardLoading } =
     useLeaderboard({
@@ -52,12 +56,12 @@ export default function LeaderboardPage() {
         metric: activeTab,
       },
       queryConfig: {
-        enabled: !!userBarangay,
+        enabled: isPublic ? true : !!userBarangay,
         placeholderData: (previousData) => previousData,
       },
     });
 
-  if (isUserLoading) {
+  if (!isPublic && isUserLoading) {
     return (
       <div className="bg-base-200 flex h-screen w-full items-center justify-center">
         <span className="loading loading-spinner loading-lg text-[#2a4263]"></span>
@@ -73,22 +77,20 @@ export default function LeaderboardPage() {
       >
         <a
           role="tab"
-          className={`tab min-w-[120px] font-bold text-gray-600 transition-colors ${
-            activeTab === 'allTime'
+          className={`tab min-w-[120px] font-bold text-gray-600 transition-colors ${activeTab === 'allTime'
               ? 'tab-active aria-selected:text-[#2a4263]'
               : ''
-          }`}
+            }`}
           onClick={() => handleTabChange('allTime')}
         >
           All-Time
         </a>
         <a
           role="tab"
-          className={`tab min-w-[120px] font-bold text-gray-600 transition-colors ${
-            activeTab === 'goBag'
+          className={`tab min-w-[120px] font-bold text-gray-600 transition-colors ${activeTab === 'goBag'
               ? 'tab-active aria-selected:text-[#2a4263]'
               : ''
-          }`}
+            }`}
           onClick={() => handleTabChange('goBag')}
         >
           Go Bag
@@ -100,9 +102,11 @@ export default function LeaderboardPage() {
           title={activeTab === 'allTime' ? 'All-time Points' : 'Go Bag Points'}
           data={leaderboardData?.data || []}
           location={
-            userBarangay
-              ? `${userBarangay}, ${user?.location?.city}`
-              : 'Unknown Location'
+            isPublic
+              ? 'Global Leaderboard'
+              : userBarangay
+                ? `${userBarangay}, ${user?.location?.city}`
+                : 'Unknown Location'
           }
           activeMetric={activeTab}
           search={localSearch}

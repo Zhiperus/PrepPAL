@@ -9,7 +9,6 @@ const controller = new LeaderboardController();
 // GET /leaderboard?barangay=Batasan&limit=50
 leaderboardRoutes.get(
   '/',
-  authenticate,
   controller.getLeaderboard.bind(controller),
 );
 

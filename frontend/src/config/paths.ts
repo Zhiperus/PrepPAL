@@ -75,6 +75,29 @@ export const paths = {
     },
   },
 
+  explore: {
+    root: {
+      path: '/explore',
+      getHref: () => '/explore',
+    },
+    community: {
+      path: 'community',
+      getHref: () => '/explore/community',
+    },
+    leaderboard: {
+      path: 'leaderboard',
+      getHref: () => '/explore/leaderboard',
+    },
+    modules: {
+      path: 'modules',
+      getHref: () => '/explore/modules',
+    },
+    module: {
+      path: 'modules/:moduleId',
+      getHref: (moduleId: string) => `/explore/modules/${moduleId}`,
+    },
+  },
+
   admin: {
     root: {
       path: '/admin',

@@ -8,25 +8,37 @@ import PostList from './post-list';
 import { useGoBag } from '@/features/go-bag/api/get-go-bag';
 import PostBagModal from '@/features/go-bag/components/post-go-bag-modal';
 
-export default function CommunityFeedRoute() {
+interface CommunityFeedProps {
+  isPublic?: boolean;
+}
+
+export default function CommunityFeedRoute({ isPublic = false }: CommunityFeedProps) {
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
-  const { data: goBag } = useGoBag();
+  const { data: goBag } = useGoBag({ queryConfig: { enabled: !isPublic } });
 
   return (
     <div className="bg-base-200 flex min-h-screen flex-col items-center pb-20">
-      <FeedHeader onCreatePost={() => setIsPostModalOpen(true)} />
-
-      <PostList onSelectPost={(post) => setSelectedPost(post)} />
-
-      <PostCardModal
-        isOpen={!!selectedPost}
-        post={selectedPost || undefined}
-        onClose={() => setSelectedPost(null)}
+      <FeedHeader
+        onCreatePost={() => setIsPostModalOpen(true)}
+        isPublic={isPublic}
       />
 
-      {isPostModalOpen && (
+      <PostList
+        onSelectPost={(post) => setSelectedPost(post)}
+        isPublic={isPublic}
+      />
+
+      {!isPublic && (
+        <PostCardModal
+          isOpen={!!selectedPost}
+          post={selectedPost || undefined}
+          onClose={() => setSelectedPost(null)}
+        />
+      )}
+
+      {!isPublic && isPostModalOpen && (
         <PostBagModal
           onClose={() => setIsPostModalOpen(false)}
           completeness={0}

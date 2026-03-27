@@ -34,6 +34,12 @@ api.interceptors.response.use(
     const isAuthCheck = error.config?.url?.includes('/auth/me');
 
     if (error.response?.status === 401 && !isAuthCheck) {
+      // Don't redirect on public explore pages
+      const isExplorePage = window.location.pathname.startsWith('/explore');
+      if (isExplorePage) {
+        return Promise.reject(error);
+      }
+
       const searchParams = new URLSearchParams();
       const redirectTo =
         searchParams.get('redirectTo') || window.location.pathname;

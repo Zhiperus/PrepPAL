@@ -9,10 +9,11 @@ import { useUser } from '@/lib/auth';
 
 interface FeedHeaderProps {
   onCreatePost: () => void;
+  isPublic?: boolean;
 }
 
-export default function FeedHeader({ onCreatePost }: FeedHeaderProps) {
-  const { data: user } = useUser();
+export default function FeedHeader({ onCreatePost, isPublic = false }: FeedHeaderProps) {
+  const { data: user } = useUser({ enabled: !isPublic } as any);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const initialSearch = searchParams.get('search') || '';
@@ -53,26 +54,38 @@ export default function FeedHeader({ onCreatePost }: FeedHeaderProps) {
             <p className="mt-1 text-sm text-gray-500">
               See what others have prepared and rate their go bags.
             </p>
-            <div className="flex flex-row items-center gap-2 pt-3 text-sm font-medium text-gray-600">
-              <FaLocationDot className="text-text-primary h-4 w-4 shrink-0" />
-              <span className="text-text-secondary line-clamp-1">
-                Brgy. {user?.location?.barangay}, {user?.location?.city}
-              </span>
-            </div>
+            {!isPublic && user?.location && (
+              <div className="flex flex-row items-center gap-2 pt-3 text-sm font-medium text-gray-600">
+                <FaLocationDot className="text-text-primary h-4 w-4 shrink-0" />
+                <span className="text-text-secondary line-clamp-1">
+                  Brgy. {user?.location?.barangay}, {user?.location?.city}
+                </span>
+              </div>
+            )}
+            {isPublic && (
+              <div className="flex flex-row items-center gap-2 pt-3 text-sm font-medium text-gray-600">
+                <FaLocationDot className="text-text-primary h-4 w-4 shrink-0" />
+                <span className="text-text-secondary line-clamp-1">
+                  All Communities
+                </span>
+              </div>
+            )}
           </div>
-          {/* New Post Button */}
-          <button
-            className="flex items-center gap-3 rounded-xl bg-[#2a4263] px-5 py-3 text-white shadow-md transition-transform hover:scale-[1.02] hover:bg-[#1e3a5a] active:scale-95"
-            onClick={onCreatePost}
-          >
-            <div className="rounded-full bg-white/20 p-2">
-              <LuPenLine className="h-6 w-6 text-white" />
-            </div>
-            <div className="flex flex-col items-start leading-none">
-              <span className="text-lg font-bold">New Post</span>
-              <span className="text-[10px] font-medium tracking-wider uppercase opacity-80"></span>
-            </div>
-          </button>
+          {/* New Post Button — hidden for public */}
+          {!isPublic && (
+            <button
+              className="flex items-center gap-3 rounded-xl bg-[#2a4263] px-5 py-3 text-white shadow-md transition-transform hover:scale-[1.02] hover:bg-[#1e3a5a] active:scale-95"
+              onClick={onCreatePost}
+            >
+              <div className="rounded-full bg-white/20 p-2">
+                <LuPenLine className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex flex-col items-start leading-none">
+                <span className="text-lg font-bold">New Post</span>
+                <span className="text-[10px] font-medium tracking-wider uppercase opacity-80"></span>
+              </div>
+            </button>
+          )}
         </div>
         <div className="mt-6 flex gap-3">
           <div className="relative max-w-md flex-1">

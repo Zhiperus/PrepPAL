@@ -4,7 +4,11 @@ import { useNavigate, useParams } from 'react-router';
 import { paths } from '@/config/paths';
 import { useModule } from '@/features/modules/api/get-module';
 
-export default function ModuleView() {
+interface ModuleViewProps {
+  isPublic?: boolean;
+}
+
+export default function ModuleView({ isPublic = false }: ModuleViewProps) {
   const { moduleId } = useParams<{ moduleId: string }>();
   const navigate = useNavigate();
   const { data, isLoading } = useModule({
@@ -26,7 +30,13 @@ export default function ModuleView() {
     <div className="relative mx-auto w-full max-w-4xl space-y-6 p-4 pb-12 md:p-8">
       <div className="sticky top-0 flex items-center justify-center gap-4 pt-10 lg:static lg:justify-normal lg:pt-0">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            if (isPublic) {
+              navigate(paths.explore.modules.getHref());
+            } else {
+              navigate(-1);
+            }
+          }}
           className="btn btn-ghost btn-sm gap-2 rounded-2xl bg-gray-50 p-5 text-slate-500 hover:bg-transparent hover:text-slate-800"
         >
           <GoArrowLeft className="h-5 w-5" />
@@ -36,8 +46,6 @@ export default function ModuleView() {
 
       <div className="border-b border-gray-200 pb-6">
         <div className="flex items-center gap-3">
-          {/* This will be commented for now and will be implemented once the module creator is finished */}
-          {/* <span className="text-3xl">{module.logo}</span> */}
           <h1 className="text-2xl leading-tight font-bold text-slate-900 md:text-3xl">
             {module.title}
           </h1>
@@ -91,16 +99,33 @@ export default function ModuleView() {
         ))}
       </div>
 
-      <div className="pt-8">
-        <div className="flex justify-center md:justify-end">
-          <button
-            onClick={() => navigate(paths.app.quiz.getHref(moduleId!))}
-            className="btn btn-soft bg-btn-primary btn-lg hover:bg-btn-primary-hover w-full text-lg text-white shadow-lg hover:shadow-md md:w-auto md:px-12"
-          >
-            Test Your Knowledge
-          </button>
+      {/* Test Your Knowledge button — hidden for public */}
+      {!isPublic && (
+        <div className="pt-8">
+          <div className="flex justify-center md:justify-end">
+            <button
+              onClick={() => navigate(paths.app.quiz.getHref(moduleId!))}
+              className="btn btn-soft bg-btn-primary btn-lg hover:bg-btn-primary-hover w-full text-lg text-white shadow-lg hover:shadow-md md:w-auto md:px-12"
+            >
+              Test Your Knowledge
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Sign up CTA for public users */}
+      {isPublic && (
+        <div className="pt-8">
+          <div className="flex justify-center md:justify-end">
+            <button
+              onClick={() => navigate(paths.auth.register.getHref())}
+              className="btn btn-soft bg-btn-primary btn-lg hover:bg-btn-primary-hover w-full text-lg text-white shadow-lg hover:shadow-md md:w-auto md:px-12"
+            >
+              Sign Up to Take Quiz
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
